@@ -1,5 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Clock, OutboxService, PrismaService, ScheduledJob, UnitOfWork } from '@tontine/platform';
+import { Inject, Injectable } from '@nestjs/common';
+import { type AppConfig } from '@tontine/config';
+import {
+  APP_CONFIG,
+  Clock,
+  OutboxService,
+  PrismaService,
+  ScheduledJob,
+  UnitOfWork,
+} from '@tontine/platform';
 
 export interface Discrepancy {
   kind: string;
@@ -9,9 +17,6 @@ export interface Discrepancy {
   deltaMinor: string;
   detail: string;
 }
-
-/** Seuil d'alerte (écart cumulé en unités mineures) au-delà duquel une alerte est levée (US-6.6). */
-export const RECONCILIATION_ALERT_THRESHOLD_MINOR = 0n;
 
 /**
  * US-6.6 — réconciliation interne quotidienne : transactions internes ⇄ paiements PSP ⇄ mouvements
@@ -24,7 +29,13 @@ export class InternalReconciliationService {
     private readonly uow: UnitOfWork,
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
+
+  /** Seuil d'alerte configurable (écart cumulé, unités mineures) — US-6.6. */
+  get threshold(): bigint {
+    return BigInt(this.config.RECONCILIATION_ALERT_THRESHOLD_MINOR);
+  }
 
   async compute(): Promise<{ checked: number; discrepancies: Discrepancy[] }> {
     const discrepancies: Discrepancy[] = [];
@@ -123,22 +134,34 @@ export class InternalReconciliationService {
     cron: '0 30 1 * * *',
     description: 'Réconciliation interne quotidienne (US-6.6)',
   })
-  async run(): Promise<{ reportId: string; discrepancies: number }> {
+  async run(): Promise<{ reportId: string; discrepancies: number; alert: boolean }> {
     const { checked, discrepancies } = await this.compute();
+    return this.record('INTERNAL', this.clock.today(), checked, discrepancies);
+  }
+
+  /** Enregistre un rapport (interne ou PSP), lève l'alerte au-delà du seuil, publie l'événement. */
+  async record(
+    kind: 'INTERNAL' | 'PSP',
+    businessDate: string,
+    checked: number,
+    discrepancies: Discrepancy[],
+  ): Promise<{ reportId: string; discrepancies: number; alert: boolean }> {
     const total = discrepancies.reduce(
       (s, d) => s + (BigInt(d.deltaMinor) < 0n ? -BigInt(d.deltaMinor) : BigInt(d.deltaMinor)),
       0n,
     );
-    const alert = discrepancies.length > 0 && total >= RECONCILIATION_ALERT_THRESHOLD_MINOR;
+    const threshold = this.threshold;
+    // Seuil 0 : toute divergence alerte (y compris un statut divergent à montant égal)
+    const alert = discrepancies.length > 0 && (threshold === 0n || total > threshold);
     const report = await this.uow.run(async (tx) => {
       const r = await tx.reconciliationReport.create({
         data: {
-          kind: 'INTERNAL',
-          businessDate: new Date(`${this.clock.today()}T00:00:00Z`),
+          kind,
+          businessDate: new Date(`${businessDate}T00:00:00Z`),
           status: discrepancies.length ? 'DISCREPANCIES' : 'BALANCED',
           checkedCount: checked,
           discrepancyCount: discrepancies.length,
-          thresholdMinor: RECONCILIATION_ALERT_THRESHOLD_MINOR,
+          thresholdMinor: threshold,
           alert,
           details: discrepancies as unknown as object,
           createdAt: this.clock.now(),
@@ -148,11 +171,11 @@ export class InternalReconciliationService {
         type: 'reconciliation.completed',
         aggregateType: 'reconciliation',
         aggregateId: r.id,
-        payload: { reportId: r.id, kind: 'INTERNAL', discrepancies: discrepancies.length, alert },
+        payload: { reportId: r.id, kind, discrepancies: discrepancies.length, alert },
       });
       return r;
     });
-    return { reportId: report.id, discrepancies: discrepancies.length };
+    return { reportId: report.id, discrepancies: discrepancies.length, alert };
   }
 }
 

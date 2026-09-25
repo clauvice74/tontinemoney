@@ -28,6 +28,7 @@
     "@opentelemetry/sdk-node": "0.205.0",
     "@opentelemetry/semantic-conventions": "1.37.0",
     "@prisma/client": "7.10.0",
+    "@tontine/administration": "workspace:*",
     "@tontine/auth": "workspace:*",
     "@tontine/auth-service": "workspace:*",
     "@tontine/compliance": "workspace:*",

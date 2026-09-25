@@ -50,6 +50,8 @@ export const envSchema = z
     /** Squelettes réels (désactivés) : utilisés uniquement pour vérifier des webhooks de test. */
     FLUTTERWAVE_WEBHOOK_HASH: z.string().default(''),
     PAYSTACK_SECRET_KEY: z.string().default(''),
+    /** US-6.6 / US-7.6 : écart cumulé (unités mineures) au-delà duquel une alerte est levée. */
+    RECONCILIATION_ALERT_THRESHOLD_MINOR: z.coerce.number().int().min(0).default(0),
     SCHEDULER_ENABLED: bool.default('true'),
     OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional().default(''),
     METRICS_ENABLED: bool.default('true'),

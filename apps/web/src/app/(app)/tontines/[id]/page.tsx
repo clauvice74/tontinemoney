@@ -129,7 +129,8 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
               </TableHeader>
               <TableBody>
                 {d.myContributions.map((c) => {
-                  const payable = c.status === 'PENDING' || c.status === 'LATE';
+                  const payable =
+                    c.status === 'PENDING' || c.status === 'LATE' || c.status === 'DEFAULTED';
                   return (
                     <TableRow key={c.id}>
                       <TableCell>{c.cycleNumber ?? '—'}</TableCell>

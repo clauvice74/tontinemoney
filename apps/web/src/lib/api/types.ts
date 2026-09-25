@@ -347,6 +347,10 @@ export interface TontineView {
   incompletePolicy: IncompletePolicy;
   currentCycleNumber: number | null;
   totalCycles: number | null;
+  timezone?: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  pausedReason?: string | null;
   myRole: TontineMemberRole | null;
   myStatus: TontineMemberStatus | null;
   version: number;

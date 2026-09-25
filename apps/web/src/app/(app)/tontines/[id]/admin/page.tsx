@@ -40,10 +40,57 @@ function beneficiaryName(b: Beneficiary): string {
 }
 
 interface DrawProof {
-  hash?: string;
-  algorithm?: string;
-  createdAt?: string;
-  seed?: string;
+  proof: string | null;
+  algorithm: string | null;
+  drawnAt: string | null;
+  seed: string | null;
+  verified: boolean | null;
+  order: Array<{ position: number; memberId: string; firstName: string }>;
+}
+
+/** US-4.3 — conditions de démarrage et démarrage manuel (dès la date de début atteinte). */
+function StartPanel({ id, onStarted }: { id: string; onStarted: () => Promise<unknown> }) {
+  const check = useQuery({
+    queryKey: ['tontines', id, 'start-check'],
+    queryFn: () => api.get<{ blockers: string[] }>(`/tontines/${id}/start-check`),
+  });
+  const blockers = check.data?.blockers ?? [];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Démarrage</CardTitle>
+        <CardDescription>
+          La tontine démarre automatiquement à la date prévue si toutes les conditions sont réunies.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {blockers.length ? (
+          <ul className="list-disc space-y-1 pl-5 text-destructive">
+            {blockers.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-success">Toutes les conditions sont réunies.</p>
+        )}
+        <ActionDialog
+          trigger="Démarrer maintenant"
+          disabled={blockers.length > 0}
+          title="Démarrer la tontine ?"
+          description="Le tirage (mode aléatoire) est effectué et le premier cycle est ouvert. Irréversible."
+          confirmLabel="Démarrer"
+          successMessage="Demande de démarrage traitée"
+          onConfirm={async () => {
+            const r = await api.post<{ started: boolean; blockers: string[] }>(
+              `/tontines/${id}/start`,
+            );
+            if (!r.started) throw new Error(r.blockers.join(' ; '));
+            await onStarted();
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function TontineAdminDashboardPage() {
@@ -58,7 +105,7 @@ export default function TontineAdminDashboardPage() {
   const proof = useQuery({
     queryKey: ['tontines', id, 'draw-proof'],
     queryFn: () => api.get<DrawProof>(`/tontines/${id}/draw-proof`),
-    enabled: tontine.data?.drawMode === 'RANDOM',
+    enabled: tontine.data?.drawMode === 'RANDOM' && !!tontine.data?.startedAt,
   });
   const t = tontine.data;
 
@@ -89,6 +136,13 @@ export default function TontineAdminDashboardPage() {
           />
         ) : null}
       </div>
+
+      {t && (t.status === 'DRAFT' || t.status === 'READY') ? (
+        <StartPanel
+          id={id}
+          onStarted={() => queryClient.invalidateQueries({ queryKey: ['tontines', id] })}
+        />
+      ) : null}
 
       <QueryState query={dashboard} comingSoonTitle="Tableau de bord bientôt disponible">
         {(d) => {
@@ -252,10 +306,19 @@ export default function TontineAdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
-            <p className="break-all font-mono">{proof.data.hash ?? '—'}</p>
+            <p className="break-all font-mono">{proof.data.proof ?? '—'}</p>
             <p className="text-muted-foreground">
-              {proof.data.algorithm ?? 'SHA-256'} · {formatDateTime(proof.data.createdAt)}
+              {proof.data.algorithm ?? 'SHA-256'} · {formatDateTime(proof.data.drawnAt)} ·{' '}
+              {proof.data.verified ? 'vérifiée ✔' : 'non vérifiable'}
             </p>
+            <p className="break-all text-xs text-muted-foreground">
+              Graine : {proof.data.seed ?? '—'}
+            </p>
+            <ol className="list-decimal pl-5">
+              {proof.data.order.map((o) => (
+                <li key={o.memberId}>{o.firstName}</li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       ) : null}

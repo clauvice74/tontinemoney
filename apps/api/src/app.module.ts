@@ -5,6 +5,7 @@ import {
   type NestModule,
 } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { AdministrationModule } from '@tontine/administration';
 import { AuthModule } from '@tontine/auth-service';
 import { ComplianceModule } from '@tontine/compliance';
 import { KycModule } from '@tontine/kyc';
@@ -45,6 +46,7 @@ export class AppModule implements NestModule {
         KycModule,
         TontinesModule,
         PaymentsModule,
+        AdministrationModule,
       ],
       controllers: [HealthController, OpsController],
       providers: [
