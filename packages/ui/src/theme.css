@@ -1,0 +1,125 @@
+/*
+ * Thème TontineMoney (Tailwind CSS 4) — jetons de couleur au format shadcn/ui.
+ * À importer après `@import 'tailwindcss';` dans la feuille globale de l'application.
+ * Couleur principale : teal/émeraude. Contrastes vérifiés AA (texte ≥ 4,5:1).
+ */
+
+:root {
+  color-scheme: light;
+  --background: #f8fafb;
+  --foreground: #0f1f1c;
+  --card: #ffffff;
+  --card-foreground: #0f1f1c;
+  --popover: #ffffff;
+  --popover-foreground: #0f1f1c;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #e6f4f1;
+  --secondary-foreground: #134e48;
+  --muted: #eef2f2;
+  --muted-foreground: #4b5b58;
+  --accent: #d9f2ec;
+  --accent-foreground: #0f3d38;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --success: #067647;
+  --success-foreground: #ffffff;
+  --warning: #9a5b00;
+  --warning-foreground: #ffffff;
+  --info: #175cd3;
+  --info-foreground: #ffffff;
+  --border: #d5dfdd;
+  --input: #c3d0cd;
+  --ring: #0d9488;
+  --radius: 0.625rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #0b1413;
+    --foreground: #e7f0ee;
+    --card: #111d1b;
+    --card-foreground: #e7f0ee;
+    --popover: #111d1b;
+    --popover-foreground: #e7f0ee;
+    --primary: #2dd4bf;
+    --primary-foreground: #04201c;
+    --secondary: #16302c;
+    --secondary-foreground: #c9ece5;
+    --muted: #172522;
+    --muted-foreground: #a3b6b2;
+    --accent: #1b3934;
+    --accent-foreground: #d7f5ee;
+    --destructive: #f97066;
+    --destructive-foreground: #2a0603;
+    --success: #47cd89;
+    --success-foreground: #052e1a;
+    --warning: #fdb022;
+    --warning-foreground: #2b1700;
+    --info: #84adff;
+    --info-foreground: #06183d;
+    --border: #25403b;
+    --input: #2f4d48;
+    --ring: #2dd4bf;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
