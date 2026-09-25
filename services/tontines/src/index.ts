@@ -6,3 +6,5 @@ export * from './domain/calendar';
 export * from './domain/draw';
 export * from './cycles.service';
 export * from './contributions.service';
+export * from './payouts.service';
+export * from './dashboard.service';

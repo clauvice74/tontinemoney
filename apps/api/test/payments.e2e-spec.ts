@@ -500,14 +500,12 @@ describe('prestataires réels (Flutterwave / Paystack) : squelettes désactivés
       }),
     ).rejects.toBeInstanceOf(ProviderDisabledError);
     await expect(
-      registry
-        .get('paystack')!
-        .payout({
-          merchantReference: randomUUID(),
-          amountMinor: 1n,
-          currency: 'NGN',
-          phone: '+2348000000000',
-        }),
+      registry.get('paystack')!.payout({
+        merchantReference: randomUUID(),
+        amountMinor: 1n,
+        currency: 'NGN',
+        phone: '+2348000000000',
+      }),
     ).rejects.toBeInstanceOf(ProviderDisabledError);
     const res = await ctx.http
       .post('/api/v1/payments/webhooks/paystack')

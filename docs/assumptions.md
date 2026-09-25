@@ -169,3 +169,11 @@ Les comptes de tontine sont une configuration de la tontine : ils sont gérés p
 ## A-38 — PRIORITY_NEED au démarrage
 
 En mode besoin prioritaire, la tontine démarre sans bénéficiaire désigné pour le cycle 1 (`firstBeneficiaryId = null`) ; l'admin désigne ensuite le bénéficiaire (US-4.6). Le paiement du pot exige une désignation (`PAYOUT_NOT_READY`).
+
+## A-39 — Collation
+
+La collation par tour est déduite du pot versé au bénéficiaire et créditée au compte de réserve de la tontine (contexte `COLLATION`), comme les pénalités (A-08). Si le montant collecté ne couvre pas la collation, aucune collation n'est prélevée.
+
+## A-40 — Paiements partiels et arriérés
+
+Après un paiement partiel (politique `PARTIAL_PAYOUT` ou décision de l'admin), les arriérés payés plus tard sont immédiatement reversés au bénéficiaire du cycle concerné (transaction `PAYOUT` idempotente `payout-topup:{contribution}`). Un paiement bloqué par la conformité passe le cycle en `PAYOUT_PENDING` (audit) ; l'admin peut relancer par le paiement forcé.

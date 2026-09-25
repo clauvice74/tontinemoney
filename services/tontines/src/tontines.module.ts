@@ -3,6 +3,9 @@ import { NotificationsModule } from '@tontine/notifications';
 import { TONTINE_ACCESS } from '@tontine/platform';
 import { TransactionsModule } from '@tontine/transactions';
 import { AccountsService } from './accounts.service';
+import { TontineOpsController } from './admin-tontines.controller';
+import { DashboardService } from './dashboard.service';
+import { PayoutsService } from './payouts.service';
 import { ContributionsService } from './contributions.service';
 import { CyclesController } from './cycles.controller';
 import { CyclesService } from './cycles.service';
@@ -24,7 +27,7 @@ export class TontinesPortsModule {}
 /** Domaine Gestion des tontines rotatives (épique 4). */
 @Module({
   imports: [TransactionsModule, NotificationsModule],
-  controllers: [TontinesController, CyclesController],
+  controllers: [TontinesController, CyclesController, TontineOpsController],
   providers: [
     MembershipConsumers,
     TontinesConsumers,
@@ -33,7 +36,15 @@ export class TontinesPortsModule {}
     CyclesService,
     ContributionsService,
     AccountsService,
+    PayoutsService,
+    DashboardService,
   ],
-  exports: [TontinesService, InvitationsService, CyclesService, ContributionsService],
+  exports: [
+    TontinesService,
+    InvitationsService,
+    CyclesService,
+    ContributionsService,
+    PayoutsService,
+  ],
 })
 export class TontinesModule {}
