@@ -23,7 +23,7 @@ import { applyServerErrors, emptyToUndefined, formatError } from '@/lib/forms';
 import { useIdempotencyKey } from '@/lib/hooks/use-idempotency-key';
 import { PAYMENT_STATUS_LABELS, label, statusVariant } from '@/lib/labels';
 import { amountStep, formatAmount, validateAmountPrecision } from '@/lib/money';
-import { isDev } from '@/lib/navigation';
+import { simulatorsEnabled } from '@/lib/navigation';
 import { qk } from '@/lib/queries';
 import { Money } from '../money';
 
@@ -82,11 +82,8 @@ export function PaymentTracker({ payment, onDone }: { payment: PaymentView; onDo
   async function simulate(outcome: 'SUCCESS' | 'FAILURE') {
     setSimulating(true);
     try {
-      await api.post(
-        `/psp-sim/mobile-money/${encodeURIComponent(reference)}/confirm`,
-        { outcome },
-        { auth: false },
-      );
+      // Simulateur : réservé au membre concerné (contrôle de propriété côté API)
+      await api.post(`/psp-sim/mobile-money/${encodeURIComponent(reference)}/confirm`, { outcome });
       await query.refetch();
       await queryClient.invalidateQueries({ queryKey: qk.wallet });
       await queryClient.invalidateQueries({ queryKey: ['wallet-movements'] });
@@ -122,7 +119,7 @@ export function PaymentTracker({ payment, onDone }: { payment: PaymentView; onDo
       ) : (
         <p className="text-sm text-destructive">Le paiement n’a pas abouti.</p>
       )}
-      {!done && isDev ? (
+      {!done && simulatorsEnabled ? (
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"

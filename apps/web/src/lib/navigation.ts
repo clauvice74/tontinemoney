@@ -40,6 +40,13 @@ export type NavIcon =
 
 export const isDev = process.env.NODE_ENV !== 'production';
 
+/**
+ * Outils de simulation (confirmation USSD, messages simulés) : actifs en développement, ou dans un
+ * build de démonstration avec NEXT_PUBLIC_ENABLE_SIMULATORS=true. L'API refuse de toute façon les
+ * routes /psp-sim et /dev en production.
+ */
+export const simulatorsEnabled = isDev || process.env.NEXT_PUBLIC_ENABLE_SIMULATORS === 'true';
+
 /** Rôles disposant d'un espace membre (profil, portefeuille, tontines). */
 export function hasMemberSpace(role: PlatformRole): boolean {
   return role === 'MEMBER' || role === 'TONTINE_ADMIN';
@@ -123,7 +130,7 @@ export function buildNavigation(
       ],
     });
   }
-  if (isDev) {
+  if (simulatorsEnabled) {
     sections.push({
       title: 'Développement',
       items: [{ href: '/dev/messages', label: 'Messages simulés', icon: 'mail' }],

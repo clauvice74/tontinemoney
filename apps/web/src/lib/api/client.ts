@@ -167,7 +167,12 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
     if (!res.ok) {
       const problem = await parseProblem(res);
-      if (res.status === 401 && problem.code && REFRESHABLE_CODES.has(problem.code)) {
+      if (
+        res.status === 401 &&
+        opts.auth !== false &&
+        problem.code &&
+        REFRESHABLE_CODES.has(problem.code)
+      ) {
         options.onSessionExpired?.();
       }
       throw new ApiError(res.status, problem, retryAfterOf(res));

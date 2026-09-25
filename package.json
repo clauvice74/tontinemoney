@@ -27,7 +27,9 @@
     "db:reset": "pnpm --filter @tontine/database db:reset",
     "secrets:scan": "node infrastructure/scripts/scan-secrets.mjs",
     "keys:generate": "node infrastructure/scripts/generate-dev-keys.mjs",
-    "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check"
+    "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check",
+    "test:e2e:local": "bash infrastructure/scripts/e2e-local.sh",
+    "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build"
   },
   "devDependencies": {
     "prettier": "3.9.9",
@@ -43,6 +45,16 @@
       "esbuild",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "path-to-regexp@>=8 <8.4.0": "8.4.2",
+      "lodash@<4.18.0": "4.18.1",
+      "js-yaml@>=4 <4.3.2": "4.3.2",
+      "postcss@<8.5.18": "8.5.28",
+      "fast-xml-parser@<5.5.6": "5.11.1",
+      "mysql2@<3.22.0": "3.24.4",
+      "deepmerge-ts@<8.0.0": "8.0.2",
+      "multer@<2.3.0": "2.4.0"
+    }
   }
 }
