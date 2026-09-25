@@ -2,7 +2,7 @@
   "name": "tontinemoney",
   "private": true,
   "version": "0.1.0",
-  "description": "Plateforme SaaS de gestion de tontines avec wallet, KYC, paiements et conformité",
+  "description": "Plateforme SaaS de gestion de tontines avec wallet, KYC, paiements et conformit\u00e9",
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=22"
@@ -26,7 +26,8 @@
     "db:seed": "pnpm --filter @tontine/database db:seed",
     "db:reset": "pnpm --filter @tontine/database db:reset",
     "secrets:scan": "node infrastructure/scripts/scan-secrets.mjs",
-    "keys:generate": "node infrastructure/scripts/generate-dev-keys.mjs"
+    "keys:generate": "node infrastructure/scripts/generate-dev-keys.mjs",
+    "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check"
   },
   "devDependencies": {
     "prettier": "3.9.9",

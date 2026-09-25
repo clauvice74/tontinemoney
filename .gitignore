@@ -16,3 +16,4 @@ playwright-report/
 next-env.d.ts
 src/generated/
 .claude/
+dump.rdb

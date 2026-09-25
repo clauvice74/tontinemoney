@@ -17,7 +17,8 @@
     "db:migration:new": "dotenv -e ../../.env -- node scripts/migrate.mjs new",
     "db:migrate:status": "dotenv -e ../../.env -- node scripts/migrate.mjs status",
     "db:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
-    "db:reset": "dotenv -e ../../.env -- node scripts/migrate.mjs reset"
+    "db:reset": "dotenv -e ../../.env -- node scripts/migrate.mjs reset",
+    "db:migrate:check": "dotenv -e ../../.env -- node scripts/migrate.mjs diff"
   },
   "dependencies": {
     "@node-rs/bcrypt": "1.10.7",
