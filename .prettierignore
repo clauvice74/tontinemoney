@@ -1,0 +1,11 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+docs/specs
+**/migrations/**/*.sql
+storage
+playwright-report
+test-results

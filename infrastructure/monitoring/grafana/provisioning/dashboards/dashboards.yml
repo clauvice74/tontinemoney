@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: tontinemoney
+    folder: TontineMoney
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

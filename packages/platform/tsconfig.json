@@ -1,0 +1,5 @@
+{
+  "extends": "@tontine/typescript-config/nestjs.json",
+  "compilerOptions": { "rootDir": "." },
+  "include": ["src", "vitest.config.ts", "vitest.int.config.ts"]
+}

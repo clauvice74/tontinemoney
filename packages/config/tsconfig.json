@@ -1,0 +1,5 @@
+{
+  "extends": "@tontine/typescript-config/node-library.json",
+  "compilerOptions": { "rootDir": "." },
+  "include": ["src", "vitest.config.ts"]
+}

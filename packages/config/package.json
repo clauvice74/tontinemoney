@@ -1,0 +1,27 @@
+{
+  "name": "@tontine/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@tontine/eslint-config": "workspace:*",
+    "@tontine/typescript-config": "workspace:*",
+    "@types/node": "22.18.0",
+    "@vitest/coverage-v8": "3.2.4",
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

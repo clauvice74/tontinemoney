@@ -1,0 +1,14 @@
+{
+  "extends": "@tontine/typescript-config/node-library.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": [
+    "src",
+    "prisma/**/*.ts",
+    "vitest.config.ts",
+    "prisma.config.ts"
+  ]
+}

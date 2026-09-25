@@ -1,0 +1,6 @@
+{
+  "extends": "@tontine/typescript-config/node-library.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist", "noUnusedLocals": false, "noUnusedParameters": false },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
+}
