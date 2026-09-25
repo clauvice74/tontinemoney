@@ -17,9 +17,7 @@ export const frenchErrorMap: ZodErrorMap = (issue, ctx) => {
       if (issue.type === 'string') {
         return {
           message:
-            issue.minimum === 1
-              ? 'Champ requis'
-              : `${String(issue.minimum)} caractères minimum`,
+            issue.minimum === 1 ? 'Champ requis' : `${String(issue.minimum)} caractères minimum`,
         };
       }
       if (issue.type === 'number') {

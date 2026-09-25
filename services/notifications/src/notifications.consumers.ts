@@ -269,6 +269,22 @@ export class NotificationConsumers {
     });
   }
 
+  /** US-3.5 : alerte à l'équipe conformité (agents KYC + super-admins) — aucun détail d'identité. */
+  @OnEvent('kyc.aml.match', { consumer: 'notifications.kyc-aml-match' })
+  async onAmlMatch(e: E<'kyc.aml.match'>): Promise<void> {
+    const staff = [
+      ...(await this.roles.userIdsWithRole('KYC_AGENT')),
+      ...(await this.roles.userIdsWithRole('SUPER_ADMIN')),
+    ];
+    await this.notifications.notify({
+      ...this.base(e),
+      recipientIds: staff,
+      template: 'kyc.aml_alert',
+      vars: { liste: e.payload.listName, score: Math.round(e.payload.score) },
+      data: { matchId: e.payload.matchId },
+    });
+  }
+
   @OnEvent('kyc.duplicate.detected', { consumer: 'notifications.kyc-duplicate' })
   async onKycDuplicate(e: E<'kyc.duplicate.detected'>): Promise<void> {
     const staff = [

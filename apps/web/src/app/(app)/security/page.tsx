@@ -22,7 +22,13 @@ import { QueryState } from '@/components/feedback';
 import { PageHeader } from '@/components/page-header';
 import { RecoveryCodes } from '@/components/security/recovery-codes';
 import { api } from '@/lib/api';
-import type { ListResponse, MfaEnableSms, MfaEnableTotp, MfaStatus, SessionView } from '@/lib/api/types';
+import type {
+  ListResponse,
+  MfaEnableSms,
+  MfaEnableTotp,
+  MfaStatus,
+  SessionView,
+} from '@/lib/api/types';
 import { loadCurrentUser } from '@/lib/auth/session';
 import { formatDateTime, formatRelative } from '@/lib/format';
 import { formatError } from '@/lib/forms';
@@ -51,7 +57,8 @@ function MfaCard() {
   };
 
   const enable = useMutation({
-    mutationFn: (type: 'TOTP' | 'SMS') => api.post<MfaEnableTotp | MfaEnableSms>('/auth/mfa/enable', { type }),
+    mutationFn: (type: 'TOTP' | 'SMS') =>
+      api.post<MfaEnableTotp | MfaEnableSms>('/auth/mfa/enable', { type }),
     onSuccess: (res, type) => {
       setError(null);
       setCode('');
@@ -62,7 +69,10 @@ function MfaCard() {
   });
 
   const verify = useMutation({
-    mutationFn: () => api.post<{ success: boolean; recoveryCodes: string[] }>('/auth/mfa/verify', { code: code.trim() }),
+    mutationFn: () =>
+      api.post<{ success: boolean; recoveryCodes: string[] }>('/auth/mfa/verify', {
+        code: code.trim(),
+      }),
     onSuccess: async (res) => {
       setError(null);
       setSetup({ step: 'codes', codes: res.recoveryCodes });
@@ -100,7 +110,8 @@ function MfaCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ShieldCheck className="size-5 text-primary" aria-hidden="true" /> Double authentification (MFA)
+          <ShieldCheck className="size-5 text-primary" aria-hidden="true" /> Double authentification
+          (MFA)
         </CardTitle>
         <CardDescription>
           Protégez votre compte avec un code à usage unique en plus du mot de passe.
@@ -114,7 +125,9 @@ function MfaCard() {
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 État :
                 {s.enabled ? (
-                  <Badge variant="success">Activée ({s.type === 'SMS' ? 'SMS' : 'application'})</Badge>
+                  <Badge variant="success">
+                    Activée ({s.type === 'SMS' ? 'SMS' : 'application'})
+                  </Badge>
                 ) : (
                   <Badge variant="muted">Désactivée</Badge>
                 )}
@@ -145,7 +158,10 @@ function MfaCard() {
 
               {!s.enabled && setup.step === 'idle' ? (
                 <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => enable.mutate('TOTP')} loading={enable.isPending && enable.variables === 'TOTP'}>
+                  <Button
+                    onClick={() => enable.mutate('TOTP')}
+                    loading={enable.isPending && enable.variables === 'TOTP'}
+                  >
                     Application d’authentification
                   </Button>
                   <Button
@@ -182,8 +198,8 @@ function MfaCard() {
                       />
                       <div className="space-y-2 text-sm">
                         <p>
-                          1. Scannez ce QR code avec votre application (Google Authenticator,
-                          Authy, FreeOTP…).
+                          1. Scannez ce QR code avec votre application (Google Authenticator, Authy,
+                          FreeOTP…).
                         </p>
                         <p>
                           Ou saisissez la clé manuellement :{' '}
@@ -211,7 +227,11 @@ function MfaCard() {
                     <Button type="submit" loading={verify.isPending}>
                       Confirmer
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => setSetup({ step: 'idle' })}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setSetup({ step: 'idle' })}
+                    >
                       Annuler
                     </Button>
                   </div>
@@ -221,7 +241,12 @@ function MfaCard() {
               {s.enabled ? (
                 <div className="flex flex-wrap gap-2">
                   {s.type === 'SMS' ? (
-                    <Button variant="outline" size="sm" onClick={() => sendSms.mutate()} loading={sendSms.isPending}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendSms.mutate()}
+                      loading={sendSms.isPending}
+                    >
                       Recevoir un code SMS
                     </Button>
                   ) : null}
@@ -343,7 +368,8 @@ function SessionsCard() {
                       ) : null}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Ouverte le {formatDateTime(s.createdAt)} · active {formatRelative(s.lastUsedAt)}
+                      Ouverte le {formatDateTime(s.createdAt)} · active{' '}
+                      {formatRelative(s.lastUsedAt)}
                     </p>
                   </div>
                   {!s.current ? (

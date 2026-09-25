@@ -55,7 +55,13 @@ function constraintsOf(r?: KycRequirements): ImageConstraints {
   };
 }
 
-function SubmitIdentity({ requirements, onSubmitted }: { requirements: KycRequirements; onSubmitted: () => void }) {
+function SubmitIdentity({
+  requirements,
+  onSubmitted,
+}: {
+  requirements: KycRequirements;
+  onSubmitted: () => void;
+}) {
   const [documentType, setDocumentType] = useState(requirements.documentTypes[0] ?? '');
   const [front, setFront] = useState<File | null>(null);
   const [back, setBack] = useState<File | null>(null);
@@ -99,7 +105,12 @@ function SubmitIdentity({ requirements, onSubmitted }: { requirements: KycRequir
   return (
     <form onSubmit={submit} className="space-y-6" noValidate>
       {formError ? <Alert variant="destructive" title={formError} /> : null}
-      <FormField id="documentType" label="Type de pièce d’identité" error={errors.documentType} required>
+      <FormField
+        id="documentType"
+        label="Type de pièce d’identité"
+        error={errors.documentType}
+        required
+      >
         <Select value={documentType} onChange={(e) => setDocumentType(e.target.value)}>
           {requirements.documentTypes.map((t) => (
             <option key={t} value={t}>
@@ -109,19 +120,46 @@ function SubmitIdentity({ requirements, onSubmitted }: { requirements: KycRequir
         </Select>
       </FormField>
       <div className="grid gap-4 sm:grid-cols-2">
-        <DocumentInput id="kyc-front" label="Recto" constraints={constraints} required onChange={setFront} error={errors.front} />
+        <DocumentInput
+          id="kyc-front"
+          label="Recto"
+          constraints={constraints}
+          required
+          onChange={setFront}
+          error={errors.front}
+        />
         {!singleSided ? (
-          <DocumentInput id="kyc-back" label="Verso" constraints={constraints} required onChange={setBack} error={errors.back} />
+          <DocumentInput
+            id="kyc-back"
+            label="Verso"
+            constraints={constraints}
+            required
+            onChange={setBack}
+            error={errors.back}
+          />
         ) : (
-          <p className="self-center text-sm text-muted-foreground">Ce document ne nécessite pas de verso.</p>
+          <p className="self-center text-sm text-muted-foreground">
+            Ce document ne nécessite pas de verso.
+          </p>
         )}
       </div>
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">
-          Selfie en direct <span className="text-destructive" aria-hidden="true">*</span>
+          Selfie en direct{' '}
+          <span className="text-destructive" aria-hidden="true">
+            *
+          </span>
         </legend>
-        <SelfieCapture startLiveness={startLiveness} onCapture={setSelfie} onReset={() => setSelfie(null)} />
-        {errors.selfie ? <p role="alert" className="text-center text-xs font-medium text-destructive">{errors.selfie}</p> : null}
+        <SelfieCapture
+          startLiveness={startLiveness}
+          onCapture={setSelfie}
+          onReset={() => setSelfie(null)}
+        />
+        {errors.selfie ? (
+          <p role="alert" className="text-center text-xs font-medium text-destructive">
+            {errors.selfie}
+          </p>
+        ) : null}
       </fieldset>
       <Button type="submit" loading={pending}>
         Envoyer mon dossier
@@ -169,7 +207,11 @@ function Tier3Request({ onSubmitted }: { onSubmitted: () => void }) {
     <form onSubmit={submit} className="space-y-5" noValidate>
       {formError ? <Alert variant="destructive" title={formError} /> : null}
       <FormField id="incomeSource" label="Source de revenus" error={errors.incomeSource} required>
-        <Textarea value={incomeSource} onChange={(e) => setIncomeSource(e.target.value)} maxLength={500} />
+        <Textarea
+          value={incomeSource}
+          onChange={(e) => setIncomeSource(e.target.value)}
+          maxLength={500}
+        />
       </FormField>
       <DocumentInput
         id="kyc-proof"
@@ -181,8 +223,16 @@ function Tier3Request({ onSubmitted }: { onSubmitted: () => void }) {
       />
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Selfie en direct</legend>
-        <SelfieCapture startLiveness={startLiveness} onCapture={setSelfie} onReset={() => setSelfie(null)} />
-        {errors.selfie ? <p role="alert" className="text-center text-xs font-medium text-destructive">{errors.selfie}</p> : null}
+        <SelfieCapture
+          startLiveness={startLiveness}
+          onCapture={setSelfie}
+          onReset={() => setSelfie(null)}
+        />
+        {errors.selfie ? (
+          <p role="alert" className="text-center text-xs font-medium text-destructive">
+            {errors.selfie}
+          </p>
+        ) : null}
       </fieldset>
       <Button type="submit" loading={pending}>
         Demander le niveau 3
@@ -220,14 +270,18 @@ export default function KycPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Statut</CardTitle>
-                  <CardDescription>Niveau actuel : {label(KYC_LEVEL_LABELS, k.kycLevel)}</CardDescription>
+                  <CardDescription>
+                    Niveau actuel : {label(KYC_LEVEL_LABELS, k.kycLevel)}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {current ? (
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       Dernier dossier ({label(KYC_DOCUMENT_LABELS, current.documentType)}) :
                       <StatusBadge status={current.status} labels={KYC_STATUS_LABELS} />
-                      <span className="text-muted-foreground">soumis le {formatDateTime(current.submittedAt)}</span>
+                      <span className="text-muted-foreground">
+                        soumis le {formatDateTime(current.submittedAt)}
+                      </span>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">Aucun dossier soumis.</p>
@@ -240,7 +294,8 @@ export default function KycPage() {
                   {current?.status === 'REJECTED' ? (
                     <Alert variant="destructive" title="Dossier refusé">
                       {label(KYC_REJECT_LABELS, current.rejectCategory)}
-                      {current.rejectReason ? ` — ${current.rejectReason}` : ''}. Vous pouvez soumettre un nouveau dossier.
+                      {current.rejectReason ? ` — ${current.rejectReason}` : ''}. Vous pouvez
+                      soumettre un nouveau dossier.
                     </Alert>
                   ) : null}
                   {current?.status === 'SUPPLEMENT_REQUESTED' ? (
@@ -256,12 +311,18 @@ export default function KycPage() {
                   <CardHeader>
                     <CardTitle>Soumettre mes documents</CardTitle>
                     <CardDescription>
-                      Le selfie est pris en direct avec la caméra : aucune photo existante n’est acceptée.
+                      Le selfie est pris en direct avec la caméra : aucune photo existante n’est
+                      acceptée.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <QueryState query={requirements} comingSoonTitle="Soumission bientôt disponible">
-                      {(r) => <SubmitIdentity requirements={r} onSubmitted={() => void refresh()} />}
+                    <QueryState
+                      query={requirements}
+                      comingSoonTitle="Soumission bientôt disponible"
+                    >
+                      {(r) => (
+                        <SubmitIdentity requirements={r} onSubmitted={() => void refresh()} />
+                      )}
                     </QueryState>
                   </CardContent>
                 </Card>
@@ -271,7 +332,10 @@ export default function KycPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Passer au niveau 3</CardTitle>
-                    <CardDescription>Requis pour créer une tontine : justificatif de domicile, source de revenus et selfie.</CardDescription>
+                    <CardDescription>
+                      Requis pour créer une tontine : justificatif de domicile, source de revenus et
+                      selfie.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Tier3Request onSubmitted={() => void refresh()} />

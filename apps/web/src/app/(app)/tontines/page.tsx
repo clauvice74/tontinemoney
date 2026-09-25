@@ -40,7 +40,10 @@ function ReceivedInvitations() {
         e instanceof ApiError && Array.isArray(e.body.reasons)
           ? (e.body.reasons as unknown[]).map(String).join(' · ')
           : undefined;
-      toast.error(reasons ? 'Vous n’êtes pas encore éligible' : 'Action impossible', reasons ?? formatError(e));
+      toast.error(
+        reasons ? 'Vous n’êtes pas encore éligible' : 'Action impossible',
+        reasons ?? formatError(e),
+      );
     },
   });
 
@@ -61,7 +64,9 @@ function ReceivedInvitations() {
                   <p className="font-medium">{i.tontine?.name ?? 'Tontine'}</p>
                   <p className="text-sm text-muted-foreground">
                     {i.tontine?.contribution ? <Money value={i.tontine.contribution} /> : null}
-                    {i.tontine?.frequency ? ` · ${label(FREQUENCY_LABELS, i.tontine.frequency)}` : ''}
+                    {i.tontine?.frequency
+                      ? ` · ${label(FREQUENCY_LABELS, i.tontine.frequency)}`
+                      : ''}
                     {i.tontine?.startDate ? ` · début ${formatDate(i.tontine.startDate)}` : ''}
                     {` · expire le ${formatDate(i.expiresAt)}`}
                   </p>
@@ -120,8 +125,8 @@ export default function TontinesPage() {
         isEmpty={(d) => d.data.length === 0}
         empty={
           <Alert variant="info" title="Aucune tontine pour le moment">
-            Acceptez une invitation ou créez votre propre tontine (vérification d’identité de
-            niveau 3 requise).
+            Acceptez une invitation ou créez votre propre tontine (vérification d’identité de niveau
+            3 requise).
           </Alert>
         }
       >
@@ -148,10 +153,14 @@ export default function TontinesPage() {
                     <p className="flex items-center gap-1 text-muted-foreground">
                       <Users className="size-4" aria-hidden="true" /> {t.memberCount}/{t.maxMembers}{' '}
                       membres
-                      {t.currentCycleNumber ? ` · cycle ${t.currentCycleNumber}/${t.totalCycles ?? '?'}` : ''}
+                      {t.currentCycleNumber
+                        ? ` · cycle ${t.currentCycleNumber}/${t.totalCycles ?? '?'}`
+                        : ''}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
-                      {t.myRole === 'ADMIN' ? <Badge variant="secondary">Administrateur</Badge> : null}
+                      {t.myRole === 'ADMIN' ? (
+                        <Badge variant="secondary">Administrateur</Badge>
+                      ) : null}
                       {t.myStatus && t.myStatus !== 'ACTIVE' ? (
                         <StatusBadge status={t.myStatus} labels={MEMBERSHIP_STATUS_LABELS} />
                       ) : null}

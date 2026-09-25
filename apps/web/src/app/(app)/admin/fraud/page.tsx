@@ -8,7 +8,10 @@ import { api } from '@/lib/api';
 export default function AdminFraudPage() {
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Signalement de fraude" description="Le membre signalé est suspendu et placé en revue de conformité." />
+      <PageHeader
+        title="Signalement de fraude"
+        description="Le membre signalé est suspendu et placé en revue de conformité."
+      />
       <IdActionForm
         title="Signaler un membre"
         idLabel="Identifiant du membre"

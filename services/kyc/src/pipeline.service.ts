@@ -77,7 +77,10 @@ export class KycPipelineService {
   }
 
   /** Appel fournisseur protégé : disjoncteur + 3 tentatives ; renvoie `null` si toujours indisponible. */
-  private async call<T>(name: string, fn: () => Promise<T>): Promise<{ value: T | null; attempts: number; error?: string }> {
+  private async call<T>(
+    name: string,
+    fn: () => Promise<T>,
+  ): Promise<{ value: T | null; attempts: number; error?: string }> {
     let attempts = 0;
     try {
       const value = await withRetry(
@@ -93,7 +96,10 @@ export class KycPipelineService {
     }
   }
 
-  private async timed(step: KycCheckStep, fn: () => Promise<Omit<StepResult, 'step' | 'durationMs'>>): Promise<StepResult> {
+  private async timed(
+    step: KycCheckStep,
+    fn: () => Promise<Omit<StepResult, 'step' | 'durationMs'>>,
+  ): Promise<StepResult> {
     const started = Date.now();
     const r = await fn();
     return { ...r, step, durationMs: Date.now() - started };
@@ -105,7 +111,10 @@ export class KycPipelineService {
       data: { status: 'PROCESSING' },
     });
     if (claimed.count !== 1) return; // déjà traité (idempotence)
-    const req = await this.prisma.kycRequest.findUniqueOrThrow({ where: { id: requestId }, include: { documents: true } });
+    const req = await this.prisma.kycRequest.findUniqueOrThrow({
+      where: { id: requestId },
+      include: { documents: true },
+    });
     const member = await this.members.snapshot(req.memberId);
     const subject: KycSubject = {
       memberId: req.memberId,
@@ -117,7 +126,8 @@ export class KycPipelineService {
       today: this.clock.today(),
     };
     const files = new Map<string, { doc: KycDocument; data: Buffer }>();
-    for (const d of req.documents) files.set(d.kind, { doc: d, data: await this.storage.get(d.storageKey) });
+    for (const d of req.documents)
+      files.set(d.kind, { doc: d, data: await this.storage.get(d.storageKey) });
 
     const results: StepResult[] = [];
     let extracted: Awaited<ReturnType<OcrProvider['extract']>> | null = null;
@@ -126,27 +136,48 @@ export class KycPipelineService {
 
     // Étape 1 — qualité
     const quality = await this.timed('QUALITY', async () => {
-      const images = [primary, files.get('ID_BACK'), selfie].filter((x): x is { doc: KycDocument; data: Buffer } => !!x);
+      const images = [primary, files.get('ID_BACK'), selfie].filter(
+        (x): x is { doc: KycDocument; data: Buffer } => !!x,
+      );
       let worst: CheckResult = { outcome: 'PASS', details: {} };
       let attempts = 1;
       for (const img of images) {
         const info = inspectImage(img.data) ?? { type: 'image/png' as const, width: 0, height: 0 };
         const res = await this.call('quality', () => this.quality.check(img.data, info));
         attempts = Math.max(attempts, res.attempts);
-        if (!res.value) return { outcome: 'REVIEW', details: { error: res.error, escalated: true }, attempts };
-        if (res.value.outcome === 'FAIL') worst = { ...res.value, details: { ...res.value.details, kind: img.doc.kind } };
+        if (!res.value)
+          return { outcome: 'REVIEW', details: { error: res.error, escalated: true }, attempts };
+        if (res.value.outcome === 'FAIL')
+          worst = { ...res.value, details: { ...res.value.details, kind: img.doc.kind } };
       }
-      return { ...worst, attempts, ...(worst.outcome === 'FAIL' ? { critical: 'DOCUMENT_ILLISIBLE' as const } : {}) };
+      return {
+        ...worst,
+        attempts,
+        ...(worst.outcome === 'FAIL' ? { critical: 'DOCUMENT_ILLISIBLE' as const } : {}),
+      };
     });
     results.push(quality);
 
     if (quality.outcome !== 'FAIL' && req.targetLevel === 'TIER_2' && primary) {
       // Étape 2 — OCR
       const ocr = await this.timed('OCR', async () => {
-        const res = await this.call('ocr', () => this.ocr.extract(primary.data, files.get('ID_BACK')?.data ?? null, subject));
-        if (!res.value) return { outcome: 'REVIEW', details: { error: res.error, escalated: true }, attempts: res.attempts };
+        const res = await this.call('ocr', () =>
+          this.ocr.extract(primary.data, files.get('ID_BACK')?.data ?? null, subject),
+        );
+        if (!res.value)
+          return {
+            outcome: 'REVIEW',
+            details: { error: res.error, escalated: true },
+            attempts: res.attempts,
+          };
         extracted = res.value;
-        return { outcome: 'PASS', details: { fields: { ...res.value, documentNumber: `***${res.value.documentNumber.slice(-3)}` } }, attempts: res.attempts };
+        return {
+          outcome: 'PASS',
+          details: {
+            fields: { ...res.value, documentNumber: `***${res.value.documentNumber.slice(-3)}` },
+          },
+          attempts: res.attempts,
+        };
       });
       results.push(ocr);
 
@@ -154,12 +185,14 @@ export class KycPipelineService {
       results.push(
         await this.timed('DOCUMENT_VALIDATION', async () => {
           const ex = extracted;
-          if (!ex) return { outcome: 'REVIEW', details: { reason: 'OCR indisponible' }, attempts: 1 };
+          if (!ex)
+            return { outcome: 'REVIEW', details: { reason: 'OCR indisponible' }, attempts: 1 };
           const issues: string[] = [];
           let critical: KycRejectCategory | undefined;
           const d1 = levenshtein(ex.firstName, subject.firstName);
           const d2 = levenshtein(ex.lastName, subject.lastName);
-          if (d1 > NAME_MAX_DISTANCE || d2 > NAME_MAX_DISTANCE) issues.push('Nom / prénom incohérents avec le profil');
+          if (d1 > NAME_MAX_DISTANCE || d2 > NAME_MAX_DISTANCE)
+            issues.push('Nom / prénom incohérents avec le profil');
           const limit = new Date(`${subject.today}T00:00:00Z`);
           limit.setUTCDate(limit.getUTCDate() + 30);
           if (ex.expiresAt <= subject.today) {
@@ -168,12 +201,18 @@ export class KycPipelineService {
           } else if (ex.expiresAt <= limit.toISOString().slice(0, 10)) {
             issues.push('Document expirant dans moins de 30 jours');
           }
-          if (!/^[A-Z0-9]{6,20}$/.test(ex.documentNumber)) issues.push('Format du numéro de document inattendu');
+          if (!/^[A-Z0-9]{6,20}$/.test(ex.documentNumber))
+            issues.push('Format du numéro de document inattendu');
           const t = await this.tamper.detect(primary.data);
           if (t.tampered) issues.push(`Manipulation suspectée (${t.signals.join(', ')})`);
           return {
             outcome: critical ? 'FAIL' : issues.length ? 'REVIEW' : 'PASS',
-            details: { issues, nameDistance: { firstName: d1, lastName: d2 }, expiresAt: ex.expiresAt, tamperSignals: t.signals },
+            details: {
+              issues,
+              nameDistance: { firstName: d1, lastName: d2 },
+              expiresAt: ex.expiresAt,
+              tamperSignals: t.signals,
+            },
             attempts: 1,
             ...(critical ? { critical } : {}),
           };
@@ -186,19 +225,43 @@ export class KycPipelineService {
       let reference = primary?.data ?? null;
       if (req.targetLevel === 'TIER_3') {
         const prev = await this.prisma.kycDocument.findFirst({
-          where: { memberId: req.memberId, kind: 'SELFIE', requestId: { not: req.id }, request: { status: 'VERIFIED' } },
+          where: {
+            memberId: req.memberId,
+            kind: 'SELFIE',
+            requestId: { not: req.id },
+            request: { status: 'VERIFIED' },
+          },
           orderBy: { createdAt: 'desc' },
         });
         reference = prev ? await this.storage.get(prev.storageKey) : null;
       }
       results.push(
         await this.timed('FACE_MATCH', async () => {
-          if (!reference) return { outcome: 'REVIEW', details: { reason: 'Aucune photo de référence' }, attempts: 1 };
-          const res = await this.call('face-match', () => this.faces.compare(selfie.data, reference!));
-          if (!res.value) return { outcome: 'REVIEW', details: { error: res.error, escalated: true }, attempts: res.attempts };
+          if (!reference)
+            return {
+              outcome: 'REVIEW',
+              details: { reason: 'Aucune photo de référence' },
+              attempts: 1,
+            };
+          const res = await this.call('face-match', () =>
+            this.faces.compare(selfie.data, reference!),
+          );
+          if (!res.value)
+            return {
+              outcome: 'REVIEW',
+              details: { error: res.error, escalated: true },
+              attempts: res.attempts,
+            };
           const score = res.value.score;
-          const outcome = score >= FACE_MATCH_PASS ? 'PASS' : score >= FACE_MATCH_REVIEW ? 'REVIEW' : 'FAIL';
-          return { outcome, score, details: { score }, attempts: res.attempts, ...(outcome === 'FAIL' ? { critical: 'FACE_MATCH_ECHOUE' as const } : {}) };
+          const outcome =
+            score >= FACE_MATCH_PASS ? 'PASS' : score >= FACE_MATCH_REVIEW ? 'REVIEW' : 'FAIL';
+          return {
+            outcome,
+            score,
+            details: { score },
+            attempts: res.attempts,
+            ...(outcome === 'FAIL' ? { critical: 'FACE_MATCH_ECHOUE' as const } : {}),
+          };
         }),
       );
 
@@ -206,11 +269,14 @@ export class KycPipelineService {
       results.push(
         await this.timed('DUPLICATE', async () => {
           const template = await this.biometrics.template(selfie.data);
-          const others = await this.prisma.kycBiometricTemplate.findMany({ where: { memberId: { not: req.memberId } } });
+          const others = await this.prisma.kycBiometricTemplate.findMany({
+            where: { memberId: { not: req.memberId } },
+          });
           let best: { memberId: string; score: number } | null = null;
           for (const o of others) {
             const s = this.biometrics.similarity(template, o.template);
-            if (s > DUPLICATE_THRESHOLD && (!best || s > best.score)) best = { memberId: o.memberId, score: s };
+            if (s > DUPLICATE_THRESHOLD && (!best || s > best.score))
+              best = { memberId: o.memberId, score: s };
           }
           await this.prisma.kycBiometricTemplate.upsert({
             where: { memberId: req.memberId },
@@ -218,7 +284,12 @@ export class KycPipelineService {
             update: { requestId: req.id, template },
           });
           if (!best) return { outcome: 'PASS', details: { compared: others.length }, attempts: 1 };
-          return { outcome: 'REVIEW', score: best.score, details: { duplicateOfMemberId: best.memberId, similarityScore: best.score }, attempts: 1 };
+          return {
+            outcome: 'REVIEW',
+            score: best.score,
+            details: { duplicateOfMemberId: best.memberId, similarityScore: best.score },
+            attempts: 1,
+          };
         }),
       );
     }
@@ -227,11 +298,26 @@ export class KycPipelineService {
     if (quality.outcome !== 'FAIL') {
       results.push(
         await this.timed('AML', async () => {
-          const res = await this.call('aml', () => this.aml.screen(`${subject.firstName} ${subject.lastName}`, subject.dateOfBirth));
-          if (!res.value) return { outcome: 'REVIEW', details: { error: res.error, escalated: true }, attempts: res.attempts };
-          const whitelist = await this.prisma.kycAmlWhitelist.findMany({ where: { memberId: req.memberId } });
-          const hits = res.value.filter((h) => !whitelist.some((w) => w.listName === h.listName && w.entryId === h.entryId));
-          return { outcome: hits.length ? 'REVIEW' : 'PASS', details: { hits, whitelisted: res.value.length - hits.length }, attempts: res.attempts };
+          const res = await this.call('aml', () =>
+            this.aml.screen(`${subject.firstName} ${subject.lastName}`, subject.dateOfBirth),
+          );
+          if (!res.value)
+            return {
+              outcome: 'REVIEW',
+              details: { error: res.error, escalated: true },
+              attempts: res.attempts,
+            };
+          const whitelist = await this.prisma.kycAmlWhitelist.findMany({
+            where: { memberId: req.memberId },
+          });
+          const hits = res.value.filter(
+            (h) => !whitelist.some((w) => w.listName === h.listName && w.entryId === h.entryId),
+          );
+          return {
+            outcome: hits.length ? 'REVIEW' : 'PASS',
+            details: { hits, whitelisted: res.value.length - hits.length },
+            attempts: res.attempts,
+          };
         }),
       );
     }
@@ -239,15 +325,32 @@ export class KycPipelineService {
     await this.conclude(req, results, extracted);
   }
 
-  private async conclude(req: KycRequest, results: StepResult[], extracted: { expiresAt: string; documentNumber: string; nationality: string | null } | null): Promise<void> {
+  private async conclude(
+    req: KycRequest,
+    results: StepResult[],
+    extracted: { expiresAt: string; documentNumber: string; nationality: string | null } | null,
+  ): Promise<void> {
     const critical = results.find((r) => r.outcome === 'FAIL' && r.critical);
     const review = results.filter((r) => r.outcome === 'REVIEW' || r.outcome === 'FAIL');
     const now = this.clock.now();
-    const status = critical ? 'REJECTED' : review.length || req.targetLevel === 'TIER_3' ? 'REVIEW_REQUIRED' : 'VERIFIED';
+    const status = critical
+      ? 'REJECTED'
+      : review.length || req.targetLevel === 'TIER_3'
+        ? 'REVIEW_REQUIRED'
+        : 'VERIFIED';
     await this.uow.run(async (tx) => {
       for (const r of results) {
         await tx.kycCheck.create({
-          data: { requestId: req.id, step: r.step, outcome: r.outcome, score: r.score ?? null, details: r.details as object, durationMs: r.durationMs, attempts: r.attempts, createdAt: now },
+          data: {
+            requestId: req.id,
+            step: r.step,
+            outcome: r.outcome,
+            score: r.score ?? null,
+            details: r.details as object,
+            durationMs: r.durationMs,
+            attempts: r.attempts,
+            createdAt: now,
+          },
         });
       }
       await tx.kycRequest.update({
@@ -255,12 +358,19 @@ export class KycPipelineService {
         data: {
           status,
           processedAt: now,
-          extracted: extracted ? ({ ...extracted, documentNumber: undefined } as object) : undefined,
+          extracted: extracted
+            ? ({ ...extracted, documentNumber: undefined } as object)
+            : undefined,
           documentNumberHash: extracted ? sha256Hex(extracted.documentNumber) : null,
           documentExpiresAt: extracted ? new Date(`${extracted.expiresAt}T00:00:00Z`) : null,
           documentCountry: extracted?.nationality ?? null,
           ...(status === 'REJECTED'
-            ? { rejectCategory: critical!.critical!, rejectReason: this.reasonFor(critical!), decidedBy: 'auto', decidedAt: now }
+            ? {
+                rejectCategory: critical!.critical!,
+                rejectReason: this.reasonFor(critical!),
+                decidedBy: 'auto',
+                decidedAt: now,
+              }
             : {}),
           ...(status === 'VERIFIED' ? { decidedBy: 'auto', decidedAt: now } : {}),
           ...(status === 'REVIEW_REQUIRED' ? { slaDueAt: addBusinessDay(now) } : {}),
@@ -272,14 +382,27 @@ export class KycPipelineService {
           type: 'kyc.verified',
           aggregateType: 'kyc_request',
           aggregateId: req.id,
-          payload: { memberId: req.memberId, requestId: req.id, kycLevel: req.targetLevel, verifiedAt: now.toISOString(), verifiedBy: 'auto', documentCountry: extracted?.nationality ?? null },
+          payload: {
+            memberId: req.memberId,
+            requestId: req.id,
+            kycLevel: req.targetLevel,
+            verifiedAt: now.toISOString(),
+            verifiedBy: 'auto',
+            documentCountry: extracted?.nationality ?? null,
+          },
         });
       } else if (status === 'REJECTED') {
         await this.outbox.add(tx, {
           type: 'kyc.rejected',
           aggregateType: 'kyc_request',
           aggregateId: req.id,
-          payload: { memberId: req.memberId, requestId: req.id, rejectCategory: critical!.critical!, rejectReason: this.reasonFor(critical!), rejectedBy: 'auto' },
+          payload: {
+            memberId: req.memberId,
+            requestId: req.id,
+            rejectCategory: critical!.critical!,
+            rejectReason: this.reasonFor(critical!),
+            rejectedBy: 'auto',
+          },
         });
       } else {
         const scores: Record<string, number> = {};
@@ -291,7 +414,10 @@ export class KycPipelineService {
           payload: {
             memberId: req.memberId,
             requestId: req.id,
-            failedSteps: req.targetLevel === 'TIER_3' && !review.length ? ['TIER_3_MANUAL'] : review.map((r) => r.step),
+            failedSteps:
+              req.targetLevel === 'TIER_3' && !review.length
+                ? ['TIER_3_MANUAL']
+                : review.map((r) => r.step),
             scores,
           },
         });
@@ -319,17 +445,42 @@ export class KycPipelineService {
     if (dup) {
       const d = dup.details as { duplicateOfMemberId: string; similarityScore: number };
       const alert = await tx.kycDuplicateAlert.create({
-        data: { memberId: req.memberId, duplicateOfMemberId: d.duplicateOfMemberId, requestId: req.id, similarityScore: d.similarityScore },
+        data: {
+          memberId: req.memberId,
+          duplicateOfMemberId: d.duplicateOfMemberId,
+          requestId: req.id,
+          similarityScore: d.similarityScore,
+        },
       });
       await this.outbox.add(tx, {
         type: 'kyc.duplicate.detected',
         aggregateType: 'kyc_request',
         aggregateId: req.id,
-        payload: { memberId: req.memberId, duplicateOfMemberId: d.duplicateOfMemberId, similarityScore: d.similarityScore, alertId: alert.id },
+        payload: {
+          memberId: req.memberId,
+          duplicateOfMemberId: d.duplicateOfMemberId,
+          similarityScore: d.similarityScore,
+          alertId: alert.id,
+        },
       });
     }
     const aml = results.find((r) => r.step === 'AML' && r.outcome === 'REVIEW');
-    const hits = (aml?.details as { hits?: Array<{ listName: string; entryId: string; entryName: string; entryCountry: string | null; entryReason: string; entryAddedAt: string; score: number }> } | undefined)?.hits ?? [];
+    const hits =
+      (
+        aml?.details as
+          | {
+              hits?: Array<{
+                listName: string;
+                entryId: string;
+                entryName: string;
+                entryCountry: string | null;
+                entryReason: string;
+                entryAddedAt: string;
+                score: number;
+              }>;
+            }
+          | undefined
+      )?.hits ?? [];
     for (const h of hits) {
       const m = await tx.kycAmlMatch.create({
         data: {

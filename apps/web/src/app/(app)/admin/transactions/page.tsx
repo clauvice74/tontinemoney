@@ -28,12 +28,16 @@ export default function AdminTransactionsPage() {
   const [type, setType] = useState('');
   const query = useQuery({
     queryKey: ['admin', 'transactions', status, type],
-    queryFn: () => api.get<ListResponse<TransactionView>>('/admin/transactions', { query: { status, type } }),
+    queryFn: () =>
+      api.get<ListResponse<TransactionView>>('/admin/transactions', { query: { status, type } }),
   });
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Transactions" description="Une annulation crée une écriture de contre-passation (aucune suppression)." />
+      <PageHeader
+        title="Transactions"
+        description="Une annulation crée une écriture de contre-passation (aucune suppression)."
+      />
       <div className="grid max-w-lg grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="tx-status">Statut</Label>
@@ -62,7 +66,9 @@ export default function AdminTransactionsPage() {
         query={query}
         comingSoonTitle="Consultation des transactions bientôt disponible"
         isEmpty={(d) => d.data.length === 0}
-        empty={<p className="py-6 text-center text-sm text-muted-foreground">Aucune transaction.</p>}
+        empty={
+          <p className="py-6 text-center text-sm text-muted-foreground">Aucune transaction.</p>
+        }
       >
         {(d) => (
           <Card>
@@ -74,7 +80,12 @@ export default function AdminTransactionsPage() {
                   { header: 'Date', cell: (t) => formatDateTime(t.createdAt) },
                   { header: 'Type', cell: (t) => label(TYPE_LABELS, t.type) },
                   { header: 'Montant', cell: (t) => <Money value={t.amount} /> },
-                  { header: 'Statut', cell: (t) => <StatusBadge status={t.status} labels={TRANSACTION_STATUS_LABELS} /> },
+                  {
+                    header: 'Statut',
+                    cell: (t) => (
+                      <StatusBadge status={t.status} labels={TRANSACTION_STATUS_LABELS} />
+                    ),
+                  },
                   { header: 'Identifiant', cell: (t) => <code className="text-xs">{t.id}</code> },
                   {
                     header: 'Actions',
@@ -92,7 +103,9 @@ export default function AdminTransactionsPage() {
                           successMessage="Transaction annulée"
                           onConfirm={async (reason) => {
                             await api.post(`/admin/transactions/${t.id}/reverse`, { reason });
-                            await queryClient.invalidateQueries({ queryKey: ['admin', 'transactions'] });
+                            await queryClient.invalidateQueries({
+                              queryKey: ['admin', 'transactions'],
+                            });
                           }}
                         />
                       ) : null,

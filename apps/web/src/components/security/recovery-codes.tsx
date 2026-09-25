@@ -8,7 +8,13 @@ import { useState } from 'react';
  * Affichage UNIQUE des 10 codes de récupération : ils ne sont conservés qu'en mémoire du
  * composant et disparaissent après confirmation explicite de sauvegarde.
  */
-export function RecoveryCodes({ codes, onAcknowledged }: { codes: string[]; onAcknowledged: () => void }) {
+export function RecoveryCodes({
+  codes,
+  onAcknowledged,
+}: {
+  codes: string[];
+  onAcknowledged: () => void;
+}) {
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const text = codes.join('\n');
@@ -23,10 +29,9 @@ export function RecoveryCodes({ codes, onAcknowledged }: { codes: string[]; onAc
   }
 
   function download() {
-    const blob = new Blob(
-      [`Codes de récupération TontineMoney (usage unique)\n\n${text}\n`],
-      { type: 'text/plain;charset=utf-8' },
-    );
+    const blob = new Blob([`Codes de récupération TontineMoney (usage unique)\n\n${text}\n`], {
+      type: 'text/plain;charset=utf-8',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

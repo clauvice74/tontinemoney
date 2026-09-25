@@ -29,8 +29,7 @@ const ICONS = {
 } as const;
 
 export interface AlertProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'>,
-    VariantProps<typeof alertVariants> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'>, VariantProps<typeof alertVariants> {
   title?: React.ReactNode;
   /** Masque l'icône par défaut. */
   hideIcon?: boolean;

@@ -62,26 +62,28 @@ export default function TontineAdminLayout({ children }: { children: ReactNode }
       </div>
       <nav aria-label="Administration de la tontine" className="-mx-1 overflow-x-auto">
         <ul className="flex min-w-max gap-1 border-b px-1">
-          {TABS.filter((tab) => !tab.fixedOrderOnly || !t || t.drawMode === 'FIXED_ORDER').map((tab) => {
-            const href = `${base}${tab.href}`;
-            const active = tab.href === '' ? pathname === base : pathname === href;
-            return (
-              <li key={tab.href}>
-                <Link
-                  href={href}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    '-mb-px inline-block border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    active
-                      ? 'border-primary text-foreground'
-                      : 'border-transparent text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {tab.label}
-                </Link>
-              </li>
-            );
-          })}
+          {TABS.filter((tab) => !tab.fixedOrderOnly || !t || t.drawMode === 'FIXED_ORDER').map(
+            (tab) => {
+              const href = `${base}${tab.href}`;
+              const active = tab.href === '' ? pathname === base : pathname === href;
+              return (
+                <li key={tab.href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      '-mb-px inline-block border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      active
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {tab.label}
+                  </Link>
+                </li>
+              );
+            },
+          )}
         </ul>
       </nav>
       {children}

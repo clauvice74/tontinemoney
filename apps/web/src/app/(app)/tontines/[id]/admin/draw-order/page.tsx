@@ -34,7 +34,9 @@ function OrderEditor({ tontineId, initial }: { tontineId: string; initial: Parti
   async function save() {
     setSaving(true);
     try {
-      await api.put(`/tontines/${tontineId}/draw-order`, { memberIds: order.map((p) => p.memberId) });
+      await api.put(`/tontines/${tontineId}/draw-order`, {
+        memberIds: order.map((p) => p.memberId),
+      });
       toast.success('Ordre de passage enregistré');
       await queryClient.invalidateQueries({ queryKey: ['tontines', tontineId, 'participants'] });
     } catch (e) {
@@ -90,7 +92,8 @@ export default function DrawOrderPage() {
   const tontine = useTontine(id);
   const participants = useQuery({
     queryKey: ['tontines', id, 'participants'],
-    queryFn: () => api.get<ListResponse<ParticipantView> | ParticipantView[]>(`/tontines/${id}/participants`),
+    queryFn: () =>
+      api.get<ListResponse<ParticipantView> | ParticipantView[]>(`/tontines/${id}/participants`),
     select: (d) => (Array.isArray(d) ? d : d.data),
   });
 

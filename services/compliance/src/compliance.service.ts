@@ -12,7 +12,12 @@ import {
   PrismaService,
   UnitOfWork,
 } from '@tontine/platform';
-import { type EvaluationResult, type RuleSnapshot, evaluate, validateParams } from './domain/evaluate';
+import {
+  type EvaluationResult,
+  type RuleSnapshot,
+  evaluate,
+  validateParams,
+} from './domain/evaluate';
 
 export interface ValidateInput {
   operationType: OperationType;
@@ -60,7 +65,9 @@ export class ComplianceService {
   async rulesFor(country: string): Promise<RuleSnapshot[]> {
     const cached = await this.kv.get(this.cacheKey(country));
     if (cached) return JSON.parse(cached) as RuleSnapshot[];
-    const rows = await this.prisma.complianceRule.findMany({ where: { countryCode: country, active: true } });
+    const rows = await this.prisma.complianceRule.findMany({
+      where: { countryCode: country, active: true },
+    });
     const rules: RuleSnapshot[] = rows.map((r) => ({
       code: r.code,
       countryCode: r.countryCode,
@@ -101,20 +108,31 @@ export class ComplianceService {
     const rules = member.country ? await this.rulesFor(member.country) : [];
     const totals: Record<string, bigint> = {};
     for (const r of rules) {
-      if ((r.ruleType === 'DAILY_LIMIT' || r.ruleType === 'MONTHLY_LIMIT') && r.operationTypes.includes(input.operationType)) {
+      if (
+        (r.ruleType === 'DAILY_LIMIT' || r.ruleType === 'MONTHLY_LIMIT') &&
+        r.operationTypes.includes(input.operationType)
+      ) {
         totals[r.code] = await this.totalFor(input.memberId, input.currency, r);
       }
     }
     let creditedWalletBalanceMinor: bigint | null = null;
     if (input.creditMemberId) {
-      const w = await this.prisma.wallet.findUnique({ where: { memberId: input.creditMemberId }, select: { balanceMinor: true } });
+      const w = await this.prisma.wallet.findUnique({
+        where: { memberId: input.creditMemberId },
+        select: { balanceMinor: true },
+      });
       creditedWalletBalanceMinor = w?.balanceMinor ?? 0n;
     }
     return evaluate({
       operationType: input.operationType,
       amountMinor: input.amountMinor,
       currency: input.currency,
-      member: { status: member.status, kycLevel: member.kycLevel, complianceStatus: member.complianceStatus, country: member.country },
+      member: {
+        status: member.status,
+        kycLevel: member.kycLevel,
+        complianceStatus: member.complianceStatus,
+        country: member.country,
+      },
       totals,
       creditedWalletBalanceMinor,
       rules,
@@ -137,7 +155,12 @@ export class ComplianceService {
             operationType: input.operationType,
             ruleCode: v.rule,
             action: suspend ? 'SUSPENDED' : 'BLOCKED',
-            details: { ...v, amountMinor: input.amountMinor.toString(), currency: input.currency, context: input.context ?? {} } as object,
+            details: {
+              ...v,
+              amountMinor: input.amountMinor.toString(),
+              currency: input.currency,
+              context: input.context ?? {},
+            } as object,
             createdAt: this.clock.now(),
           },
         });
@@ -145,24 +168,47 @@ export class ComplianceService {
           type: 'compliance.violation.detected',
           aggregateType: 'member',
           aggregateId: input.memberId,
-          payload: { violationId: row.id, memberId: input.memberId, operationType: input.operationType, ruleCode: v.rule, action: row.action },
+          payload: {
+            violationId: row.id,
+            memberId: input.memberId,
+            operationType: input.operationType,
+            ruleCode: v.rule,
+            action: row.action,
+          },
         });
       }
       const recent = await tx.complianceViolation.count({
-        where: { memberId: input.memberId, createdAt: { gte: new Date(this.clock.now().getTime() - 86_400_000) } },
+        where: {
+          memberId: input.memberId,
+          createdAt: { gte: new Date(this.clock.now().getTime() - 86_400_000) },
+        },
       });
       if (suspend || recent >= VIOLATIONS_BEFORE_SUSPENSION) {
         await this.outbox.add(tx, {
           type: 'compliance.user.suspended',
           aggregateType: 'member',
           aggregateId: input.memberId,
-          payload: { memberId: input.memberId, reason: suspend ? `Règle ${result.violations[0]?.rule}` : 'Violations répétées de conformité' },
+          payload: {
+            memberId: input.memberId,
+            reason: suspend
+              ? `Règle ${result.violations[0]?.rule}`
+              : 'Violations répétées de conformité',
+          },
         });
       }
     });
-    throw new DomainError('COMPLIANCE_VIOLATION', result.violations.map((v) => v.message).join(' ; '), {
-      violations: result.violations.map(({ rule, message, limit, current }) => ({ rule, message, limit, current })),
-    });
+    throw new DomainError(
+      'COMPLIANCE_VIOLATION',
+      result.violations.map((v) => v.message).join(' ; '),
+      {
+        violations: result.violations.map(({ rule, message, limit, current }) => ({
+          rule,
+          message,
+          limit,
+          current,
+        })),
+      },
+    );
   }
 
   // ------------------------------------------------------------------ US-9.3 règles dynamiques
@@ -171,7 +217,11 @@ export class ComplianceService {
       where: country ? { countryCode: country } : {},
       orderBy: [{ countryCode: 'asc' }, { code: 'asc' }],
     });
-    return rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() }));
+    return rows.map((r) => ({
+      ...r,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+    }));
   }
 
   async createRule(actor: Actor, input: ComplianceRuleInput) {
@@ -191,7 +241,15 @@ export class ComplianceService {
             updatedById: actor.userId,
           },
         });
-        await tx.complianceRuleHistory.create({ data: { ruleId: r.id, version: 1, snapshot: this.snapshot(r), change: 'CREATED', changedById: actor.userId } });
+        await tx.complianceRuleHistory.create({
+          data: {
+            ruleId: r.id,
+            version: 1,
+            snapshot: this.snapshot(r),
+            change: 'CREATED',
+            changedById: actor.userId,
+          },
+        });
         await this.outbox.add(tx, {
           type: 'compliance.rule.updated',
           aggregateType: 'compliance_rule',
@@ -208,15 +266,34 @@ export class ComplianceService {
     }
   }
 
-  private snapshot(r: { ruleType: string; operationTypes: string[]; params: unknown; active: boolean; description: string | null }) {
-    return { ruleType: r.ruleType, operationTypes: r.operationTypes, params: r.params, active: r.active, description: r.description } as object;
+  private snapshot(r: {
+    ruleType: string;
+    operationTypes: string[];
+    params: unknown;
+    active: boolean;
+    description: string | null;
+  }) {
+    return {
+      ruleType: r.ruleType,
+      operationTypes: r.operationTypes,
+      params: r.params,
+      active: r.active,
+      description: r.description,
+    } as object;
   }
 
   /** Mise à jour sans redéploiement : effet immédiat (cache invalidé + événement). */
   async updateRule(
     actor: Actor,
     code: string,
-    input: { params?: Record<string, unknown>; active?: boolean; operationTypes?: OperationType[]; description?: string; ruleType?: never; changeReason: string },
+    input: {
+      params?: Record<string, unknown>;
+      active?: boolean;
+      operationTypes?: OperationType[];
+      description?: string;
+      ruleType?: never;
+      changeReason: string;
+    },
   ) {
     const existing = await this.prisma.complianceRule.findUnique({ where: { code } });
     if (!existing) throw new DomainError('NOT_FOUND', 'Règle introuvable');
@@ -237,13 +314,25 @@ export class ComplianceService {
         },
       });
       await tx.complianceRuleHistory.create({
-        data: { ruleId: r.id, version: r.version, snapshot: this.snapshot(r), change: 'UPDATED', reason: input.changeReason, changedById: actor.userId },
+        data: {
+          ruleId: r.id,
+          version: r.version,
+          snapshot: this.snapshot(r),
+          change: 'UPDATED',
+          reason: input.changeReason,
+          changedById: actor.userId,
+        },
       });
       await this.outbox.add(tx, {
         type: 'compliance.rule.updated',
         aggregateType: 'compliance_rule',
         aggregateId: r.id,
-        payload: { ruleCode: r.code, country: r.countryCode, version: r.version, change: input.changeReason },
+        payload: {
+          ruleCode: r.code,
+          country: r.countryCode,
+          version: r.version,
+          change: input.changeReason,
+        },
       });
       return r;
     });
@@ -252,7 +341,10 @@ export class ComplianceService {
   }
 
   async history(code: string) {
-    const rule = await this.prisma.complianceRule.findUnique({ where: { code }, include: { history: { orderBy: { version: 'desc' } } } });
+    const rule = await this.prisma.complianceRule.findUnique({
+      where: { code },
+      include: { history: { orderBy: { version: 'desc' } } },
+    });
     if (!rule) throw new DomainError('NOT_FOUND', 'Règle introuvable');
     return rule.history.map((h) => ({ ...h, createdAt: h.createdAt.toISOString() }));
   }
@@ -270,10 +362,18 @@ export class ComplianceService {
   async onCountryChanged(memberId: string, from: unknown, to: unknown): Promise<void> {
     const since = new Date(this.clock.now().getTime() - 30 * 86_400_000);
     const changes = await this.prisma.memberAuditLog.count({
-      where: { memberId, action: 'UPDATED', createdAt: { gte: since }, trigger: { in: ['profile.update'] }, newValues: { path: ['country'], not: Prisma.AnyNull } },
+      where: {
+        memberId,
+        action: 'UPDATED',
+        createdAt: { gte: since },
+        trigger: { in: ['profile.update'] },
+        newValues: { path: ['country'], not: Prisma.AnyNull },
+      },
     });
     if (changes < 2) return;
-    this.logger.warn(`Changement de pays suspect pour ${memberId} (${String(from)} → ${String(to)})`);
+    this.logger.warn(
+      `Changement de pays suspect pour ${memberId} (${String(from)} → ${String(to)})`,
+    );
     await this.uow.run(async (tx) => {
       const row = await tx.complianceViolation.create({
         data: {
@@ -290,7 +390,13 @@ export class ComplianceService {
           type: 'compliance.violation.detected',
           aggregateType: 'member',
           aggregateId: memberId,
-          payload: { violationId: row.id, memberId, operationType: 'TRANSFER', ruleCode: 'SUSPICIOUS-COUNTRY-CHANGE', action: 'ALERTED' },
+          payload: {
+            violationId: row.id,
+            memberId,
+            operationType: 'TRANSFER',
+            ruleCode: 'SUSPICIOUS-COUNTRY-CHANGE',
+            action: 'ALERTED',
+          },
         },
         {
           type: 'compliance.user.restricted',

@@ -996,6 +996,9 @@ importers:
       '@tontine/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@tontine/compliance':
+        specifier: workspace:*
+        version: link:../compliance
       '@tontine/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -1014,6 +1017,9 @@ importers:
       '@tontine/platform':
         specifier: workspace:*
         version: link:../../packages/platform
+      '@tontine/transactions':
+        specifier: workspace:*
+        version: link:../transactions
       '@tontine/wallets':
         specifier: workspace:*
         version: link:../wallets

@@ -1,3 +1,5 @@
+import { type TxClient } from '@tontine/database';
+
 /**
  * Ports inter-domaines partagés (noyau). Les implémentations sont fournies par le domaine
  * propriétaire sous forme de providers globaux ; les consommateurs ne dépendent que de l'interface.
@@ -51,3 +53,16 @@ const KYC_ORDER = ['NONE', 'TIER_1', 'TIER_2', 'TIER_3'];
 export function kycAtLeast(level: string, min: string): boolean {
   return KYC_ORDER.indexOf(level) >= KYC_ORDER.indexOf(min);
 }
+
+/**
+ * Délégation de création de tontine (US-1.1 / A-04), implémentée par le domaine Auth :
+ * un admin créé par le super-admin peut créer UNE tontine sans le niveau KYC TIER_3.
+ */
+export interface AdminDelegationPort {
+  /** Nom de tontine délégué encore disponible, sinon null. */
+  pendingDelegation(userId: string): Promise<string | null>;
+  /** Consomme la délégation dans la transaction appelante ; faux si déjà utilisée. */
+  consumeDelegation(tx: TxClient, userId: string): Promise<boolean>;
+}
+
+export const ADMIN_DELEGATION = Symbol('ADMIN_DELEGATION');

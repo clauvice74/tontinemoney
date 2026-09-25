@@ -27,7 +27,10 @@ interface DetectedFace {
 interface FaceDetectorLike {
   detect(source: HTMLVideoElement): Promise<DetectedFace[]>;
 }
-type FaceDetectorCtor = new (opts?: { fastMode?: boolean; maxDetectedFaces?: number }) => FaceDetectorLike;
+type FaceDetectorCtor = new (opts?: {
+  fastMode?: boolean;
+  maxDetectedFaces?: number;
+}) => FaceDetectorLike;
 
 /** API expérimentale (Chrome) : utilisée pour la capture automatique si disponible. */
 function getFaceDetector(): FaceDetectorLike | null {
@@ -66,7 +69,9 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [hint, setHint] = useState('Placez votre visage dans l’ovale, bien éclairé, sans lunettes.');
+  const [hint, setHint] = useState(
+    'Placez votre visage dans l’ovale, bien éclairé, sans lunettes.',
+  );
   const [faceAligned, setFaceAligned] = useState(false);
 
   const stopStream = useCallback(() => {
@@ -119,7 +124,9 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
     setError(null);
     setPhase('starting');
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError('Votre navigateur ne permet pas l’accès à la caméra. Utilisez un navigateur récent.');
+      setError(
+        'Votre navigateur ne permet pas l’accès à la caméra. Utilisez un navigateur récent.',
+      );
       setPhase('error');
       return;
     }
@@ -141,7 +148,11 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
       setPhase('live');
     } catch (e) {
       stopStream();
-      setError(e instanceof DOMException ? cameraErrorMessage(e) : 'Impossible d’ouvrir la session de vérification. Réessayez.');
+      setError(
+        e instanceof DOMException
+          ? cameraErrorMessage(e)
+          : 'Impossible d’ouvrir la session de vérification. Réessayez.',
+      );
       setPhase('error');
     }
   }
@@ -182,7 +193,13 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
         } else {
           stable = 0;
           setFaceAligned(false);
-          setHint(!bigEnough ? (size <= 0.25 ? 'Rapprochez-vous.' : 'Éloignez-vous un peu.') : 'Centrez votre visage dans l’ovale.');
+          setHint(
+            !bigEnough
+              ? size <= 0.25
+                ? 'Rapprochez-vous.'
+                : 'Éloignez-vous un peu.'
+              : 'Centrez votre visage dans l’ovale.',
+          );
         }
       } catch {
         window.clearInterval(timer);
@@ -233,7 +250,10 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
               )}
             />
             {phase === 'live' ? (
-              <div className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden="true">
+              <div
+                className="pointer-events-none absolute inset-0 grid place-items-center"
+                aria-hidden="true"
+              >
                 <div
                   className={cn(
                     'h-[62%] w-[62%] rounded-[50%] border-4 border-dashed shadow-[0_0_0_9999px_rgba(0,0,0,0.35)] transition-colors',
@@ -261,7 +281,12 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
 
       <div className="flex flex-wrap justify-center gap-2">
         {phase === 'idle' || phase === 'error' || phase === 'starting' ? (
-          <Button type="button" onClick={() => void start()} loading={phase === 'starting'} disabled={disabled}>
+          <Button
+            type="button"
+            onClick={() => void start()}
+            loading={phase === 'starting'}
+            disabled={disabled}
+          >
             <Camera aria-hidden="true" /> Activer la caméra
           </Button>
         ) : null}

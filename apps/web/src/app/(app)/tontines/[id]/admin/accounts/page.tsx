@@ -2,7 +2,15 @@
 
 import { TONTINE_ACCOUNT_TYPES } from '@tontine/contracts';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, LoadingBlock } from '@tontine/ui';
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  LoadingBlock,
+} from '@tontine/ui';
 import { Landmark, PiggyBank, HandCoins, HeartHandshake } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { ErrorAlert, isComingSoon } from '@/components/feedback';
@@ -30,22 +38,35 @@ export default function TontineAccountsPage() {
   const byType = new Map((accounts.data?.data ?? []).map((a) => [a.type, a]));
 
   return (
-    <Section title="Comptes de la tontine" description="Le compte principal est actif ; les autres types de comptes arrivent bientôt.">
-      {accounts.isError && !isComingSoon(accounts.error) ? <ErrorAlert error={accounts.error} /> : null}
+    <Section
+      title="Comptes de la tontine"
+      description="Le compte principal est actif ; les autres types de comptes arrivent bientôt."
+    >
+      {accounts.isError && !isComingSoon(accounts.error) ? (
+        <ErrorAlert error={accounts.error} />
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         {TONTINE_ACCOUNT_TYPES.map((type) => {
           const Icon = ICONS[type];
           const account = byType.get(type);
           const available = type === 'MAIN';
           return (
-            <Card key={type} className={available ? '' : 'opacity-75'} aria-disabled={!available || undefined}>
+            <Card
+              key={type}
+              className={available ? '' : 'opacity-75'}
+              aria-disabled={!available || undefined}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="flex items-center gap-2">
                     <Icon className="size-5 text-primary" aria-hidden="true" />
                     {account?.name ?? ACCOUNT_TYPE_LABELS[type]}
                   </CardTitle>
-                  {available ? <Badge variant="success">Actif</Badge> : <Badge variant="muted">Bientôt</Badge>}
+                  {available ? (
+                    <Badge variant="success">Actif</Badge>
+                  ) : (
+                    <Badge variant="muted">Bientôt</Badge>
+                  )}
                 </div>
                 <CardDescription>{DESCRIPTIONS[type]}</CardDescription>
               </CardHeader>
@@ -63,7 +84,9 @@ export default function TontineAccountsPage() {
                     </p>
                   )
                 ) : (
-                  <p className="text-sm text-muted-foreground">Fonctionnalité bientôt disponible.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Fonctionnalité bientôt disponible.
+                  </p>
                 )}
               </CardContent>
             </Card>

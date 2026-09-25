@@ -61,8 +61,17 @@ export class TokenService implements AccessTokenVerifier {
     return this.keys.publicJwks as unknown as { keys: Array<Record<string, unknown>> };
   }
 
-  async signAccess(user: Pick<User, 'id' | 'role'>, sessionId: string) {
-    const tontineIds = await this.tontines.tontineIdsOf(user.id);
+  /** Claims `tontineIds` lus hors transaction (évite d'occuper une 2e connexion du pool). */
+  async claimsFor(userId: string): Promise<string[]> {
+    return this.tontines.tontineIdsOf(userId);
+  }
+
+  async signAccess(
+    user: Pick<User, 'id' | 'role'>,
+    sessionId: string,
+    prefetchedTontineIds?: string[],
+  ) {
+    const tontineIds = prefetchedTontineIds ?? (await this.tontines.tontineIdsOf(user.id));
     return this.keys.sign(
       { sub: user.id, role: user.role as PlatformRole, tontineIds, sid: sessionId },
       this.config.ACCESS_TOKEN_TTL_SECONDS,
@@ -71,7 +80,12 @@ export class TokenService implements AccessTokenVerifier {
   }
 
   /** Ouvre une session (refresh token haché, lié au device) et émet l'access token. */
-  async openSession(tx: TxClient, user: User, mfaUsed: boolean): Promise<IssuedTokens> {
+  async openSession(
+    tx: TxClient,
+    user: User,
+    mfaUsed: boolean,
+    tontineIds: string[],
+  ): Promise<IssuedTokens> {
     const now = this.clock.now();
     const { ip, userAgent } = RequestContext.metadata();
     const ua = (userAgent ?? 'unknown').slice(0, 255);
@@ -109,7 +123,7 @@ export class TokenService implements AccessTokenVerifier {
     if (known) await tx.knownDevice.update({ where: { id: known.id }, data: { lastSeenAt: now } });
     else await tx.knownDevice.create({ data: { userId: user.id, fingerprint } });
     const hadDevices = (await tx.knownDevice.count({ where: { userId: user.id } })) > 1;
-    const access = await this.signAccess(user, session.id);
+    const access = await this.signAccess(user, session.id, tontineIds);
     return {
       accessToken: access.token,
       expiresIn: this.config.ACCESS_TOKEN_TTL_SECONDS,
@@ -142,6 +156,7 @@ export class TokenService implements AccessTokenVerifier {
       throw new DomainError('INVALID_TOKEN', 'Session expirée, reconnectez-vous');
     if (session.user.status !== 'ACTIVE') throw new DomainError('INVALID_TOKEN', 'Compte inactif');
 
+    const tontineIds = await this.claimsFor(session.userId);
     return this.uow.run(async (tx) => {
       // Consommation atomique (protège contre deux rafraîchissements simultanés)
       const consumed = await tx.refreshSession.updateMany({
@@ -167,7 +182,7 @@ export class TokenService implements AccessTokenVerifier {
         where: { id: session.id },
         data: { replacedById: replacement.id },
       });
-      const access = await this.signAccess(session.user, replacement.id);
+      const access = await this.signAccess(session.user, replacement.id, tontineIds);
       return {
         accessToken: access.token,
         expiresIn: this.config.ACCESS_TOKEN_TTL_SECONDS,

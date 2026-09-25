@@ -68,7 +68,9 @@ export default function TontineAdminDashboardPage() {
         <p className="flex items-center gap-1 text-xs text-muted-foreground" aria-live="polite">
           <RefreshCw className="size-3" aria-hidden="true" />
           Actualisation automatique toutes les 30 s
-          {dashboard.dataUpdatedAt ? ` · mis à jour à ${new Date(dashboard.dataUpdatedAt).toLocaleTimeString('fr-FR')}` : ''}
+          {dashboard.dataUpdatedAt
+            ? ` · mis à jour à ${new Date(dashboard.dataUpdatedAt).toLocaleTimeString('fr-FR')}`
+            : ''}
         </p>
         {t && (t.status === 'DRAFT' || t.status === 'READY') ? (
           <ActionDialog
@@ -91,12 +93,24 @@ export default function TontineAdminDashboardPage() {
       <QueryState query={dashboard} comingSoonTitle="Tableau de bord bientôt disponible">
         {(d) => {
           const c = d.currentCycle;
-          const progress = c && c.memberCount > 0 ? Math.round((c.paidCount / c.memberCount) * 100) : 0;
+          const progress =
+            c && c.memberCount > 0 ? Math.round((c.paidCount / c.memberCount) * 100) : 0;
           return (
             <>
-              <section aria-label="Indicateurs" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Total collecté" value={formatMoneyView(d.totalCollected)} icon={<CircleDollarSign />} />
-                <StatCard label="Pénalités perçues" value={formatMoneyView(d.penaltiesCollected)} icon={<HandCoins />} />
+              <section
+                aria-label="Indicateurs"
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+              >
+                <StatCard
+                  label="Total collecté"
+                  value={formatMoneyView(d.totalCollected)}
+                  icon={<CircleDollarSign />}
+                />
+                <StatCard
+                  label="Pénalités perçues"
+                  value={formatMoneyView(d.penaltiesCollected)}
+                  icon={<HandCoins />}
+                />
                 <StatCard
                   label="Cycle en cours"
                   value={c ? `${c.number}${t?.totalCycles ? ` / ${t.totalCycles}` : ''}` : '—'}
@@ -112,7 +126,9 @@ export default function TontineAdminDashboardPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Cycle {c.number}</CardTitle>
-                    <CardDescription>Bénéficiaire : {beneficiaryName(c.beneficiary)}</CardDescription>
+                    <CardDescription>
+                      Bénéficiaire : {beneficiaryName(c.beneficiary)}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div>
@@ -130,7 +146,10 @@ export default function TontineAdminDashboardPage() {
                         aria-valuenow={progress}
                         aria-label="Cotisations reçues"
                       >
-                        <div className="h-2.5 rounded-full bg-primary" style={{ width: `${progress}%` }} />
+                        <div
+                          className="h-2.5 rounded-full bg-primary"
+                          style={{ width: `${progress}%` }}
+                        />
                       </div>
                     </div>
                     <p className="text-sm">
@@ -152,7 +171,9 @@ export default function TontineAdminDashboardPage() {
                       <ul className="divide-y text-sm">
                         {d.lateMembers.map((m) => (
                           <li key={m.memberId} className="flex justify-between py-2">
-                            <span className="font-medium">{m.fullName ?? m.firstName ?? 'Membre'}</span>
+                            <span className="font-medium">
+                              {m.fullName ?? m.firstName ?? 'Membre'}
+                            </span>
                             {m.daysLate !== undefined ? (
                               <span className="text-destructive">{m.daysLate} j de retard</span>
                             ) : null}
@@ -226,7 +247,9 @@ export default function TontineAdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Preuve du tirage</CardTitle>
-            <CardDescription>Empreinte permettant à chacun de vérifier l’ordre tiré au sort.</CardDescription>
+            <CardDescription>
+              Empreinte permettant à chacun de vérifier l’ordre tiré au sort.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
             <p className="break-all font-mono">{proof.data.hash ?? '—'}</p>

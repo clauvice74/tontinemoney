@@ -55,18 +55,37 @@ export function evaluate(input: EvaluationInput): EvaluationResult {
 
   // R-MBR-02 : un membre suspendu ne peut effectuer aucune opération
   if (member.status === 'SUSPENDED' || member.complianceStatus === 'SUSPENDED') {
-    violations.push({ rule: 'MEMBER-SUSPENDED', message: 'Membre suspendu : aucune opération possible', action: 'BLOCK' });
+    violations.push({
+      rule: 'MEMBER-SUSPENDED',
+      message: 'Membre suspendu : aucune opération possible',
+      action: 'BLOCK',
+    });
   }
   // R-MBR-03 : informations complètes (pays) avant toute opération financière
   if (!member.country) {
-    violations.push({ rule: 'COUNTRY-UNKNOWN', message: 'Pays du membre inconnu : complétez votre profil', action: 'BLOCK' });
+    violations.push({
+      rule: 'COUNTRY-UNKNOWN',
+      message: 'Pays du membre inconnu : complétez votre profil',
+      action: 'BLOCK',
+    });
   }
-  if (member.complianceStatus === 'RESTRICTED' && OUTFLOW.includes(input.operationType) && input.operationType !== 'TONTINE_CONTRIBUTION') {
-    violations.push({ rule: 'MEMBER-RESTRICTED', message: 'Compte restreint : opération sortante interdite', action: 'BLOCK' });
+  if (
+    member.complianceStatus === 'RESTRICTED' &&
+    OUTFLOW.includes(input.operationType) &&
+    input.operationType !== 'TONTINE_CONTRIBUTION'
+  ) {
+    violations.push({
+      rule: 'MEMBER-RESTRICTED',
+      message: 'Compte restreint : opération sortante interdite',
+      action: 'BLOCK',
+    });
   }
 
   const rules = input.rules.filter(
-    (r) => r.active && r.countryCode === member.country && r.operationTypes.includes(input.operationType),
+    (r) =>
+      r.active &&
+      r.countryCode === member.country &&
+      r.operationTypes.includes(input.operationType),
   );
   for (const r of rules) {
     applied.push(r.code);
@@ -80,7 +99,10 @@ export function evaluate(input: EvaluationInput): EvaluationResult {
         if (current + input.amountMinor > limit) {
           violations.push({
             rule: r.code,
-            message: r.ruleType === 'DAILY_LIMIT' ? 'Limite journalière dépassée' : 'Limite mensuelle dépassée',
+            message:
+              r.ruleType === 'DAILY_LIMIT'
+                ? 'Limite journalière dépassée'
+                : 'Limite mensuelle dépassée',
             limit: limit.toString(),
             current: current.toString(),
             action: onViolation(p),
@@ -89,7 +111,11 @@ export function evaluate(input: EvaluationInput): EvaluationResult {
         break;
       }
       case 'WALLET_LIMIT': {
-        if (input.creditedWalletBalanceMinor === undefined || input.creditedWalletBalanceMinor === null) break;
+        if (
+          input.creditedWalletBalanceMinor === undefined ||
+          input.creditedWalletBalanceMinor === null
+        )
+          break;
         if (p['currency'] && p['currency'] !== input.currency) break;
         const limit = BigInt(String(p['limitMinor'] ?? '0'));
         if (input.creditedWalletBalanceMinor + input.amountMinor > limit) {
@@ -106,20 +132,39 @@ export function evaluate(input: EvaluationInput): EvaluationResult {
       case 'KYC_MIN_LEVEL': {
         const min = String(p['minLevel'] ?? 'TIER_2');
         if (!atLeast(member.kycLevel, min)) {
-          violations.push({ rule: r.code, message: `Niveau KYC ${min} requis`, action: onViolation(p) });
+          violations.push({
+            rule: r.code,
+            message: `Niveau KYC ${min} requis`,
+            action: onViolation(p),
+          });
         }
         break;
       }
       case 'TONTINE_ALLOWED': {
         if (p['allowed'] === false) {
-          violations.push({ rule: r.code, message: 'Tontines non autorisées dans ce pays', action: onViolation(p) });
-        } else if (typeof p['requiresLevel'] === 'string' && !atLeast(member.kycLevel, p['requiresLevel'])) {
-          violations.push({ rule: r.code, message: `Tontines autorisées sous condition de KYC ${p['requiresLevel']}`, action: onViolation(p) });
+          violations.push({
+            rule: r.code,
+            message: 'Tontines non autorisées dans ce pays',
+            action: onViolation(p),
+          });
+        } else if (
+          typeof p['requiresLevel'] === 'string' &&
+          !atLeast(member.kycLevel, p['requiresLevel'])
+        ) {
+          violations.push({
+            rule: r.code,
+            message: `Tontines autorisées sous condition de KYC ${p['requiresLevel']}`,
+            action: onViolation(p),
+          });
         }
         break;
       }
       case 'OPERATION_FORBIDDEN':
-        violations.push({ rule: r.code, message: 'Opération interdite dans ce pays', action: onViolation(p) });
+        violations.push({
+          rule: r.code,
+          message: 'Opération interdite dans ce pays',
+          action: onViolation(p),
+        });
         break;
     }
   }
@@ -127,13 +172,18 @@ export function evaluate(input: EvaluationInput): EvaluationResult {
 }
 
 /** Validation des paramètres selon le type de règle (US-9.3). */
-export function validateParams(type: ComplianceRuleType, params: Record<string, unknown>): string | null {
+export function validateParams(
+  type: ComplianceRuleType,
+  params: Record<string, unknown>,
+): string | null {
   const isMinor = (v: unknown) => typeof v === 'string' && /^\d+$/.test(v);
   switch (type) {
     case 'DAILY_LIMIT':
     case 'MONTHLY_LIMIT':
     case 'WALLET_LIMIT':
-      return isMinor(params['limitMinor']) ? null : 'params.limitMinor (chaîne d’entiers en unités mineures) requis';
+      return isMinor(params['limitMinor'])
+        ? null
+        : 'params.limitMinor (chaîne d’entiers en unités mineures) requis';
     case 'KYC_MIN_LEVEL':
       return KYC_ORDER.includes(String(params['minLevel'])) ? null : 'params.minLevel invalide';
     case 'TONTINE_ALLOWED':

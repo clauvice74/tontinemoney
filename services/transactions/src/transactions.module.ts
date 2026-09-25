@@ -11,7 +11,12 @@ import { TransfersService } from './transfers.service';
 @Module({
   imports: [WalletsModule, ComplianceModule],
   controllers: [TransactionsController],
-  providers: [TransactionsService, TransfersService, InternalReconciliationService, { provide: FraudScoringPort, useClass: SimulatedFraudScoring }],
+  providers: [
+    TransactionsService,
+    TransfersService,
+    InternalReconciliationService,
+    { provide: FraudScoringPort, useClass: SimulatedFraudScoring },
+  ],
   exports: [TransactionsService, InternalReconciliationService, WalletsModule, ComplianceModule],
 })
 export class TransactionsModule {}

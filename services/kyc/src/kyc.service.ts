@@ -84,18 +84,29 @@ export class KycService {
   private async consumeLiveness(memberId: string, token: string): Promise<void> {
     const owner = await this.kv.get(`kyc:liveness:${token}`);
     if (owner !== memberId) {
-      throw new DomainError('VALIDATION_FAILED', 'Session de capture caméra invalide ou expirée : reprenez le selfie');
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        'Session de capture caméra invalide ou expirée : reprenez le selfie',
+      );
     }
     await this.kv.del(`kyc:liveness:${token}`);
   }
 
-  private validateImage(file: UploadedImage | undefined, label: string): { width: number; height: number; type: string } {
+  private validateImage(
+    file: UploadedImage | undefined,
+    label: string,
+  ): { width: number; height: number; type: string } {
     if (!file) throw new DomainError('VALIDATION_FAILED', `${label} manquant`);
-    if (file.buffer.length > KYC_MAX_FILE_BYTES) throw new DomainError('FILE_TOO_LARGE', `${label} : 10 Mo maximum`);
+    if (file.buffer.length > KYC_MAX_FILE_BYTES)
+      throw new DomainError('FILE_TOO_LARGE', `${label} : 10 Mo maximum`);
     const info = inspectImage(file.buffer);
-    if (!info) throw new DomainError('UNSUPPORTED_MEDIA_TYPE', `${label} : formats acceptés JPEG ou PNG`);
+    if (!info)
+      throw new DomainError('UNSUPPORTED_MEDIA_TYPE', `${label} : formats acceptés JPEG ou PNG`);
     if (info.width < KYC_MIN_WIDTH || info.height < KYC_MIN_HEIGHT) {
-      throw new DomainError('VALIDATION_FAILED', `${label} : résolution minimale ${KYC_MIN_WIDTH}×${KYC_MIN_HEIGHT}`);
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        `${label} : résolution minimale ${KYC_MIN_WIDTH}×${KYC_MIN_HEIGHT}`,
+      );
     }
     return info;
   }
@@ -116,11 +127,25 @@ export class KycService {
 
   private async persist(
     memberId: string,
-    data: { targetLevel: 'TIER_2' | 'TIER_3'; documentType: KycDocumentType; livenessToken: string; incomeSource?: string },
-    files: Array<{ kind: KycFileKind; file: UploadedImage; info: { width: number; height: number; type: string } }>,
+    data: {
+      targetLevel: 'TIER_2' | 'TIER_3';
+      documentType: KycDocumentType;
+      livenessToken: string;
+      incomeSource?: string;
+    },
+    files: Array<{
+      kind: KycFileKind;
+      file: UploadedImage;
+      info: { width: number; height: number; type: string };
+    }>,
   ): Promise<KycRequest> {
     const now = this.clock.now();
-    const stored: Array<{ kind: KycFileKind; key: string; file: UploadedImage; info: { width: number; height: number; type: string } }> = [];
+    const stored: Array<{
+      kind: KycFileKind;
+      key: string;
+      file: UploadedImage;
+      info: { width: number; height: number; type: string };
+    }> = [];
     for (const f of files) {
       const key = this.storageKey(memberId);
       await this.storage.put(key, f.file.buffer);
@@ -159,7 +184,12 @@ export class KycService {
           type: 'kyc.submitted',
           aggregateType: 'kyc_request',
           aggregateId: req.id,
-          payload: { memberId, requestId: req.id, kycLevel: data.targetLevel, documentTypes: [data.documentType] },
+          payload: {
+            memberId,
+            requestId: req.id,
+            kycLevel: data.targetLevel,
+            documentTypes: [data.documentType],
+          },
         });
         return req;
       });
@@ -178,11 +208,19 @@ export class KycService {
   ): Promise<{ kycRequestId: string; status: 'SUBMITTED' }> {
     const member = await this.members.snapshot(actor.userId);
     if (!member) throw new DomainError('NOT_FOUND', 'Profil membre introuvable');
-    if (member.status === 'SUSPENDED' || member.status === 'PENDING_REVIEW') throw new DomainError('FORBIDDEN', 'Compte suspendu ou en revue');
-    if (!member.country) throw new DomainError('BUSINESS_RULE_VIOLATION', 'Renseignez votre pays avant la vérification d’identité');
+    if (member.status === 'SUSPENDED' || member.status === 'PENDING_REVIEW')
+      throw new DomainError('FORBIDDEN', 'Compte suspendu ou en revue');
+    if (!member.country)
+      throw new DomainError(
+        'BUSINESS_RULE_VIOLATION',
+        'Renseignez votre pays avant la vérification d’identité',
+      );
     const country = getCountry(member.country)!;
     if (!country.kycDocuments.includes(input.documentType)) {
-      throw new DomainError('VALIDATION_FAILED', `Type de pièce non accepté pour ${country.nameFr} : ${country.kycDocuments.join(', ')}`);
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        `Type de pièce non accepté pour ${country.nameFr} : ${country.kycDocuments.join(', ')}`,
+      );
     }
     await this.assertNoOpenRequest(actor.userId);
     const front = this.validateImage(files.front, 'Recto');
@@ -192,7 +230,11 @@ export class KycService {
     await this.consumeLiveness(actor.userId, input.livenessToken);
     const req = await this.persist(
       actor.userId,
-      { targetLevel: 'TIER_2', documentType: input.documentType, livenessToken: input.livenessToken },
+      {
+        targetLevel: 'TIER_2',
+        documentType: input.documentType,
+        livenessToken: input.livenessToken,
+      },
       [
         { kind: 'ID_FRONT', file: files.front!, info: front },
         ...(back ? [{ kind: 'ID_BACK' as const, file: files.back!, info: back }] : []),
@@ -210,16 +252,27 @@ export class KycService {
   ): Promise<{ kycRequestId: string; status: 'SUBMITTED' }> {
     const member = await this.members.snapshot(actor.userId);
     if (!member || member.kycLevel !== 'TIER_2' || member.status !== 'ACTIVE') {
-      throw new DomainError('KYC_LEVEL_INSUFFICIENT', 'Le niveau 3 requiert un niveau 2 vérifié et un compte actif');
+      throw new DomainError(
+        'KYC_LEVEL_INSUFFICIENT',
+        'Le niveau 3 requiert un niveau 2 vérifié et un compte actif',
+      );
     }
     await this.assertNoOpenRequest(actor.userId);
     const proof = this.validateImage(files.proofOfAddress, 'Justificatif de domicile');
     const selfie = this.validateImage(files.selfie, 'Selfie');
     await this.consumeLiveness(actor.userId, input.livenessToken);
-    const last = await this.prisma.kycRequest.findFirst({ where: { memberId: actor.userId, status: 'VERIFIED' }, orderBy: { submittedAt: 'desc' } });
+    const last = await this.prisma.kycRequest.findFirst({
+      where: { memberId: actor.userId, status: 'VERIFIED' },
+      orderBy: { submittedAt: 'desc' },
+    });
     const req = await this.persist(
       actor.userId,
-      { targetLevel: 'TIER_3', documentType: last?.documentType ?? 'PROOF_OF_ADDRESS', livenessToken: input.livenessToken, incomeSource: input.incomeSource },
+      {
+        targetLevel: 'TIER_3',
+        documentType: last?.documentType ?? 'PROOF_OF_ADDRESS',
+        livenessToken: input.livenessToken,
+        incomeSource: input.incomeSource,
+      },
       [
         { kind: 'PROOF_OF_ADDRESS', file: files.proofOfAddress!, info: proof },
         { kind: 'SELFIE', file: files.selfie!, info: selfie },
@@ -230,7 +283,11 @@ export class KycService {
 
   async me(actor: Actor) {
     const member = await this.members.snapshot(actor.userId);
-    const rows = await this.prisma.kycRequest.findMany({ where: { memberId: actor.userId }, orderBy: { submittedAt: 'desc' }, take: 20 });
+    const rows = await this.prisma.kycRequest.findMany({
+      where: { memberId: actor.userId },
+      orderBy: { submittedAt: 'desc' },
+      take: 20,
+    });
     const view = (r: KycRequest) => ({
       id: r.id,
       targetLevel: r.targetLevel,
@@ -247,16 +304,28 @@ export class KycService {
       kycLevel: member?.kycLevel ?? 'NONE',
       memberStatus: member?.status ?? null,
       current: current ? view(current) : null,
-      message: current && ['SUBMITTED', 'PROCESSING', 'REVIEW_REQUIRED'].includes(current.status) ? 'Vos documents sont en cours de vérification' : null,
+      message:
+        current && ['SUBMITTED', 'PROCESSING', 'REVIEW_REQUIRED'].includes(current.status)
+          ? 'Vos documents sont en cours de vérification'
+          : null,
       history: rows.map(view),
     };
   }
 
   /** Lecture d'un document déchiffré (agents KYC / super-admin, accès journalisé). */
-  async readDocument(actor: Actor, documentId: string): Promise<{ data: Buffer; mimeType: string }> {
+  async readDocument(
+    actor: Actor,
+    documentId: string,
+  ): Promise<{ data: Buffer; mimeType: string }> {
     const doc = await this.prisma.kycDocument.findUnique({ where: { id: documentId } });
     if (!doc) throw new DomainError('NOT_FOUND', 'Document introuvable');
-    await this.audit.record({ action: 'kyc.document.read', resourceType: 'kyc_document', resourceId: doc.id, result: 'SUCCESS', metadata: { memberId: doc.memberId, kind: doc.kind, by: actor.role } });
+    await this.audit.record({
+      action: 'kyc.document.read',
+      resourceType: 'kyc_document',
+      resourceId: doc.id,
+      result: 'SUCCESS',
+      metadata: { memberId: doc.memberId, kind: doc.kind, by: actor.role },
+    });
     return { data: await this.storage.get(doc.storageKey), mimeType: doc.mimeType };
   }
 }

@@ -27,7 +27,12 @@ export function UsersList({
     queryKey: ['admin', 'users', filters],
     queryFn: () =>
       api.get<ListResponse<AdminUserView>>('/admin/users', {
-        query: { search: filters.search || undefined, role: filters.role, status: filters.status, limit: 50 },
+        query: {
+          search: filters.search || undefined,
+          role: filters.role,
+          status: filters.status,
+          limit: 50,
+        },
       }),
     placeholderData: keepPreviousData,
   });
@@ -60,7 +65,11 @@ export function UsersList({
         {!fixedRole ? (
           <div className="space-y-1.5">
             <Label htmlFor="users-role">Rôle</Label>
-            <Select id="users-role" value={filters.role} onChange={(e) => setFilters({ ...filters, role: e.target.value })}>
+            <Select
+              id="users-role"
+              value={filters.role}
+              onChange={(e) => setFilters({ ...filters, role: e.target.value })}
+            >
               <option value="">Tous</option>
               {PLATFORM_ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -72,7 +81,11 @@ export function UsersList({
         ) : null}
         <div className="space-y-1.5">
           <Label htmlFor="users-status">Statut</Label>
-          <Select id="users-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+          <Select
+            id="users-status"
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          >
             <option value="">Tous</option>
             {USER_STATUSES.map((s) => (
               <option key={s} value={s}>
@@ -85,7 +98,9 @@ export function UsersList({
       <QueryState
         query={query}
         isEmpty={(d) => d.data.length === 0}
-        empty={<p className="py-6 text-center text-sm text-muted-foreground">Aucun compte trouvé.</p>}
+        empty={
+          <p className="py-6 text-center text-sm text-muted-foreground">Aucun compte trouvé.</p>
+        }
       >
         {(d) => (
           <Card>
@@ -94,7 +109,10 @@ export function UsersList({
                 rows={d.data}
                 rowKey={(u) => u.id}
                 columns={[
-                  { header: 'Nom', cell: (u) => <span className="font-medium">{fullName(u)}</span> },
+                  {
+                    header: 'Nom',
+                    cell: (u) => <span className="font-medium">{fullName(u)}</span>,
+                  },
                   {
                     header: 'Contact',
                     cell: (u) => (

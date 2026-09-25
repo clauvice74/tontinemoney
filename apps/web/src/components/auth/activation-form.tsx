@@ -44,7 +44,13 @@ export function ActivationForm({ token }: { token?: string }) {
 
   const form = useForm<ActivationValues>({
     resolver: zodResolver(activationSchema, zodFr),
-    defaultValues: { mode: token ? 'token' : 'otp', identifier: '', otp: '', password: '', confirm: '' },
+    defaultValues: {
+      mode: token ? 'token' : 'otp',
+      identifier: '',
+      otp: '',
+      password: '',
+      confirm: '',
+    },
   });
   const password = form.watch('password');
   const errors = form.formState.errors;
@@ -59,7 +65,10 @@ export function ActivationForm({ token }: { token?: string }) {
       setDone(true);
       toast.success('Compte activé');
     } catch (e) {
-      if (e instanceof ApiError && (e.code === 'TOKEN_EXPIRED' || e.code === 'TOKEN_ALREADY_USED')) {
+      if (
+        e instanceof ApiError &&
+        (e.code === 'TOKEN_EXPIRED' || e.code === 'TOKEN_ALREADY_USED')
+      ) {
         setFormError(
           token
             ? `${e.title}. Vous pouvez activer votre compte avec le code reçu, ou demander un nouveau code.`
@@ -82,7 +91,10 @@ export function ActivationForm({ token }: { token?: string }) {
     setResending(true);
     try {
       await api.post('/auth/activation/resend', { identifier: parsed.data }, { auth: false });
-      toast.success('Code renvoyé', 'Si un compte en attente existe, un nouveau code a été envoyé.');
+      toast.success(
+        'Code renvoyé',
+        'Si un compte en attente existe, un nouveau code a été envoyé.',
+      );
     } catch (e) {
       toast.error('Envoi impossible', formatError(e));
     } finally {

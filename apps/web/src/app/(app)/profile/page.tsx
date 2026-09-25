@@ -36,7 +36,10 @@ function ProfileHistory() {
       {(d) => (
         <ol className="space-y-2 text-sm">
           {d.data.map((h) => (
-            <li key={h.id} className="flex flex-wrap items-center gap-2 border-b pb-2 last:border-0">
+            <li
+              key={h.id}
+              className="flex flex-wrap items-center gap-2 border-b pb-2 last:border-0"
+            >
               <span className="text-muted-foreground">{formatDateTime(h.createdAt)}</span>
               <span className="font-medium">{h.action}</span>
               {h.version ? <Badge variant="outline">v{h.version}</Badge> : null}

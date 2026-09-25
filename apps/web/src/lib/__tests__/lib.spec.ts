@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { formatBytes, formatRelative, fullName, isoDateFromToday } from '../format';
-import { amountStep, currencyForCountry, formatMinor, isNegative, validateAmountPrecision } from '../money';
+import {
+  amountStep,
+  currencyForCountry,
+  formatMinor,
+  isNegative,
+  validateAmountPrecision,
+} from '../money';
 import { buildNavigation, homeFor, isActive } from '../navigation';
 
 const nbsp = (s: string) => s.replace(/[\u00a0\u202f]/g, ' ');
@@ -70,7 +76,9 @@ describe('navigation', () => {
     expect(items.find((i) => i.href === '/tontines/t1/admin')?.label).toBe('Solidarité');
   });
   it('isActive exact / préfixe', () => {
-    expect(isActive('/tontines/new', { href: '/tontines', label: '', icon: 'tontines', exact: true })).toBe(false);
+    expect(
+      isActive('/tontines/new', { href: '/tontines', label: '', icon: 'tontines', exact: true }),
+    ).toBe(false);
     expect(isActive('/wallet/history', { href: '/wallet', label: '', icon: 'wallet' })).toBe(true);
   });
 });

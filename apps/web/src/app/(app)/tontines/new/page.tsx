@@ -30,7 +30,11 @@ export default function NewTontinePage() {
         description="La tontine est créée en brouillon ; vous en devenez l’administrateur."
       />
       {!eligible ? (
-        <Alert variant="warning" title="Vérification d’identité de niveau 3 requise" className="mb-6">
+        <Alert
+          variant="warning"
+          title="Vérification d’identité de niveau 3 requise"
+          className="mb-6"
+        >
           <p>
             La création d’une tontine est réservée aux membres actifs vérifiés au niveau 3. Vous
             pouvez préparer la configuration, mais l’enregistrement sera refusé tant que ce niveau

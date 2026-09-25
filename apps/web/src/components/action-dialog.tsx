@@ -67,11 +67,7 @@ export function ActionDialog({
     e.preventDefault();
     setError(null);
     if (reason && value.trim().length < minLength) {
-      setFieldError(
-        minLength > 1
-          ? `${minLength} caractères minimum`
-          : 'Le motif est obligatoire',
-      );
+      setFieldError(minLength > 1 ? `${minLength} caractères minimum` : 'Le motif est obligatoire');
       return;
     }
     setFieldError(undefined);

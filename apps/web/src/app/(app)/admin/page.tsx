@@ -27,11 +27,17 @@ export default function AdminHomePage() {
   const items = platform?.items.filter((i) => i.href !== '/admin') ?? [];
   return (
     <div>
-      <PageHeader title="Administration de la plateforme" description="Outils réservés au super-administrateur." />
+      <PageHeader
+        title="Administration de la plateforme"
+        description="Outils réservés au super-administrateur."
+      />
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((i) => (
           <li key={i.href}>
-            <Link href={i.href} className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link
+              href={i.href}
+              className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <Card className="h-full transition-colors hover:bg-muted/50">
                 <CardHeader>
                   <CardTitle>{i.label}</CardTitle>

@@ -1,7 +1,25 @@
 import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { type TransferInput, decodeCursor, encodeCursor, refundSchema, transferSchema, TRANSACTION_STATUSES, TRANSACTION_TYPES } from '@tontine/contracts';
-import { type Actor, ApiZodBody, ApiZodQuery, CurrentUser, Idempotent, PrismaService, Roles, ZodBody, ZodQuery } from '@tontine/platform';
+import {
+  type TransferInput,
+  decodeCursor,
+  encodeCursor,
+  refundSchema,
+  transferSchema,
+  TRANSACTION_STATUSES,
+  TRANSACTION_TYPES,
+} from '@tontine/contracts';
+import {
+  type Actor,
+  ApiZodBody,
+  ApiZodQuery,
+  CurrentUser,
+  Idempotent,
+  PrismaService,
+  Roles,
+  ZodBody,
+  ZodQuery,
+} from '@tontine/platform';
 import { type Request } from 'express';
 import { z } from 'zod';
 import { TransactionsService, transactionView } from './transactions.service';
@@ -26,9 +44,15 @@ export class TransactionsController {
 
   @Post('me/wallet/transfers')
   @Idempotent('wallet.transfer')
-  @ApiOperation({ summary: 'Transfert vers un autre membre (US-5.6) — Idempotency-Key obligatoire' })
+  @ApiOperation({
+    summary: 'Transfert vers un autre membre (US-5.6) — Idempotency-Key obligatoire',
+  })
   @ApiZodBody(transferSchema)
-  async transfer(@CurrentUser() actor: Actor, @ZodBody(transferSchema) body: TransferInput, @Req() req: Request) {
+  async transfer(
+    @CurrentUser() actor: Actor,
+    @ZodBody(transferSchema) body: TransferInput,
+    @Req() req: Request,
+  ) {
     const t = await this.transfers.transfer(actor, body, req.header('idempotency-key') ?? '');
     return transactionView(t);
   }
@@ -40,7 +64,14 @@ export class TransactionsController {
         ...where,
         ...(q.status ? { status: q.status } : {}),
         ...(q.type ? { type: q.type } : {}),
-        ...(cursor ? { OR: [{ createdAt: { lt: new Date(String(cursor.k)) } }, { createdAt: new Date(String(cursor.k)), id: { lt: cursor.id } }] } : {}),
+        ...(cursor
+          ? {
+              OR: [
+                { createdAt: { lt: new Date(String(cursor.k)) } },
+                { createdAt: new Date(String(cursor.k)), id: { lt: cursor.id } },
+              ],
+            }
+          : {}),
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: q.limit + 1,
@@ -50,7 +81,11 @@ export class TransactionsController {
     const last = items[items.length - 1];
     return {
       data: items.map(transactionView),
-      page: { nextCursor: hasMore && last ? encodeCursor({ k: last.createdAt.toISOString(), id: last.id }) : null, limit: q.limit },
+      page: {
+        nextCursor:
+          hasMore && last ? encodeCursor({ k: last.createdAt.toISOString(), id: last.id }) : null,
+        limit: q.limit,
+      },
     };
   }
 
@@ -80,8 +115,17 @@ export class TransactionsController {
   @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Journal d’audit immuable d’une transaction (US-6.5)' })
   async auditTrail(@Param('id', ParseUUIDPipe) id: string) {
-    const rows = await this.prisma.transactionAuditLog.findMany({ where: { transactionId: id }, orderBy: { createdAt: 'asc' } });
-    return { data: rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString(), retainUntil: r.retainUntil.toISOString() })) };
+    const rows = await this.prisma.transactionAuditLog.findMany({
+      where: { transactionId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+    return {
+      data: rows.map((r) => ({
+        ...r,
+        createdAt: r.createdAt.toISOString(),
+        retainUntil: r.retainUntil.toISOString(),
+      })),
+    };
   }
 
   @Post('admin/transactions/:id/reverse')
@@ -89,7 +133,11 @@ export class TransactionsController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Contre-passer une transaction (US-6.4)' })
   @ApiZodBody(refundSchema)
-  async reverse(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @ZodBody(refundSchema) body: { reason: string }) {
+  async reverse(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZodBody(refundSchema) body: { reason: string },
+  ) {
     return transactionView(await this.transactions.reverse(id, body.reason, actor.userId));
   }
 }

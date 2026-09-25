@@ -1,6 +1,12 @@
 import { DocumentStorage, SimulatedAmlProvider } from '@tontine/kyc';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { type TestContext, type TestUser, bearer, createTestContext, kycImage } from './support/test-app';
+import {
+  type TestContext,
+  type TestUser,
+  bearer,
+  createTestContext,
+  kycImage,
+} from './support/test-app';
 
 let ctx: TestContext;
 
@@ -21,9 +27,18 @@ async function applicant(opts: { firstName?: string; lastName?: string; country?
 
 async function submit(
   token: string,
-  opts: { documentType?: string; front?: Buffer; back?: Buffer | null; selfie?: Buffer; liveness?: string | null } = {},
+  opts: {
+    documentType?: string;
+    front?: Buffer;
+    back?: Buffer | null;
+    selfie?: Buffer;
+    liveness?: string | null;
+  } = {},
 ) {
-  const liveness = opts.liveness === undefined ? (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body.livenessToken : opts.liveness;
+  const liveness =
+    opts.liveness === undefined
+      ? (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body.livenessToken
+      : opts.liveness;
   let req = ctx.http
     .post('/api/v1/kyc/submit')
     .set(bearer(token))
@@ -41,7 +56,10 @@ function created(res: { status: number; body: unknown }) {
 }
 
 async function statusOf(user: TestUser) {
-  const r = await ctx.prisma.kycRequest.findFirstOrThrow({ where: { memberId: user.id }, orderBy: { submittedAt: 'desc' } });
+  const r = await ctx.prisma.kycRequest.findFirstOrThrow({
+    where: { memberId: user.id },
+    orderBy: { submittedAt: 'desc' },
+  });
   const m = await ctx.prisma.member.findUniqueOrThrow({ where: { id: user.id } });
   return { request: r, member: m };
 }
@@ -53,7 +71,9 @@ describe('US-3.1 — soumission de la pièce et du selfie', () => {
     const res = await submit(token, { front });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ status: 'SUBMITTED' });
-    const docs = await ctx.prisma.kycDocument.findMany({ where: { requestId: res.body.kycRequestId } });
+    const docs = await ctx.prisma.kycDocument.findMany({
+      where: { requestId: res.body.kycRequestId },
+    });
     expect(docs.map((d) => d.kind).sort()).toEqual(['ID_BACK', 'ID_FRONT', 'SELFIE']);
     const frontDoc = docs.find((d) => d.kind === 'ID_FRONT')!;
     expect(frontDoc.storageKey).not.toContain(user.id);
@@ -62,7 +82,9 @@ describe('US-3.1 — soumission de la pièce et du selfie', () => {
     expect(raw.equals(front)).toBe(false);
     expect(raw.includes(Buffer.from('IHDR'))).toBe(false);
     expect((await storage.get(frontDoc.storageKey)).equals(front)).toBe(true);
-    const r = await ctx.prisma.kycRequest.findUniqueOrThrow({ where: { id: res.body.kycRequestId } });
+    const r = await ctx.prisma.kycRequest.findUniqueOrThrow({
+      where: { id: res.body.kycRequestId },
+    });
     expect(r.retentionUntil.getTime() - r.submittedAt.getTime()).toBe(7 * 365 * 86_400_000);
     expect(await ctx.prisma.outboxEvent.count({ where: { eventType: 'kyc.submitted' } })).toBe(1);
     const me = await ctx.http.get('/api/v1/kyc/me').set(bearer(token));
@@ -98,7 +120,8 @@ describe('US-3.1 — soumission de la pièce et du selfie', () => {
     const { token } = await applicant();
     expect((await submit(token, { liveness: null })).status).toBe(400);
     expect((await submit(token, { liveness: 'inventé-123456' })).status).toBe(400);
-    const live = (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body.livenessToken;
+    const live = (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body
+      .livenessToken;
     expect((await submit(token, { liveness: live })).status).toBe(201);
   });
 
@@ -120,12 +143,23 @@ describe('US-3.2 — vérification automatique', () => {
     expect(request.status).toBe('VERIFIED');
     expect(member).toMatchObject({ status: 'ACTIVE', kycLevel: 'TIER_2', countrySource: 'KYC' });
     const checks = await ctx.prisma.kycCheck.findMany({ where: { requestId: request.id } });
-    expect(checks.map((c) => c.step).sort()).toEqual(['AML', 'DOCUMENT_VALIDATION', 'DUPLICATE', 'FACE_MATCH', 'OCR', 'QUALITY']);
+    expect(checks.map((c) => c.step).sort()).toEqual([
+      'AML',
+      'DOCUMENT_VALIDATION',
+      'DUPLICATE',
+      'FACE_MATCH',
+      'OCR',
+      'QUALITY',
+    ]);
     expect(checks.every((c) => c.outcome === 'PASS')).toBe(true);
     expect(request.documentNumberHash).toHaveLength(64);
     const total = checks.reduce((s, c) => s + (c.durationMs ?? 0), 0);
     expect(total).toBeLessThan(10_000);
-    expect(await ctx.prisma.notification.count({ where: { recipientId: user.id, templateKey: 'kyc.verified' } })).toBeGreaterThan(0);
+    expect(
+      await ctx.prisma.notification.count({
+        where: { recipientId: user.id, templateKey: 'kyc.verified' },
+      }),
+    ).toBeGreaterThan(0);
   });
 
   it('face match 72 % → REVIEW_REQUIRED (SLA 24 h ouvrées), membre KYC_IN_REVIEW', async () => {
@@ -155,7 +189,10 @@ describe('US-3.2 — vérification automatique', () => {
     const { user, token } = await applicant();
     created(await submit(token, { front: kycImage('expired') }));
     await ctx.drain();
-    expect((await statusOf(user)).request).toMatchObject({ status: 'REJECTED', rejectCategory: 'DOCUMENT_EXPIRE' });
+    expect((await statusOf(user)).request).toMatchObject({
+      status: 'REJECTED',
+      rejectCategory: 'DOCUMENT_EXPIRE',
+    });
   });
 
   it('image floue → échec qualité avec recommandation de resoumettre', async () => {
@@ -164,7 +201,9 @@ describe('US-3.2 — vérification automatique', () => {
     await ctx.drain();
     const { request } = await statusOf(user);
     expect(request).toMatchObject({ status: 'REJECTED', rejectCategory: 'DOCUMENT_ILLISIBLE' });
-    const q = await ctx.prisma.kycCheck.findFirstOrThrow({ where: { requestId: request.id, step: 'QUALITY' } });
+    const q = await ctx.prisma.kycCheck.findFirstOrThrow({
+      where: { requestId: request.id, step: 'QUALITY' },
+    });
     expect((q.details as { recommendation: string }).recommendation).toMatch(/nouvelle photo/);
   });
 
@@ -181,7 +220,9 @@ describe('US-3.2 — vérification automatique', () => {
     await ctx.drain();
     const { request } = await statusOf(user);
     expect(request.status).toBe('REVIEW_REQUIRED');
-    const face = await ctx.prisma.kycCheck.findFirstOrThrow({ where: { requestId: request.id, step: 'FACE_MATCH' } });
+    const face = await ctx.prisma.kycCheck.findFirstOrThrow({
+      where: { requestId: request.id, step: 'FACE_MATCH' },
+    });
     expect(face.attempts).toBe(3);
     expect((face.details as { escalated: boolean }).escalated).toBe(true);
   });
@@ -193,7 +234,11 @@ describe('US-3.3 — revue manuelle par un agent KYC', () => {
     created(await submit(a.token, { selfie: kycImage(selfie) }));
     await ctx.drain();
     const agent = await ctx.createUser({ role: 'KYC_AGENT' });
-    return { ...a, agentToken: await ctx.token(agent), requestId: (await statusOf(a.user)).request.id };
+    return {
+      ...a,
+      agentToken: await ctx.token(agent),
+      requestId: (await statusOf(a.user)).request.id,
+    };
   }
 
   it('file triée par ancienneté, détail complet ; interdite aux membres', async () => {
@@ -202,7 +247,9 @@ describe('US-3.3 — revue manuelle par un agent KYC', () => {
     expect(queue.status).toBe(200);
     expect(queue.body.data[0]).toMatchObject({ id: requestId, slaBreached: false });
     const detail = await ctx.http.get(`/api/v1/kyc/requests/${requestId}`).set(bearer(agentToken));
-    expect(detail.body.checks.find((c: { step: string }) => c.step === 'FACE_MATCH').score).toBe(78);
+    expect(detail.body.checks.find((c: { step: string }) => c.step === 'FACE_MATCH').score).toBe(
+      78,
+    );
     expect(detail.body.documents).toHaveLength(3);
     expect((await ctx.http.get('/api/v1/kyc/reviews').set(bearer(token))).status).toBe(403);
   });
@@ -214,15 +261,28 @@ describe('US-3.3 — revue manuelle par un agent KYC', () => {
     const img = await ctx.http.get(`/api/v1/kyc/documents/${docId}`).set(bearer(agentToken));
     expect(img.status).toBe(200);
     expect(img.headers['content-type']).toContain('image/png');
-    expect(await ctx.prisma.auditLog.count({ where: { action: 'kyc.document.read', resourceId: docId } })).toBe(1);
-    expect((await ctx.http.get(`/api/v1/kyc/documents/${docId}`).set(bearer(token))).status).toBe(403);
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: { action: 'kyc.document.read', resourceId: docId },
+      }),
+    ).toBe(1);
+    expect((await ctx.http.get(`/api/v1/kyc/documents/${docId}`).set(bearer(token))).status).toBe(
+      403,
+    );
   });
 
   it('acceptation avec annotation (≥ 10 caractères) → VERIFIED, membre ACTIVE, action journalisée', async () => {
     const { user, requestId, agentToken } = await reviewCase();
-    const short = await ctx.http.post(`/api/v1/kyc/requests/${requestId}/decision`).set(bearer(agentToken)).send({ action: 'APPROVE', annotation: 'ok' });
+    const short = await ctx.http
+      .post(`/api/v1/kyc/requests/${requestId}/decision`)
+      .set(bearer(agentToken))
+      .send({ action: 'APPROVE', annotation: 'ok' });
     expect(short.status).toBe(400);
-    await ctx.http.post(`/api/v1/kyc/requests/${requestId}/decision`).set(bearer(agentToken)).send({ action: 'APPROVE', annotation: 'Visage conforme après zoom' }).expect(200);
+    await ctx.http
+      .post(`/api/v1/kyc/requests/${requestId}/decision`)
+      .set(bearer(agentToken))
+      .send({ action: 'APPROVE', annotation: 'Visage conforme après zoom' })
+      .expect(200);
     await ctx.drain();
     expect((await statusOf(user)).member).toMatchObject({ status: 'ACTIVE', kycLevel: 'TIER_2' });
     expect(await ctx.prisma.kycAgentAction.count({ where: { requestId } })).toBe(1);
@@ -230,12 +290,23 @@ describe('US-3.3 — revue manuelle par un agent KYC', () => {
 
   it('rejet avec catégorie + commentaire obligatoire ; demande de compléments', async () => {
     const { user, requestId, agentToken } = await reviewCase();
-    const noComment = await ctx.http.post(`/api/v1/kyc/requests/${requestId}/decision`).set(bearer(agentToken)).send({ action: 'REJECT', category: 'DOCUMENT_FALSIFIE', comment: '' });
+    const noComment = await ctx.http
+      .post(`/api/v1/kyc/requests/${requestId}/decision`)
+      .set(bearer(agentToken))
+      .send({ action: 'REJECT', category: 'DOCUMENT_FALSIFIE', comment: '' });
     expect(noComment.status).toBe(400);
-    await ctx.http.post(`/api/v1/kyc/requests/${requestId}/decision`).set(bearer(agentToken)).send({ action: 'REQUEST_SUPPLEMENT', comment: 'Merci de fournir un verso lisible' }).expect(200);
+    await ctx.http
+      .post(`/api/v1/kyc/requests/${requestId}/decision`)
+      .set(bearer(agentToken))
+      .send({ action: 'REQUEST_SUPPLEMENT', comment: 'Merci de fournir un verso lisible' })
+      .expect(200);
     await ctx.drain();
     expect((await statusOf(user)).request.status).toBe('SUPPLEMENT_REQUESTED');
-    expect(await ctx.prisma.notification.count({ where: { recipientId: user.id, templateKey: 'kyc.supplement_requested' } })).toBeGreaterThan(0);
+    expect(
+      await ctx.prisma.notification.count({
+        where: { recipientId: user.id, templateKey: 'kyc.supplement_requested' },
+      }),
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -247,16 +318,24 @@ describe('US-3.4 — doublons biométriques', () => {
     const second = await applicant();
     created(await submit(second.token, { selfie: kycImage('face=jumeau') }));
     await ctx.drain();
-    const alert = await ctx.prisma.kycDuplicateAlert.findFirstOrThrow({ where: { memberId: second.user.id } });
+    const alert = await ctx.prisma.kycDuplicateAlert.findFirstOrThrow({
+      where: { memberId: second.user.id },
+    });
     expect(alert).toMatchObject({ duplicateOfMemberId: first.user.id, status: 'OPEN' });
     expect(alert.similarityScore).toBeGreaterThan(90);
     expect((await statusOf(second.user)).member.status).toBe('PENDING_REVIEW');
-    expect(await ctx.prisma.outboxEvent.count({ where: { eventType: 'kyc.duplicate.detected' } })).toBe(1);
+    expect(
+      await ctx.prisma.outboxEvent.count({ where: { eventType: 'kyc.duplicate.detected' } }),
+    ).toBe(1);
     const agent = await ctx.createUser({ role: 'KYC_AGENT' });
     const agentToken = await ctx.token(agent);
     const list = await ctx.http.get('/api/v1/kyc/duplicates').set(bearer(agentToken));
     expect(list.body.data[0].links.newFile).toContain(alert.requestId);
-    await ctx.http.post(`/api/v1/kyc/duplicates/${alert.id}/resolve`).set(bearer(agentToken)).send({ resolution: 'DISMISSED', comment: 'Jumeaux, pièces différentes' }).expect(204);
+    await ctx.http
+      .post(`/api/v1/kyc/duplicates/${alert.id}/resolve`)
+      .set(bearer(agentToken))
+      .send({ resolution: 'DISMISSED', comment: 'Jumeaux, pièces différentes' })
+      .expect(204);
     await ctx.drain();
     expect((await statusOf(second.user)).member.status).toBe('KYC_IN_REVIEW');
   });
@@ -264,25 +343,49 @@ describe('US-3.4 — doublons biométriques', () => {
 
 describe('US-3.5 — screening AML / sanctions', () => {
   it('correspondance → REVIEW_REQUIRED (jamais de rejet automatique) ; faux positif → liste blanche', async () => {
+    const agent = await ctx.createUser({ role: 'KYC_AGENT' });
     const { user } = await applicant({ firstName: 'Viktor', lastName: 'Contrebandier' });
     const token = await ctx.token(user);
     created(await submit(token));
+    await ctx.drain();
     await ctx.drain();
     const { request } = await statusOf(user);
     expect(request.status).toBe('REVIEW_REQUIRED');
     const match = await ctx.prisma.kycAmlMatch.findFirstOrThrow({ where: { memberId: user.id } });
     expect(match).toMatchObject({ listName: 'OFAC', status: 'OPEN', source: 'SUBMISSION' });
-    const agent = await ctx.createUser({ role: 'KYC_AGENT' });
-    await ctx.http.post(`/api/v1/kyc/aml-matches/${match.id}/resolve`).set(bearer(await ctx.token(agent))).send({ resolution: 'FALSE_POSITIVE', comment: 'Homonyme, date de naissance différente' }).expect(204);
-    expect(await ctx.prisma.kycAmlWhitelist.count({ where: { memberId: user.id, entryId: match.entryId } })).toBe(1);
+    // alerte à l'équipe conformité, sans nom ni pièce d'identité
+    const alert = await ctx.prisma.notification.findFirstOrThrow({
+      where: { recipientId: agent.id, templateKey: 'kyc.aml_alert' },
+    });
+    expect(alert.body).toContain('OFAC');
+    expect(alert.body).not.toContain('Contrebandier');
+    await ctx.http
+      .post(`/api/v1/kyc/aml-matches/${match.id}/resolve`)
+      .set(bearer(await ctx.token(agent)))
+      .send({ resolution: 'FALSE_POSITIVE', comment: 'Homonyme, date de naissance différente' })
+      .expect(204);
+    expect(
+      await ctx.prisma.kycAmlWhitelist.count({
+        where: { memberId: user.id, entryId: match.entryId },
+      }),
+    ).toBe(1);
   });
 
   it('batch quotidien : une nouvelle entrée de liste visant un membre actif crée une alerte', async () => {
     const m = await ctx.createUser({ firstName: 'Jules', lastName: 'Nouvelentree' });
-    ctx.app.get(SimulatedAmlProvider).addEntry({ listName: 'UE', entryId: 'EU-TEST-NEW', entryName: 'Jules Nouvelentree', entryCountry: 'XX', entryReason: 'Ajout récent (fictif)', entryAddedAt: '2026-09-01' });
+    ctx.app.get(SimulatedAmlProvider).addEntry({
+      listName: 'UE',
+      entryId: 'EU-TEST-NEW',
+      entryName: 'Jules Nouvelentree',
+      entryCountry: 'XX',
+      entryReason: 'Ajout récent (fictif)',
+      entryAddedAt: '2026-09-01',
+    });
     const run = await ctx.jobs.run('kyc.aml-batch', 'test');
     expect(run.summary).toMatchObject({ newMatches: 1 });
-    expect(await ctx.prisma.kycAmlMatch.count({ where: { memberId: m.id, source: 'BATCH' } })).toBe(1);
+    expect(await ctx.prisma.kycAmlMatch.count({ where: { memberId: m.id, source: 'BATCH' } })).toBe(
+      1,
+    );
     // Rejouer le batch ne duplique pas l'alerte
     await ctx.jobs.run('kyc.aml-batch', 'test');
     expect(await ctx.prisma.kycAmlMatch.count({ where: { memberId: m.id } })).toBe(1);
@@ -298,11 +401,19 @@ describe('US-3.6 — expiration et renouvellement', () => {
     ctx.clock.advanceDays(12); // J-28
     expect((await ctx.jobs.run('kyc.expiry', 'test')).summary).toMatchObject({ warned: 1 });
     await ctx.drain();
-    expect(await ctx.prisma.notification.count({ where: { recipientId: user.id, templateKey: 'kyc.expiring_30' } })).toBeGreaterThan(0);
+    expect(
+      await ctx.prisma.notification.count({
+        where: { recipientId: user.id, templateKey: 'kyc.expiring_30' },
+      }),
+    ).toBeGreaterThan(0);
     ctx.clock.advanceDays(22); // J-6
     await ctx.jobs.run('kyc.expiry', 'test');
     await ctx.drain();
-    expect(await ctx.prisma.notification.count({ where: { recipientId: user.id, templateKey: 'kyc.expiring_7', channel: 'SMS' } })).toBe(1);
+    expect(
+      await ctx.prisma.notification.count({
+        where: { recipientId: user.id, templateKey: 'kyc.expiring_7', channel: 'SMS' },
+      }),
+    ).toBe(1);
     ctx.clock.advanceDays(6); // J-0
     expect((await ctx.jobs.run('kyc.expiry', 'test')).summary).toMatchObject({ expired: 1 });
     await ctx.drain();
@@ -325,7 +436,8 @@ describe('A-03 — niveau 3', () => {
     const { user, token } = await applicant();
     created(await submit(token));
     await ctx.drain();
-    const live = (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body.livenessToken;
+    const live = (await ctx.http.post('/api/v1/kyc/liveness').set(bearer(token))).body
+      .livenessToken;
     const res = await ctx.http
       .post('/api/v1/kyc/tier3')
       .set(bearer(token))
@@ -336,11 +448,19 @@ describe('A-03 — niveau 3', () => {
       .attach('selfie', kycImage(), 'selfie.png');
     expect(res.status).toBe(201);
     await ctx.drain();
-    const r = await ctx.prisma.kycRequest.findUniqueOrThrow({ where: { id: res.body.kycRequestId } });
+    const r = await ctx.prisma.kycRequest.findUniqueOrThrow({
+      where: { id: res.body.kycRequestId },
+    });
     expect(r.status).toBe('REVIEW_REQUIRED');
     const agent = await ctx.createUser({ role: 'KYC_AGENT' });
-    await ctx.http.post(`/api/v1/kyc/requests/${r.id}/decision`).set(bearer(await ctx.token(agent))).send({ action: 'APPROVE', annotation: 'Justificatif de domicile conforme' }).expect(200);
+    await ctx.http
+      .post(`/api/v1/kyc/requests/${r.id}/decision`)
+      .set(bearer(await ctx.token(agent)))
+      .send({ action: 'APPROVE', annotation: 'Justificatif de domicile conforme' })
+      .expect(200);
     await ctx.drain();
-    expect((await ctx.prisma.member.findUniqueOrThrow({ where: { id: user.id } })).kycLevel).toBe('TIER_3');
+    expect((await ctx.prisma.member.findUniqueOrThrow({ where: { id: user.id } })).kycLevel).toBe(
+      'TIER_3',
+    );
   });
 });

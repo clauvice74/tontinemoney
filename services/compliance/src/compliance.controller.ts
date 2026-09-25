@@ -7,12 +7,23 @@ import {
   complianceRuleUpdateSchema,
   complianceValidateSchema,
 } from '@tontine/contracts';
-import { type Actor, ApiZodBody, ApiZodQuery, CurrentUser, RequirePermission, ZodBody, ZodQuery } from '@tontine/platform';
+import {
+  type Actor,
+  ApiZodBody,
+  ApiZodQuery,
+  CurrentUser,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '@tontine/platform';
 import { z } from 'zod';
 import { ComplianceService } from './compliance.service';
 
 const listQuery = z.object({ country: z.string().length(2).toUpperCase().optional() });
-const violationsQuery = z.object({ memberId: z.string().uuid().optional(), limit: z.coerce.number().int().min(1).max(500).default(100) });
+const violationsQuery = z.object({
+  memberId: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+});
 
 @ApiTags('Conformité')
 @ApiBearerAuth()
@@ -24,9 +35,13 @@ export class ComplianceController {
   @Post('compliance/validate')
   @HttpCode(200)
   @RequirePermission('compliance.validate')
-  @ApiOperation({ summary: 'Valider une opération (US-9.2) — {compliant, appliedRules, violations}' })
+  @ApiOperation({
+    summary: 'Valider une opération (US-9.2) — {compliant, appliedRules, violations}',
+  })
   @ApiZodBody(complianceValidateSchema)
-  async validate(@ZodBody(complianceValidateSchema) body: z.infer<typeof complianceValidateSchema>) {
+  async validate(
+    @ZodBody(complianceValidateSchema) body: z.infer<typeof complianceValidateSchema>,
+  ) {
     const r = await this.compliance.validate({
       operationType: body.operationType as OperationType,
       memberId: body.memberId,
@@ -34,7 +49,12 @@ export class ComplianceController {
       currency: body.currency.toUpperCase(),
       context: body.context,
     });
-    return { compliant: r.compliant, applied_rules: r.appliedRules, appliedRules: r.appliedRules, violations: r.violations };
+    return {
+      compliant: r.compliant,
+      applied_rules: r.appliedRules,
+      appliedRules: r.appliedRules,
+      violations: r.violations,
+    };
   }
 
   @Get('admin/compliance/rules')
@@ -49,7 +69,10 @@ export class ComplianceController {
   @RequirePermission('compliance.rules.manage')
   @ApiOperation({ summary: 'Créer une règle (US-9.3)' })
   @ApiZodBody(complianceRuleSchema)
-  async create(@CurrentUser() actor: Actor, @ZodBody(complianceRuleSchema) body: ComplianceRuleInput) {
+  async create(
+    @CurrentUser() actor: Actor,
+    @ZodBody(complianceRuleSchema) body: ComplianceRuleInput,
+  ) {
     return this.compliance.createRule(actor, body);
   }
 
@@ -57,7 +80,11 @@ export class ComplianceController {
   @RequirePermission('compliance.rules.manage')
   @ApiOperation({ summary: 'Modifier une règle — effet immédiat, sans redéploiement (US-9.3)' })
   @ApiZodBody(complianceRuleUpdateSchema)
-  async update(@CurrentUser() actor: Actor, @Param('code') code: string, @ZodBody(complianceRuleUpdateSchema) body: z.infer<typeof complianceRuleUpdateSchema>) {
+  async update(
+    @CurrentUser() actor: Actor,
+    @Param('code') code: string,
+    @ZodBody(complianceRuleUpdateSchema) body: z.infer<typeof complianceRuleUpdateSchema>,
+  ) {
     return this.compliance.updateRule(actor, code, body as never);
   }
 

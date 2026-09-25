@@ -21,7 +21,10 @@ export default function AdminTontinesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tontines" description="Mettre en pause ou reprendre une tontine (motif obligatoire)." />
+      <PageHeader
+        title="Tontines"
+        description="Mettre en pause ou reprendre une tontine (motif obligatoire)."
+      />
       <Card>
         <CardHeader>
           <CardTitle>Tontines visibles</CardTitle>
@@ -48,7 +51,10 @@ export default function AdminTontinesPage() {
                     ),
                   },
                   { header: 'Membres', cell: (t) => `${t.memberCount}/${t.maxMembers}` },
-                  { header: 'Statut', cell: (t) => <StatusBadge status={t.status} labels={TONTINE_STATUS_LABELS} /> },
+                  {
+                    header: 'Statut',
+                    cell: (t) => <StatusBadge status={t.status} labels={TONTINE_STATUS_LABELS} />,
+                  },
                   {
                     header: 'Actions',
                     srOnlyHeader: true,

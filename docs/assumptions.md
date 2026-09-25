@@ -129,3 +129,19 @@ Toutes les échéances sont calculées en date civile dans le fuseau du **créat
 ## A-28 — Service Rapports / CQRS
 
 En monolithe modulaire, les rapports lisent des vues de lecture dédiées (requêtes en lecture seule sur les tables du domaine) exposées par chaque module. Les vues matérialisées alimentées par événements sont une évolution documentée.
+
+## A-29 — Expiration d'une pièce d'identité (US-3.6)
+
+À J-0 les opérations financières sont suspendues (`kyc.operations.suspended`) mais le niveau `TIER_2` est conservé 30 jours pour permettre le renouvellement sans perdre l'historique ; à J+30 sans renouvellement, le niveau redescend à `TIER_1`.
+
+## A-30 — Devise d'une tontine (US-4.1)
+
+La devise est pré-remplie selon le pays du créateur et reste modifiable dans le formulaire, mais comme l'admin est aussi participant (A-04) et qu'aucune conversion n'existe (A-11), elle doit être égale à la devise de son portefeuille ; sinon `CURRENCY_MISMATCH`. La collation par tour doit rester inférieure au pot minimal (3 contributions).
+
+## A-31 — Invitations (US-4.2)
+
+Toute invitation porte un code secret (seul son SHA-256 est stocké). Un seul lien partageable actif par tontine (un nouveau lien révoque le précédent) ; il est multi-usage jusqu'à expiration (7 jours) ou jusqu'à ce que la capacité soit atteinte. Une invitation email/téléphone n'est acceptable que par la personne ciblée. Si l'invité n'est pas éligible, l'acceptation est refusée (422 avec motifs) et l'invitation reste en attente, pour qu'il puisse réessayer après avoir complété son KYC. L'aperçu d'un lien (`GET /invitations/code/{code}`) est public et n'expose que les informations déjà contenues dans l'invitation.
+
+## A-32 — Délégation de création (A-04, précision)
+
+Le super-admin ne crée pas la tontine lui-même (les paramètres financiers appartiennent à l'admin) : il crée le compte avec le nom de tontine délégué. L'admin crée ensuite UNE tontine sans l'exigence TIER_3 ; la délégation est consommée atomiquement avec la création (port `ADMIN_DELEGATION` implémenté par Auth).

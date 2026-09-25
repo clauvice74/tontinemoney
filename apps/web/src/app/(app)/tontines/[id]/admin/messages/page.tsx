@@ -73,7 +73,10 @@ export default function TontineMessagesPage() {
     const filter = { ...values.filter };
     if (!filter.memberStatuses?.length) delete filter.memberStatuses;
     try {
-      const res = await api.post<{ recipientCount?: number }>(`/tontines/${id}/messages`, { ...values, filter });
+      const res = await api.post<{ recipientCount?: number }>(`/tontines/${id}/messages`, {
+        ...values,
+        filter,
+      });
       toast.success(
         'Message envoyé',
         res?.recipientCount !== undefined ? `${res.recipientCount} destinataire(s)` : undefined,
@@ -86,7 +89,10 @@ export default function TontineMessagesPage() {
 
   return (
     <div className="space-y-6">
-      <Section title="Messagerie ciblée" description="Variables disponibles : {prenom}, {nom}, {tontine}.">
+      <Section
+        title="Messagerie ciblée"
+        description="Variables disponibles : {prenom}, {nom}, {tontine}."
+      >
         <Card>
           <CardContent className="pt-5">
             <form onSubmit={onSubmit} className="space-y-4" noValidate>
@@ -120,7 +126,10 @@ export default function TontineMessagesPage() {
                 control={form.control}
                 name="filter.memberStatuses"
                 render={({ field }) => (
-                  <Fieldset legend="Destinataires : statut du membre" description="Aucune case cochée = tous les membres.">
+                  <Fieldset
+                    legend="Destinataires : statut du membre"
+                    description="Aucune case cochée = tous les membres."
+                  >
                     <div className="grid gap-2 sm:grid-cols-3">
                       {MEMBER_STATUSES.map((s) => {
                         const value = field.value ?? [];
@@ -129,7 +138,9 @@ export default function TontineMessagesPage() {
                             <Checkbox
                               checked={value.includes(s)}
                               onChange={(e) =>
-                                field.onChange(e.target.checked ? [...value, s] : value.filter((x) => x !== s))
+                                field.onChange(
+                                  e.target.checked ? [...value, s] : value.filter((x) => x !== s),
+                                )
                               }
                             />
                             {MEMBER_STATUS_LABELS[s]}
@@ -140,8 +151,14 @@ export default function TontineMessagesPage() {
                   </Fieldset>
                 )}
               />
-              <FormField id="contributionStatus" label="Statut de cotisation (cycle en cours)" className="max-w-xs">
-                <Select {...form.register('filter.contributionStatus', { setValueAs: emptyToUndefined })}>
+              <FormField
+                id="contributionStatus"
+                label="Statut de cotisation (cycle en cours)"
+                className="max-w-xs"
+              >
+                <Select
+                  {...form.register('filter.contributionStatus', { setValueAs: emptyToUndefined })}
+                >
                   <option value="">Tous</option>
                   <option value="LATE">En retard</option>
                   <option value="PENDING">À payer</option>
@@ -174,9 +191,13 @@ export default function TontineMessagesPage() {
                       <p className="font-medium">{m.subject}</p>
                       <Badge variant="outline">{label(MESSAGE_TEMPLATE_LABELS, m.template)}</Badge>
                       {m.recipientCount !== undefined ? (
-                        <span className="text-xs text-muted-foreground">{m.recipientCount} destinataire(s)</span>
+                        <span className="text-xs text-muted-foreground">
+                          {m.recipientCount} destinataire(s)
+                        </span>
                       ) : null}
-                      <span className="ml-auto text-xs text-muted-foreground">{formatDateTime(m.createdAt)}</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {formatDateTime(m.createdAt)}
+                      </span>
                     </div>
                     <p className="line-clamp-2 text-sm text-muted-foreground">{m.body}</p>
                   </li>

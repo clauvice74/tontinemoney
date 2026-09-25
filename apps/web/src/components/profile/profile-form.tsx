@@ -2,7 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { COUNTRIES, GENDERS, type UpdateProfileInput, updateProfileSchema } from '@tontine/contracts';
+import {
+  COUNTRIES,
+  GENDERS,
+  type UpdateProfileInput,
+  updateProfileSchema,
+} from '@tontine/contracts';
 import { Alert, Button, FormField, Input, Select, toast } from '@tontine/ui';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';

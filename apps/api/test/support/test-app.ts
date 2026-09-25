@@ -225,8 +225,17 @@ export class TestContext {
   async fund(memberId: string, amountMinor: bigint): Promise<void> {
     const w = await this.prisma.wallet.findUniqueOrThrow({ where: { memberId } });
     const clearing =
-      (await this.prisma.wallet.findFirst({ where: { systemCode: 'PSP_CLEARING', currency: w.currency } })) ??
-      (await this.prisma.wallet.create({ data: { ownerType: 'SYSTEM', systemCode: 'PSP_CLEARING', currency: w.currency, allowNegative: true } }));
+      (await this.prisma.wallet.findFirst({
+        where: { systemCode: 'PSP_CLEARING', currency: w.currency },
+      })) ??
+      (await this.prisma.wallet.create({
+        data: {
+          ownerType: 'SYSTEM',
+          systemCode: 'PSP_CLEARING',
+          currency: w.currency,
+          allowNegative: true,
+        },
+      }));
     await this.app.get(TransactionsService).execute({
       idempotencyKey: `test-fund-${randomUUID()}`,
       type: 'DEPOSIT',

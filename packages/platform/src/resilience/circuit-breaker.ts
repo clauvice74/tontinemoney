@@ -36,7 +36,8 @@ export class CircuitBreaker {
   }
 
   get currentState(): CircuitState {
-    if (this.state === 'OPEN' && this.now() - this.openedAt >= this.cooldownMs) this.state = 'HALF_OPEN';
+    if (this.state === 'OPEN' && this.now() - this.openedAt >= this.cooldownMs)
+      this.state = 'HALF_OPEN';
     return this.state;
   }
 
@@ -71,7 +72,10 @@ export interface RetryOptions {
   sleep?: (ms: number) => Promise<void>;
 }
 
-export async function withRetry<T>(fn: (attempt: number) => Promise<T>, options: RetryOptions = {}): Promise<T> {
+export async function withRetry<T>(
+  fn: (attempt: number) => Promise<T>,
+  options: RetryOptions = {},
+): Promise<T> {
   const attempts = options.attempts ?? 3;
   const delays = options.delaysMs ?? [1000, 4000, 16000];
   const sleep = options.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));

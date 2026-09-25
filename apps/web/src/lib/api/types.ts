@@ -57,7 +57,12 @@ export interface Me {
   email: string | null;
   phone: string | null;
   language: string;
-  mfa: { enabled: boolean; type: 'TOTP' | 'SMS' | null; required: boolean; usedThisSession: boolean };
+  mfa: {
+    enabled: boolean;
+    type: 'TOTP' | 'SMS' | null;
+    required: boolean;
+    usedThisSession: boolean;
+  };
   tontineIds: string[];
   delegatedTontine: string | null;
 }
@@ -365,7 +370,13 @@ export interface InvitationView {
   email?: string | null;
   phone?: string | null;
   createdAt?: string;
-  tontine?: { id: string; name: string; contribution?: MoneyView; frequency?: string; startDate?: string };
+  tontine?: {
+    id: string;
+    name: string;
+    contribution?: MoneyView;
+    frequency?: string;
+    startDate?: string;
+  };
 }
 
 export interface ContributionView {
@@ -406,7 +417,12 @@ export interface AdminTontineDashboard {
   } | null;
   cycles: CycleView[];
   penaltiesCollected: MoneyView;
-  lateMembers: Array<{ memberId: string; fullName?: string; firstName?: string; daysLate?: number }>;
+  lateMembers: Array<{
+    memberId: string;
+    fullName?: string;
+    firstName?: string;
+    daysLate?: number;
+  }>;
 }
 
 export interface MemberTontineDashboard {

@@ -13,7 +13,10 @@ export default function AdminMembersPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
   return (
     <div>
-      <PageHeader title="Membres" description="Suspendre ou réactiver un membre (motif obligatoire, journalisé)." />
+      <PageHeader
+        title="Membres"
+        description="Suspendre ou réactiver un membre (motif obligatoire, journalisé)."
+      />
       <UsersList
         fixedRole="MEMBER"
         actions={(u) =>

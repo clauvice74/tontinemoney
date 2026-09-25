@@ -17,6 +17,10 @@ export class ComplianceConsumers {
   @OnEvent('member.updated', { consumer: 'compliance.country-change' })
   async onMemberUpdated(e: EventEnvelope<'member.updated'>): Promise<void> {
     if (!e.payload.changedFields.includes('country')) return;
-    await this.compliance.onCountryChanged(e.payload.memberId, e.payload.oldValues['country'], e.payload.newValues['country']);
+    await this.compliance.onCountryChanged(
+      e.payload.memberId,
+      e.payload.oldValues['country'],
+      e.payload.newValues['country'],
+    );
   }
 }

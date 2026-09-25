@@ -21,10 +21,13 @@ describe('withRetry', () => {
     const slept: number[] = [];
     let calls = 0;
     await expect(
-      withRetry(async () => {
-        calls++;
-        throw new Error('KO');
-      }, { sleep: async (ms) => void slept.push(ms) }),
+      withRetry(
+        async () => {
+          calls++;
+          throw new Error('KO');
+        },
+        { sleep: async (ms) => void slept.push(ms) },
+      ),
     ).rejects.toThrow('KO');
     expect(calls).toBe(3);
     expect(slept).toEqual([1000, 4000]);
@@ -32,9 +35,21 @@ describe('withRetry', () => {
 
   it('réussit dès qu’un essai passe ; n’insiste pas sur une erreur non rejouable', async () => {
     let n = 0;
-    await expect(withRetry(async () => (++n < 2 ? Promise.reject(new Error('x')) : 'ok'), { sleep: async () => undefined })).resolves.toBe('ok');
+    await expect(
+      withRetry(async () => (++n < 2 ? Promise.reject(new Error('x')) : 'ok'), {
+        sleep: async () => undefined,
+      }),
+    ).resolves.toBe('ok');
     let m = 0;
-    await expect(withRetry(async () => { m++; throw new Error('fatal'); }, { retryable: () => false, sleep: async () => undefined })).rejects.toThrow('fatal');
+    await expect(
+      withRetry(
+        async () => {
+          m++;
+          throw new Error('fatal');
+        },
+        { retryable: () => false, sleep: async () => undefined },
+      ),
+    ).rejects.toThrow('fatal');
     expect(m).toBe(1);
   });
 });

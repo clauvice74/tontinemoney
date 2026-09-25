@@ -2,12 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
-import type {
-  ListResponse,
-  NotificationView,
-  TontineView,
-  WalletView,
-} from './api/types';
+import type { ListResponse, NotificationView, TontineView, WalletView } from './api/types';
 import { useAuthStore } from './auth/store';
 
 /** Clés de cache partagées. */

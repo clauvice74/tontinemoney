@@ -45,7 +45,10 @@ export default function TontineReportsPage() {
           to: kind === 'CONTRIBUTIONS' || kind === 'PENALTIES' ? to : undefined,
         },
       });
-      saveBlob(blob, `rapport-${kind.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.${format}`);
+      saveBlob(
+        blob,
+        `rapport-${kind.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.${format}`,
+      );
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) setUnavailable(true);
       else setError(formatError(e));
@@ -72,12 +75,23 @@ export default function TontineReportsPage() {
             </FormField>
             {kind === 'CYCLE' ? (
               <FormField id="report-cycle" label="Numéro de cycle">
-                <Input type="number" min={1} value={cycleNumber} onChange={(e) => setCycleNumber(e.target.value)} />
+                <Input
+                  type="number"
+                  min={1}
+                  value={cycleNumber}
+                  onChange={(e) => setCycleNumber(e.target.value)}
+                />
               </FormField>
             ) : null}
             {kind === 'MONTHLY' || kind === 'ANNUAL' ? (
               <FormField id="report-year" label="Année">
-                <Input type="number" min={2000} max={2100} value={year} onChange={(e) => setYear(e.target.value)} />
+                <Input
+                  type="number"
+                  min={2000}
+                  max={2100}
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                />
               </FormField>
             ) : null}
             {kind === 'MONTHLY' ? (
@@ -85,7 +99,9 @@ export default function TontineReportsPage() {
                 <Select value={month} onChange={(e) => setMonth(e.target.value)}>
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
-                      {new Intl.DateTimeFormat('fr-FR', { month: 'long' }).format(new Date(2026, i, 1))}
+                      {new Intl.DateTimeFormat('fr-FR', { month: 'long' }).format(
+                        new Date(2026, i, 1),
+                      )}
                     </option>
                   ))}
                 </Select>
@@ -103,7 +119,11 @@ export default function TontineReportsPage() {
             ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => void download('pdf')} loading={pending === 'pdf'} disabled={pending !== null}>
+            <Button
+              onClick={() => void download('pdf')}
+              loading={pending === 'pdf'}
+              disabled={pending !== null}
+            >
               <FileText aria-hidden="true" /> Télécharger en PDF
             </Button>
             <Button

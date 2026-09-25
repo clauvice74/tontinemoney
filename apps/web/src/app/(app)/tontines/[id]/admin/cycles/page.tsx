@@ -28,7 +28,12 @@ import { Money } from '@/components/money';
 import { Section } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
 import { api } from '@/lib/api';
-import type { CycleView, ListResponse, ParticipantView, PriorityRequestView } from '@/lib/api/types';
+import type {
+  CycleView,
+  ListResponse,
+  ParticipantView,
+  PriorityRequestView,
+} from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
 import { formatError } from '@/lib/forms';
 import { CONTRIBUTION_STATUS_LABELS } from '@/lib/labels';
@@ -47,11 +52,15 @@ function DesignateBeneficiary({ tontineId, cycleId }: { tontineId: string; cycle
   const [pending, setPending] = useState(false);
   const requests = useQuery({
     queryKey: ['tontines', tontineId, 'priority-requests'],
-    queryFn: () => api.get<ListResponse<PriorityRequestView>>(`/tontines/${tontineId}/priority-requests`),
+    queryFn: () =>
+      api.get<ListResponse<PriorityRequestView>>(`/tontines/${tontineId}/priority-requests`),
   });
   const participants = useQuery({
     queryKey: ['tontines', tontineId, 'participants'],
-    queryFn: () => api.get<ListResponse<ParticipantView> | ParticipantView[]>(`/tontines/${tontineId}/participants`),
+    queryFn: () =>
+      api.get<ListResponse<ParticipantView> | ParticipantView[]>(
+        `/tontines/${tontineId}/participants`,
+      ),
     select: (d) => (Array.isArray(d) ? d : d.data),
   });
 
@@ -103,7 +112,15 @@ function DesignateBeneficiary({ tontineId, cycleId }: { tontineId: string; cycle
   );
 }
 
-function CycleDetail({ tontineId, cycleId, drawMode }: { tontineId: string; cycleId: string; drawMode?: string }) {
+function CycleDetail({
+  tontineId,
+  cycleId,
+  drawMode,
+}: {
+  tontineId: string;
+  cycleId: string;
+  drawMode?: string;
+}) {
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ['tontines', tontineId, 'cycles', cycleId],
@@ -113,14 +130,17 @@ function CycleDetail({ tontineId, cycleId, drawMode }: { tontineId: string; cycl
     <QueryState query={query}>
       {(c) => {
         const contributions = c.contributions ?? [];
-        const paid = contributions.filter((x) => x.status === 'PAID' || x.status === 'PAID_LATE').length;
+        const paid = contributions.filter(
+          (x) => x.status === 'PAID' || x.status === 'PAID_LATE',
+        ).length;
         return (
           <Card>
             <CardHeader className="flex-row flex-wrap items-start justify-between gap-2">
               <div>
                 <CardTitle>Cycle {c.number}</CardTitle>
                 <CardDescription>
-                  Échéance {formatDate(c.dueDate)} · {paid}/{contributions.length} payées · bénéficiaire :{' '}
+                  Échéance {formatDate(c.dueDate)} · {paid}/{contributions.length} payées ·
+                  bénéficiaire :{' '}
                   {c.beneficiary?.fullName ?? c.beneficiary?.firstName ?? 'à déterminer'}
                 </CardDescription>
               </div>
@@ -135,8 +155,12 @@ function CycleDetail({ tontineId, cycleId, drawMode }: { tontineId: string; cycl
                   confirmLabel="Verser"
                   successMessage="Versement partiel effectué"
                   onConfirm={async (reason) => {
-                    await api.post(`/tontines/${tontineId}/cycles/${cycleId}/force-payout`, { reason });
-                    await queryClient.invalidateQueries({ queryKey: ['tontines', tontineId, 'cycles'] });
+                    await api.post(`/tontines/${tontineId}/cycles/${cycleId}/force-payout`, {
+                      reason,
+                    });
+                    await queryClient.invalidateQueries({
+                      queryKey: ['tontines', tontineId, 'cycles'],
+                    });
                   }}
                 />
               ) : null}
@@ -193,7 +217,10 @@ export default function CyclesPage() {
   });
 
   return (
-    <Section title="Cycles & cotisations" description="Qui a payé, retards, pénalités et versements.">
+    <Section
+      title="Cycles & cotisations"
+      description="Qui a payé, retards, pénalités et versements."
+    >
       <QueryState
         query={cycles}
         comingSoonTitle="Suivi des cycles bientôt disponible"
@@ -205,7 +232,8 @@ export default function CyclesPage() {
         }
       >
         {(d) => {
-          const current = selected ?? d.data.find((c) => c.status === 'IN_PROGRESS')?.id ?? d.data[0]?.id ?? null;
+          const current =
+            selected ?? d.data.find((c) => c.status === 'IN_PROGRESS')?.id ?? d.data[0]?.id ?? null;
           return (
             <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
               <nav aria-label="Cycles">
@@ -223,7 +251,9 @@ export default function CyclesPage() {
                       >
                         <span>
                           Cycle {c.number}
-                          <span className="block text-xs text-muted-foreground">{formatDate(c.dueDate)}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            {formatDate(c.dueDate)}
+                          </span>
                         </span>
                         <StatusBadge status={c.status} labels={CYCLE_LABELS} />
                       </button>
@@ -231,7 +261,9 @@ export default function CyclesPage() {
                   ))}
                 </ul>
               </nav>
-              {current ? <CycleDetail tontineId={id} cycleId={current} drawMode={tontine.data?.drawMode} /> : null}
+              {current ? (
+                <CycleDetail tontineId={id} cycleId={current} drawMode={tontine.data?.drawMode} />
+              ) : null}
             </div>
           );
         }}

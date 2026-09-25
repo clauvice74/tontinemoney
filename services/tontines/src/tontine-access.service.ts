@@ -72,6 +72,22 @@ export class TontineAccessService implements TontineAccessPort {
   }
 
   async resolveInvitationCode(code: string): Promise<string | null> {
+    const inv = await this.prisma.tontineInvitation.findUnique({
+      where: { codeHash: sha256Hex(code.trim()) },
+      select: {
+        tontineId: true,
+        status: true,
+        expiresAt: true,
+        tontine: { select: { status: true } },
+      },
+    });
+    if (inv) {
+      const open =
+        inv.status === 'PENDING' &&
+        inv.expiresAt > this.clock.now() &&
+        ['DRAFT', 'READY'].includes(inv.tontine.status);
+      return open ? inv.tontineId : null;
+    }
     const t = await this.prisma.tontine.findFirst({
       where: {
         invitationLinkHash: sha256Hex(code.trim()),

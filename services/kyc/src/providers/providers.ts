@@ -70,7 +70,11 @@ export abstract class DocumentQualityProvider {
   abstract check(image: Buffer, info: ImageInfo): Promise<CheckResult>;
 }
 export abstract class OcrProvider {
-  abstract extract(front: Buffer, back: Buffer | null, subject: KycSubject): Promise<ExtractedFields>;
+  abstract extract(
+    front: Buffer,
+    back: Buffer | null,
+    subject: KycSubject,
+  ): Promise<ExtractedFields>;
 }
 export abstract class FaceMatchProvider {
   abstract compare(selfie: Buffer, documentFront: Buffer): Promise<{ score: number }>;
@@ -92,11 +96,18 @@ export abstract class TamperDetectionProvider {
 export function levenshtein(a: string, b: string): number {
   const s = a.toLowerCase();
   const t = b.toLowerCase();
-  const dp = Array.from({ length: s.length + 1 }, (_, i) => [i, ...Array<number>(t.length).fill(0)]);
+  const dp = Array.from({ length: s.length + 1 }, (_, i) => [
+    i,
+    ...Array<number>(t.length).fill(0),
+  ]);
   for (let j = 1; j <= t.length; j++) dp[0]![j] = j;
   for (let i = 1; i <= s.length; i++) {
     for (let j = 1; j <= t.length; j++) {
-      dp[i]![j] = Math.min(dp[i - 1]![j]! + 1, dp[i]![j - 1]! + 1, dp[i - 1]![j - 1]! + (s[i - 1] === t[j - 1] ? 0 : 1));
+      dp[i]![j] = Math.min(
+        dp[i - 1]![j]! + 1,
+        dp[i]![j - 1]! + 1,
+        dp[i - 1]![j - 1]! + (s[i - 1] === t[j - 1] ? 0 : 1),
+      );
     }
   }
   return dp[s.length]![t.length]!;
@@ -133,7 +144,16 @@ export class SimulatedQualityProvider extends DocumentQualityProvider {
     return {
       outcome: failures.length ? 'FAIL' : 'PASS',
       score: sharpness,
-      details: { sharpness, brightness, width: info.width, height: info.height, failures, recommendation: failures.length ? 'Merci de soumettre une nouvelle photo nette et bien éclairée' : null },
+      details: {
+        sharpness,
+        brightness,
+        width: info.width,
+        height: info.height,
+        failures,
+        recommendation: failures.length
+          ? 'Merci de soumettre une nouvelle photo nette et bien éclairée'
+          : null,
+      },
     };
   }
 }
@@ -142,7 +162,11 @@ export class SimulatedOcrProvider extends OcrProvider {
   async extract(front: Buffer, back: Buffer | null, subject: KycSubject): Promise<ExtractedFields> {
     const m = simMarkers(front, back);
     if (m['ocr-down']) throw new ProviderUnavailableError('ocr');
-    const expiresAt = m['expired'] ? addDays(subject.today, -1) : m['expiring'] ? addDays(subject.today, Number(m['expiring'])) : addDays(subject.today, 5 * 365);
+    const expiresAt = m['expired']
+      ? addDays(subject.today, -1)
+      : m['expiring']
+        ? addDays(subject.today, Number(m['expiring']))
+        : addDays(subject.today, 5 * 365);
     return {
       firstName: m['ocrfirst'] ?? subject.firstName,
       lastName: m['ocrlast'] ?? subject.lastName,
@@ -166,7 +190,9 @@ export class SimulatedBiometricProvider extends BiometricTemplateProvider {
   async template(selfie: Buffer): Promise<string> {
     const m = simMarkers(selfie);
     // `face=<id>` simule le même visage sur deux selfies différents
-    return m['face'] ? `face:${m['face']}` : `sha:${createHash('sha256').update(selfie).digest('hex')}`;
+    return m['face']
+      ? `face:${m['face']}`
+      : `sha:${createHash('sha256').update(selfie).digest('hex')}`;
   }
 
   similarity(a: string, b: string): number {
@@ -184,11 +210,46 @@ export class SimulatedTamperDetection extends TamperDetectionProvider {
 
 /** Liste de test embarquée — identités entièrement fictives (aucune donnée réelle). */
 export const TEST_WATCHLIST: Array<Omit<AmlHit, 'score'> & { dateOfBirth?: string }> = [
-  { listName: 'OFAC', entryId: 'OFAC-TEST-001', entryName: 'Viktor Contrebandier', entryCountry: 'XX', entryReason: 'Sanctions (fictif)', entryAddedAt: '2024-03-01' },
-  { listName: 'ONU', entryId: 'UN-TEST-017', entryName: 'Ambroise Sanction', entryCountry: 'XX', entryReason: 'Résolution du Conseil de sécurité (fictif)', entryAddedAt: '2023-11-15' },
-  { listName: 'UE', entryId: 'EU-TEST-042', entryName: 'Nadia Blanchiment', entryCountry: 'XX', entryReason: 'Gel des avoirs (fictif)', entryAddedAt: '2025-06-30' },
-  { listName: 'INTERPOL', entryId: 'IP-TEST-007', entryName: 'Oscar Fugitif', entryCountry: 'XX', entryReason: 'Notice rouge (fictif)', entryAddedAt: '2022-01-20' },
-  { listName: 'PEP', entryId: 'PEP-TEST-100', entryName: 'Paul Expose', entryCountry: 'CM', entryReason: 'Personne politiquement exposée (fictif)', entryAddedAt: '2021-05-05' },
+  {
+    listName: 'OFAC',
+    entryId: 'OFAC-TEST-001',
+    entryName: 'Viktor Contrebandier',
+    entryCountry: 'XX',
+    entryReason: 'Sanctions (fictif)',
+    entryAddedAt: '2024-03-01',
+  },
+  {
+    listName: 'ONU',
+    entryId: 'UN-TEST-017',
+    entryName: 'Ambroise Sanction',
+    entryCountry: 'XX',
+    entryReason: 'Résolution du Conseil de sécurité (fictif)',
+    entryAddedAt: '2023-11-15',
+  },
+  {
+    listName: 'UE',
+    entryId: 'EU-TEST-042',
+    entryName: 'Nadia Blanchiment',
+    entryCountry: 'XX',
+    entryReason: 'Gel des avoirs (fictif)',
+    entryAddedAt: '2025-06-30',
+  },
+  {
+    listName: 'INTERPOL',
+    entryId: 'IP-TEST-007',
+    entryName: 'Oscar Fugitif',
+    entryCountry: 'XX',
+    entryReason: 'Notice rouge (fictif)',
+    entryAddedAt: '2022-01-20',
+  },
+  {
+    listName: 'PEP',
+    entryId: 'PEP-TEST-100',
+    entryName: 'Paul Expose',
+    entryCountry: 'CM',
+    entryReason: 'Personne politiquement exposée (fictif)',
+    entryAddedAt: '2021-05-05',
+  },
 ];
 
 export class SimulatedAmlProvider extends AmlScreeningProvider {

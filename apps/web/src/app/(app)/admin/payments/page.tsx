@@ -8,7 +8,10 @@ import { api } from '@/lib/api';
 export default function AdminPaymentsPage() {
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Paiements" description="Remboursement d’un paiement terminé, par contre-passation." />
+      <PageHeader
+        title="Paiements"
+        description="Remboursement d’un paiement terminé, par contre-passation."
+      />
       <IdActionForm
         title="Rembourser un paiement"
         description="L’identifiant figure dans le détail du paiement ou de la transaction."

@@ -40,7 +40,8 @@ export default function InvitationPage() {
   });
 
   const accept = useMutation({
-    mutationFn: () => api.post<{ tontineId?: string }>(`/invitations/code/${encodeURIComponent(code)}/accept`),
+    mutationFn: () =>
+      api.post<{ tontineId?: string }>(`/invitations/code/${encodeURIComponent(code)}/accept`),
     onSuccess: (res) => {
       const id = res?.tontineId ?? preview.data?.tontine?.id;
       router.push(id ? `/tontines/${id}` : '/tontines');

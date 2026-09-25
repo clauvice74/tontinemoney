@@ -7,7 +7,10 @@ export interface ImageInfo {
 
 export function inspectImage(buf: Buffer): ImageInfo | null {
   // PNG : signature + chunk IHDR (largeur/hauteur big-endian aux octets 16-23)
-  if (buf.length >= 24 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+  if (
+    buf.length >= 24 &&
+    buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ) {
     return { type: 'image/png', width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
   }
   // JPEG : parcours des segments jusqu'à un marqueur SOFn
@@ -19,8 +22,18 @@ export function inspectImage(buf: Buffer): ImageInfo | null {
         continue;
       }
       const marker = buf[i + 1]!;
-      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-        return { type: 'image/jpeg', height: buf.readUInt16BE(i + 5), width: buf.readUInt16BE(i + 7) };
+      if (
+        marker >= 0xc0 &&
+        marker <= 0xcf &&
+        marker !== 0xc4 &&
+        marker !== 0xc8 &&
+        marker !== 0xcc
+      ) {
+        return {
+          type: 'image/jpeg',
+          height: buf.readUInt16BE(i + 5),
+          width: buf.readUInt16BE(i + 7),
+        };
       }
       const len = buf.readUInt16BE(i + 2);
       i += 2 + len;

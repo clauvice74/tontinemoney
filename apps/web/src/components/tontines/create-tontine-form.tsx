@@ -149,7 +149,13 @@ export function CreateTontineForm({
           <CardTitle>Informations générales</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <FormField id="name" label="Nom de la tontine" error={errors.name?.message} required className="sm:col-span-2">
+          <FormField
+            id="name"
+            label="Nom de la tontine"
+            error={errors.name?.message}
+            required
+            className="sm:col-span-2"
+          >
             <Input {...form.register('name')} maxLength={200} />
           </FormField>
           <FormField
@@ -158,7 +164,13 @@ export function CreateTontineForm({
             error={errors.contributionAmount?.message}
             required
           >
-            <Input {...form.register('contributionAmount')} type="number" inputMode="decimal" min="0" step={step} />
+            <Input
+              {...form.register('contributionAmount')}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step={step}
+            />
           </FormField>
           <FormField
             id="currency"
@@ -193,7 +205,12 @@ export function CreateTontineForm({
           </FormField>
 
           {frequency === 'WEEKLY' || frequency === 'BIWEEKLY' ? (
-            <FormField id="frequencyDetail.day" label="Jour de la semaine" error={errors.frequencyDetail?.day?.message} required>
+            <FormField
+              id="frequencyDetail.day"
+              label="Jour de la semaine"
+              error={errors.frequencyDetail?.day?.message}
+              required
+            >
               <Select {...form.register('frequencyDetail.day', { setValueAs: emptyToUndefined })}>
                 <option value="">Choisir…</option>
                 {WEEKDAY_VALUES.map((d) => (
@@ -214,7 +231,9 @@ export function CreateTontineForm({
               {!lastDay ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField id="frequencyDetail.day" label="Jour de la semaine">
-                    <Select {...form.register('frequencyDetail.day', { setValueAs: emptyToUndefined })}>
+                    <Select
+                      {...form.register('frequencyDetail.day', { setValueAs: emptyToUndefined })}
+                    >
                       <option value="">Choisir…</option>
                       {WEEKDAY_VALUES.map((d) => (
                         <option key={d} value={d}>
@@ -226,7 +245,8 @@ export function CreateTontineForm({
                   <FormField id="frequencyDetail.weekOfMonth" label="Semaine du mois">
                     <Select
                       {...form.register('frequencyDetail.weekOfMonth', {
-                        setValueAs: (v: unknown) => (v === '' || v === undefined ? undefined : Number(v)),
+                        setValueAs: (v: unknown) =>
+                          v === '' || v === undefined ? undefined : Number(v),
                       })}
                     >
                       <option value="">Choisir…</option>
@@ -255,7 +275,11 @@ export function CreateTontineForm({
             error={errors.startDate?.message}
             required
           >
-            <Input {...form.register('startDate')} type="date" min={isoDateFromToday(MIN_START_DELAY_DAYS, today)} />
+            <Input
+              {...form.register('startDate')}
+              type="date"
+              min={isoDateFromToday(MIN_START_DELAY_DAYS, today)}
+            />
           </FormField>
           <FormField
             id="maxMembers"
@@ -264,7 +288,13 @@ export function CreateTontineForm({
             error={errors.maxMembers?.message}
             required
           >
-            <Input {...form.register('maxMembers', numberField)} type="number" min={3} max={50} step={1} />
+            <Input
+              {...form.register('maxMembers', numberField)}
+              type="number"
+              min={3}
+              max={50}
+              step={1}
+            />
           </FormField>
         </CardContent>
       </Card>
@@ -274,14 +304,22 @@ export function CreateTontineForm({
           <CardTitle>Mode de tirage</CardTitle>
         </CardHeader>
         <CardContent>
-          <Fieldset legend="Comment le bénéficiaire de chaque cycle est-il choisi ?" error={errors.drawMode?.message}>
+          <Fieldset
+            legend="Comment le bénéficiaire de chaque cycle est-il choisi ?"
+            error={errors.drawMode?.message}
+          >
             <div className="grid gap-3 sm:grid-cols-3">
               {DRAW_MODES.map((m) => (
                 <label
                   key={m}
                   className="flex cursor-pointer gap-3 rounded-lg border p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-secondary"
                 >
-                  <input type="radio" value={m} {...form.register('drawMode')} className="mt-0.5 accent-primary" />
+                  <input
+                    type="radio"
+                    value={m}
+                    {...form.register('drawMode')}
+                    className="mt-0.5 accent-primary"
+                  />
                   <span>
                     <span className="block font-medium">{DRAW_MODE_LABELS[m]}</span>
                     <span className="text-muted-foreground">{DRAW_MODE_HELP[m]}</span>
@@ -299,11 +337,32 @@ export function CreateTontineForm({
           <CardDescription>Appliquées automatiquement aux cotisations en retard.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <FormField id="penaltyRules.graceDays" label="Jours de grâce" error={errors.penaltyRules?.graceDays?.message} required>
-            <Input {...form.register('penaltyRules.graceDays', numberField)} type="number" min={0} max={30} />
+          <FormField
+            id="penaltyRules.graceDays"
+            label="Jours de grâce"
+            error={errors.penaltyRules?.graceDays?.message}
+            required
+          >
+            <Input
+              {...form.register('penaltyRules.graceDays', numberField)}
+              type="number"
+              min={0}
+              max={30}
+            />
           </FormField>
-          <FormField id="penaltyRules.lateFeePercent" label="Pénalité (%)" error={errors.penaltyRules?.lateFeePercent?.message} required>
-            <Input {...form.register('penaltyRules.lateFeePercent', numberField)} type="number" min={0} max={100} step="0.5" />
+          <FormField
+            id="penaltyRules.lateFeePercent"
+            label="Pénalité (%)"
+            error={errors.penaltyRules?.lateFeePercent?.message}
+            required
+          >
+            <Input
+              {...form.register('penaltyRules.lateFeePercent', numberField)}
+              type="number"
+              min={0}
+              max={100}
+              step="0.5"
+            />
           </FormField>
           <FormField
             id="penaltyRules.suspendAfter"
@@ -311,14 +370,24 @@ export function CreateTontineForm({
             error={errors.penaltyRules?.suspendAfter?.message}
             required
           >
-            <Input {...form.register('penaltyRules.suspendAfter', numberField)} type="number" min={1} max={12} />
+            <Input
+              {...form.register('penaltyRules.suspendAfter', numberField)}
+              type="number"
+              min={1}
+              max={12}
+            />
           </FormField>
           <FormField
             id="penaltyRules.defaultAfterDays"
             label="Défaut après (jours)"
             error={errors.penaltyRules?.defaultAfterDays?.message}
           >
-            <Input {...form.register('penaltyRules.defaultAfterDays', numberField)} type="number" min={1} max={60} />
+            <Input
+              {...form.register('penaltyRules.defaultAfterDays', numberField)}
+              type="number"
+              min={1}
+              max={60}
+            />
           </FormField>
         </CardContent>
       </Card>
@@ -329,7 +398,11 @@ export function CreateTontineForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField id="entryFee" label="Droit d’entrée (facultatif)" error={errors.entryFee?.message}>
+            <FormField
+              id="entryFee"
+              label="Droit d’entrée (facultatif)"
+              error={errors.entryFee?.message}
+            >
               <Input
                 {...form.register('entryFee', { setValueAs: emptyToUndefined })}
                 type="number"
@@ -338,7 +411,11 @@ export function CreateTontineForm({
                 step={step}
               />
             </FormField>
-            <FormField id="collation" label="Collation par tour (facultatif)" error={errors.collation?.message}>
+            <FormField
+              id="collation"
+              label="Collation par tour (facultatif)"
+              error={errors.collation?.message}
+            >
               <Input
                 {...form.register('collation', { setValueAs: emptyToUndefined })}
                 type="number"
@@ -348,10 +425,18 @@ export function CreateTontineForm({
               />
             </FormField>
           </div>
-          <Fieldset legend="Si les cotisations d’un cycle sont incomplètes" error={errors.incompletePolicy?.message}>
+          <Fieldset
+            legend="Si les cotisations d’un cycle sont incomplètes"
+            error={errors.incompletePolicy?.message}
+          >
             {INCOMPLETE_POLICIES.map((p) => (
               <label key={p} className="flex items-center gap-2 text-sm">
-                <input type="radio" value={p} {...form.register('incompletePolicy')} className="accent-primary" />
+                <input
+                  type="radio"
+                  value={p}
+                  {...form.register('incompletePolicy')}
+                  className="accent-primary"
+                />
                 {INCOMPLETE_POLICY_LABELS[p]}
               </label>
             ))}

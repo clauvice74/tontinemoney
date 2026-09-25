@@ -86,7 +86,11 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
       {formError ? <Alert variant="destructive" title={formError} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField id="preferredChannel" label="Canal préféré" error={errors.preferredChannel?.message}>
+        <FormField
+          id="preferredChannel"
+          label="Canal préféré"
+          error={errors.preferredChannel?.message}
+        >
           <Select {...form.register('preferredChannel')}>
             {(['IN_APP', 'SMS', 'EMAIL', 'PUSH'] as const).map((c) => (
               <option key={c} value={c}>
@@ -140,7 +144,10 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
           </Fieldset>
         )}
       />
-      <Fieldset legend="Heures calmes" description="Aucune notification non urgente pendant cette plage.">
+      <Fieldset
+        legend="Heures calmes"
+        description="Aucune notification non urgente pendant cette plage."
+      >
         <label className="flex items-center gap-2 text-sm">
           <Checkbox {...form.register('quietEnabled')} />
           Activer les heures calmes

@@ -82,7 +82,11 @@ export function PaymentTracker({ payment, onDone }: { payment: PaymentView; onDo
   async function simulate(outcome: 'SUCCESS' | 'FAILURE') {
     setSimulating(true);
     try {
-      await api.post(`/psp-sim/mobile-money/${encodeURIComponent(reference)}/confirm`, { outcome }, { auth: false });
+      await api.post(
+        `/psp-sim/mobile-money/${encodeURIComponent(reference)}/confirm`,
+        { outcome },
+        { auth: false },
+      );
       await query.refetch();
       await queryClient.invalidateQueries({ queryKey: qk.wallet });
       await queryClient.invalidateQueries({ queryKey: ['wallet-movements'] });
@@ -120,10 +124,20 @@ export function PaymentTracker({ payment, onDone }: { payment: PaymentView; onDo
       )}
       {!done && isDev ? (
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="secondary" onClick={() => void simulate('SUCCESS')} loading={simulating}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void simulate('SUCCESS')}
+            loading={simulating}
+          >
             Simuler la confirmation USSD
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => void simulate('FAILURE')} disabled={simulating}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void simulate('FAILURE')}
+            disabled={simulating}
+          >
             Simuler un refus
           </Button>
         </div>
@@ -178,17 +192,38 @@ export function DepositForm({ currency }: { currency: string }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {formError ? <Alert variant="destructive" title={formError} /> : null}
-      <FormField id="deposit-amount" label={`Montant (${currency})`} error={errors.amount?.message} required>
-        <Input {...form.register('amount')} inputMode="decimal" type="number" min="0" step={amountStep(currency)} />
+      <FormField
+        id="deposit-amount"
+        label={`Montant (${currency})`}
+        error={errors.amount?.message}
+        required
+      >
+        <Input
+          {...form.register('amount')}
+          inputMode="decimal"
+          type="number"
+          min="0"
+          step={amountStep(currency)}
+        />
       </FormField>
       <Fieldset legend="Moyen de paiement">
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="MOBILE_MONEY" {...form.register('method')} className="accent-primary" />
+            <input
+              type="radio"
+              value="MOBILE_MONEY"
+              {...form.register('method')}
+              className="accent-primary"
+            />
             Mobile Money
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="CARD" {...form.register('method')} className="accent-primary" />
+            <input
+              type="radio"
+              value="CARD"
+              {...form.register('method')}
+              className="accent-primary"
+            />
             Carte bancaire (3-D Secure)
           </label>
         </div>
@@ -201,7 +236,11 @@ export function DepositForm({ currency }: { currency: string }) {
           error={errors.phone?.message}
           required
         >
-          <Input {...form.register('phone', { setValueAs: emptyToUndefined })} type="tel" autoComplete="tel" />
+          <Input
+            {...form.register('phone', { setValueAs: emptyToUndefined })}
+            type="tel"
+            autoComplete="tel"
+          />
         </FormField>
       ) : (
         <p className="text-sm text-muted-foreground">
@@ -232,7 +271,10 @@ export function WithdrawalForm({ currency }: { currency: string }) {
       api.post<PaymentView>('/me/wallet/withdrawals', values, { idempotencyKey: key }),
     );
     if (!res) return;
-    toast.success('Retrait initié', `${formatAmount(values.amount, values.currency)} vers ${values.phone}`);
+    toast.success(
+      'Retrait initié',
+      `${formatAmount(values.amount, values.currency)} vers ${values.phone}`,
+    );
     setPayment(res);
     void queryClient.invalidateQueries({ queryKey: qk.wallet });
   });
@@ -252,10 +294,26 @@ export function WithdrawalForm({ currency }: { currency: string }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {formError ? <Alert variant="destructive" title={formError} /> : null}
-      <FormField id="withdraw-amount" label={`Montant (${currency})`} error={errors.amount?.message} required>
-        <Input {...form.register('amount')} inputMode="decimal" type="number" min="0" step={amountStep(currency)} />
+      <FormField
+        id="withdraw-amount"
+        label={`Montant (${currency})`}
+        error={errors.amount?.message}
+        required
+      >
+        <Input
+          {...form.register('amount')}
+          inputMode="decimal"
+          type="number"
+          min="0"
+          step={amountStep(currency)}
+        />
       </FormField>
-      <FormField id="withdraw-phone" label="Numéro Mobile Money bénéficiaire" error={errors.phone?.message} required>
+      <FormField
+        id="withdraw-phone"
+        label="Numéro Mobile Money bénéficiaire"
+        error={errors.phone?.message}
+        required
+      >
         <Input {...form.register('phone')} type="tel" autoComplete="tel" />
       </FormField>
       <Button type="submit" loading={form.formState.isSubmitting}>
@@ -306,8 +364,19 @@ export function TransferForm({ currency }: { currency: string }) {
       >
         <Input {...form.register('toIdentifier')} />
       </FormField>
-      <FormField id="transfer-amount" label={`Montant (${currency})`} error={errors.amount?.message} required>
-        <Input {...form.register('amount')} inputMode="decimal" type="number" min="0" step={amountStep(currency)} />
+      <FormField
+        id="transfer-amount"
+        label={`Montant (${currency})`}
+        error={errors.amount?.message}
+        required
+      >
+        <Input
+          {...form.register('amount')}
+          inputMode="decimal"
+          type="number"
+          min="0"
+          step={amountStep(currency)}
+        />
       </FormField>
       <FormField id="transfer-note" label="Message (facultatif)" error={errors.note?.message}>
         <Input {...form.register('note', { setValueAs: emptyToUndefined })} maxLength={140} />

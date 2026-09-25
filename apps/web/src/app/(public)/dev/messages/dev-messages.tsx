@@ -80,7 +80,9 @@ export function DevMessages() {
                 <Card>
                   <CardContent className="space-y-2 pt-5">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <Badge variant={m.channel === 'SMS' ? 'info' : 'secondary'}>{m.channel}</Badge>
+                      <Badge variant={m.channel === 'SMS' ? 'info' : 'secondary'}>
+                        {m.channel}
+                      </Badge>
                       <span className="font-medium">{m.to}</span>
                       <span className="ml-auto text-xs text-muted-foreground">
                         {formatDateTime(m.createdAt)}

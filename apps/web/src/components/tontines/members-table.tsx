@@ -176,9 +176,7 @@ export function MembersTable({
           <Select
             id="members-sort"
             value={draft.sort}
-            onChange={(e) =>
-              apply({ ...draft, sort: e.target.value as MemberFilters['sort'] })
-            }
+            onChange={(e) => apply({ ...draft, sort: e.target.value as MemberFilters['sort'] })}
           >
             {Object.entries(MEMBER_SORTS).map(([k, v]) => (
               <option key={k} value={k}>
@@ -256,11 +254,15 @@ export function MembersTable({
                     <TableCell>
                       <StatusBadge status={m.membershipStatus} labels={MEMBERSHIP_STATUS_LABELS} />
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">{formatDate(m.registeredAt)}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(m.registeredAt)}
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {m.lastActivityAt ? formatRelative(m.lastActivityAt) : '—'}
                     </TableCell>
-                    {rowActions ? <TableCell className="text-right">{rowActions(m)}</TableCell> : null}
+                    {rowActions ? (
+                      <TableCell className="text-right">{rowActions(m)}</TableCell>
+                    ) : null}
                   </TableRow>
                 ))}
               </TableBody>

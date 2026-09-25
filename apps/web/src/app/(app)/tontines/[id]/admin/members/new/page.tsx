@@ -94,7 +94,11 @@ export default function RegisterMemberPage() {
               <FormField id="phone" label="Téléphone" error={errors.phone?.message}>
                 <Input {...form.register('phone', opt)} type="tel" placeholder="+237…" />
               </FormField>
-              <FormField id="dateOfBirth" label="Date de naissance" error={errors.dateOfBirth?.message}>
+              <FormField
+                id="dateOfBirth"
+                label="Date de naissance"
+                error={errors.dateOfBirth?.message}
+              >
                 <Input {...form.register('dateOfBirth', opt)} type="date" />
               </FormField>
               <FormField id="country" label="Pays" error={errors.country?.message}>
@@ -107,15 +111,28 @@ export default function RegisterMemberPage() {
                   ))}
                 </Select>
               </FormField>
-              <FormField id="address" label="Adresse" error={errors.address?.message} className="sm:col-span-2">
+              <FormField
+                id="address"
+                label="Adresse"
+                error={errors.address?.message}
+                className="sm:col-span-2"
+              >
                 <Input {...form.register('address', opt)} />
               </FormField>
             </div>
-            <Fieldset legend="Canal d’envoi de l’activation" error={errors.preferredChannel?.message}>
+            <Fieldset
+              legend="Canal d’envoi de l’activation"
+              error={errors.preferredChannel?.message}
+            >
               <div className="flex gap-4">
                 {(['SMS', 'EMAIL'] as const).map((c) => (
                   <label key={c} className="flex items-center gap-2 text-sm">
-                    <input type="radio" value={c} {...form.register('preferredChannel')} className="accent-primary" />
+                    <input
+                      type="radio"
+                      value={c}
+                      {...form.register('preferredChannel')}
+                      className="accent-primary"
+                    />
                     {c === 'SMS' ? 'SMS (code à 6 chiffres)' : 'Email (lien valable 48 h)'}
                   </label>
                 ))}

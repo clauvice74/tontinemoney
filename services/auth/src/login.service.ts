@@ -230,12 +230,13 @@ export class LoginService {
   private async completeLogin(user: User, mfaUsed: boolean): Promise<IssuedTokens> {
     const now = this.clock.now();
     const ctx = RequestContext.metadata();
+    const tontineIds = await this.tokens.claimsFor(user.id);
     const issued = await this.uow.run(async (tx) => {
       await tx.user.update({
         where: { id: user.id },
         data: { failedLoginCount: 0, lockedUntil: null, lockReason: null, lastLoginAt: now },
       });
-      const t = await this.tokens.openSession(tx, user, mfaUsed);
+      const t = await this.tokens.openSession(tx, user, mfaUsed, tontineIds);
       await this.outbox.add(tx, {
         type: 'user.login',
         aggregateType: 'user',

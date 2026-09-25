@@ -416,6 +416,20 @@ export const TEMPLATES = {
     },
   }),
 
+  'kyc.aml_alert': T({
+    category: 'ADMIN',
+    priority: 'URGENT',
+    channels: ['IN_APP', 'EMAIL'],
+    fr: {
+      title: 'Correspondance AML / sanctions',
+      body: 'Correspondance potentielle sur la liste {liste} (score {score} %). Revue humaine requise : aucune décision automatique définitive.',
+    },
+    en: {
+      title: 'AML / sanctions match',
+      body: 'Potential match on the {liste} list (score {score}%). Human review required: no automatic final decision.',
+    },
+  }),
+
   // --- Tontines ---
   'tontine.invitation': T({
     category: 'TONTINE',

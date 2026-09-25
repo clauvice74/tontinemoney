@@ -10,6 +10,7 @@ import {
   type ErrorCode,
   type ProblemDetails,
   problemType,
+  MoneyError,
 } from '@tontine/contracts';
 import { type Response } from 'express';
 import { ZodError } from 'zod';
@@ -65,6 +66,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     }
     if (exception instanceof ZodError) {
       return this.base('VALIDATION_FAILED', 'Données invalides', zodIssues(exception));
+    }
+    // Montant incompatible avec la devise (A-13 : précision) → 400
+    if (exception instanceof MoneyError) {
+      return this.base('VALIDATION_FAILED', exception.message);
     }
     const multerCode = (exception as { code?: string } | null)?.code;
     if (multerCode === 'LIMIT_FILE_SIZE')

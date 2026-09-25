@@ -43,7 +43,9 @@ function Participants({ tontineId }: { tontineId: string }) {
   const query = useQuery({
     queryKey: ['tontines', tontineId, 'participants'],
     queryFn: () =>
-      api.get<ListResponse<ParticipantView> | ParticipantView[]>(`/tontines/${tontineId}/participants`),
+      api.get<ListResponse<ParticipantView> | ParticipantView[]>(
+        `/tontines/${tontineId}/participants`,
+      ),
     select: (d) => (Array.isArray(d) ? d : d.data),
   });
   return (
@@ -74,7 +76,10 @@ function Participants({ tontineId }: { tontineId: string }) {
                   ) : null}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={p.currentContributionStatus} labels={CONTRIBUTION_STATUS_LABELS} />
+                  <StatusBadge
+                    status={p.currentContributionStatus}
+                    labels={CONTRIBUTION_STATUS_LABELS}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -101,7 +106,9 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
             {d.myBeneficiaryCycles.length > 0 ? (
               <p>
                 Mon tour : cycle{d.myBeneficiaryCycles.length > 1 ? 's' : ''}{' '}
-                {d.myBeneficiaryCycles.map((c) => `${c.number}${c.dueDate ? ` (${formatDate(c.dueDate)})` : ''}`).join(', ')}
+                {d.myBeneficiaryCycles
+                  .map((c) => `${c.number}${c.dueDate ? ` (${formatDate(c.dueDate)})` : ''}`)
+                  .join(', ')}
               </p>
             ) : null}
           </div>
@@ -155,7 +162,9 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
                             }
                           />
                         ) : c.paidAt ? (
-                          <span className="text-xs text-muted-foreground">Payée le {formatDate(c.paidAt)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            Payée le {formatDate(c.paidAt)}
+                          </span>
                         ) : null}
                       </TableCell>
                     </TableRow>
@@ -174,7 +183,8 @@ function PriorityRequests({ tontineId }: { tontineId: string }) {
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ['tontines', tontineId, 'priority-requests'],
-    queryFn: () => api.get<ListResponse<PriorityRequestView>>(`/tontines/${tontineId}/priority-requests`),
+    queryFn: () =>
+      api.get<ListResponse<PriorityRequestView>>(`/tontines/${tontineId}/priority-requests`),
   });
   return (
     <div className="space-y-3">
@@ -188,7 +198,9 @@ function PriorityRequests({ tontineId }: { tontineId: string }) {
         successMessage="Demande envoyée"
         onConfirm={async (reason) => {
           await api.post(`/tontines/${tontineId}/priority-requests`, { reason });
-          await queryClient.invalidateQueries({ queryKey: ['tontines', tontineId, 'priority-requests'] });
+          await queryClient.invalidateQueries({
+            queryKey: ['tontines', tontineId, 'priority-requests'],
+          });
         }}
       />
       <QueryState
@@ -217,7 +229,10 @@ export default function TontineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const tontine = useTontine(id);
   return (
-    <QueryState query={tontine} comingSoonTitle="Tontine introuvable ou fonctionnalité bientôt disponible">
+    <QueryState
+      query={tontine}
+      comingSoonTitle="Tontine introuvable ou fonctionnalité bientôt disponible"
+    >
       {(t) => (
         <div className="space-y-6">
           <PageHeader
@@ -233,7 +248,8 @@ export default function TontineDetailPage() {
                     size="default"
                     summary={
                       <>
-                        Droit d’entrée de « {t.name} » : <Money value={t.entryFee} className="font-semibold" />
+                        Droit d’entrée de « {t.name} » :{' '}
+                        <Money value={t.entryFee} className="font-semibold" />
                       </>
                     }
                   />
@@ -268,7 +284,9 @@ export default function TontineDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Participants</CardTitle>
-                <CardDescription>Prénoms et statut de cotisation du cycle en cours.</CardDescription>
+                <CardDescription>
+                  Prénoms et statut de cotisation du cycle en cours.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Participants tontineId={t.id} />

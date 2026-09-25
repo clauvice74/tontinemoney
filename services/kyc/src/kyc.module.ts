@@ -33,7 +33,9 @@ import { DocumentStorage, LocalDocumentStorage, S3DocumentStorage } from './stor
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig) => {
         const cipher = new DataCipher(config.DATA_ENCRYPTION_KEY);
-        return config.DOCUMENT_STORAGE_DRIVER === 's3' ? new S3DocumentStorage(cipher, config) : new LocalDocumentStorage(cipher, config.DOCUMENT_STORAGE_DIR);
+        return config.DOCUMENT_STORAGE_DRIVER === 's3'
+          ? new S3DocumentStorage(cipher, config)
+          : new LocalDocumentStorage(cipher, config.DOCUMENT_STORAGE_DIR);
       },
     },
     { provide: DocumentQualityProvider, useClass: SimulatedQualityProvider },

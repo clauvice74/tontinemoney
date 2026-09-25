@@ -96,7 +96,9 @@ export function AccessRequests({ tontineId }: { tontineId?: string }) {
                       <TableCell>
                         <StatusBadge status={r.status} labels={ACCESS_REQUEST_STATUS_LABELS} />
                         {r.decisionReason ? (
-                          <span className="block text-xs text-muted-foreground">{r.decisionReason}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            {r.decisionReason}
+                          </span>
                         ) : null}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right">
@@ -112,7 +114,7 @@ export function AccessRequests({ tontineId }: { tontineId?: string }) {
                               onConfirm={async () => {
                                 await api.post(`/access-requests/${r.id}/decision`, {
                                   decision: 'APPROVE',
-                                  ...(r.targetTontine?.id ?? tontineId
+                                  ...((r.targetTontine?.id ?? tontineId)
                                     ? { tontineId: r.targetTontine?.id ?? tontineId }
                                     : {}),
                                 });

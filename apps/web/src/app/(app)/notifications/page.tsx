@@ -68,7 +68,9 @@ export default function NotificationsPage() {
       <PageHeader
         title="Notifications"
         description={
-          unread > 0 ? `${unread} notification${unread > 1 ? 's' : ''} non lue${unread > 1 ? 's' : ''}` : 'Tout est lu'
+          unread > 0
+            ? `${unread} notification${unread > 1 ? 's' : ''} non lue${unread > 1 ? 's' : ''}`
+            : 'Tout est lu'
         }
         actions={
           <Button
@@ -97,7 +99,9 @@ export default function NotificationsPage() {
       <QueryState
         query={query}
         isEmpty={(d) => d.data.length === 0}
-        empty={<p className="py-8 text-center text-sm text-muted-foreground">Aucune notification.</p>}
+        empty={
+          <p className="py-8 text-center text-sm text-muted-foreground">Aucune notification.</p>
+        }
       >
         {(d) => (
           <>
@@ -124,8 +128,12 @@ export default function NotificationsPage() {
                             </Badge>
                           ) : null}
                         </div>
-                        <p className="whitespace-pre-line text-sm text-muted-foreground">{n.body}</p>
-                        <p className="text-xs text-muted-foreground">{formatDateTime(n.createdAt)}</p>
+                        <p className="whitespace-pre-line text-sm text-muted-foreground">
+                          {n.body}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDateTime(n.createdAt)}
+                        </p>
                       </div>
                       {!n.readAt ? (
                         <Button

@@ -43,7 +43,11 @@ export interface ExecuteInput {
   /** Contrôle d'éligibilité du membre à l'origine de l'opération (R-MBR-02, R-KYC-01). */
   eligibility?: { memberId: string; minKyc: KycLevel } | null;
   /** Validation de conformité (R-CMP-01). */
-  compliance?: { operationType: OperationType; memberId: string; creditMemberId?: string | null } | null;
+  compliance?: {
+    operationType: OperationType;
+    memberId: string;
+    creditMemberId?: string | null;
+  } | null;
   /** Scoring fraude (R-TRX-03). */
   fraudCheck?: boolean;
   metadata?: Record<string, unknown>;
@@ -90,7 +94,13 @@ export class TransactionsService {
   ) {}
 
   /** US-6.5 — journal immuable : IP, device, User-Agent, pays, action, résultat. */
-  async audit(db: TxClient | PrismaService, txId: string, action: string, result: string, details: Record<string, unknown> = {}): Promise<void> {
+  async audit(
+    db: TxClient | PrismaService,
+    txId: string,
+    action: string,
+    result: string,
+    details: Record<string, unknown> = {},
+  ): Promise<void> {
     const ctx = RequestContext.current();
     await db.transactionAuditLog.create({
       data: {
@@ -99,7 +109,7 @@ export class TransactionsService {
         result,
         actorId: ctx?.actor?.userId ?? null,
         ip: ctx?.ip ?? null,
-        device: ctx?.userAgent ? ctx.userAgent.slice(0, 100) : ctx?.source ?? null,
+        device: ctx?.userAgent ? ctx.userAgent.slice(0, 100) : (ctx?.source ?? null),
         userAgent: ctx?.userAgent?.slice(0, 255) ?? null,
         country: ctx?.country ?? null,
         details: details as object,
@@ -109,23 +119,52 @@ export class TransactionsService {
     });
   }
 
-  private async reject(t: Transaction, rule: string, reason: string, code: 'INSUFFICIENT_FUNDS' | 'COMPLIANCE_VIOLATION' | 'KYC_LEVEL_INSUFFICIENT' | 'MEMBER_NOT_ELIGIBLE' | 'BUSINESS_RULE_VIOLATION' | 'CURRENCY_MISMATCH' | 'WALLET_NOT_OPERATIONAL', extra: Record<string, unknown> = {}): Promise<never> {
+  private async reject(
+    t: Transaction,
+    rule: string,
+    reason: string,
+    code:
+      | 'INSUFFICIENT_FUNDS'
+      | 'COMPLIANCE_VIOLATION'
+      | 'KYC_LEVEL_INSUFFICIENT'
+      | 'MEMBER_NOT_ELIGIBLE'
+      | 'BUSINESS_RULE_VIOLATION'
+      | 'CURRENCY_MISMATCH'
+      | 'WALLET_NOT_OPERATIONAL',
+    extra: Record<string, unknown> = {},
+  ): Promise<never> {
     await this.uow.run(async (tx) => {
-      await tx.transaction.update({ where: { id: t.id }, data: { status: 'REJECTED', rejectionRule: rule, rejectionReason: reason } });
+      await tx.transaction.update({
+        where: { id: t.id },
+        data: { status: 'REJECTED', rejectionRule: rule, rejectionReason: reason },
+      });
       await this.audit(tx, t.id, 'VALIDATION', 'REJECTED', { rule, reason });
       await this.outbox.add(tx, {
         type: 'transaction.rejected',
         aggregateType: 'transaction',
         aggregateId: t.id,
-        payload: { txId: t.id, initiatorId: t.initiatorId, rejectionRule: rule, rejectionReason: reason },
+        payload: {
+          txId: t.id,
+          initiatorId: t.initiatorId,
+          rejectionRule: rule,
+          rejectionReason: reason,
+        },
       });
       if (code === 'INSUFFICIENT_FUNDS' && t.sourceWalletId) {
-        const w = await tx.wallet.findUnique({ where: { id: t.sourceWalletId }, select: { memberId: true } });
+        const w = await tx.wallet.findUnique({
+          where: { id: t.sourceWalletId },
+          select: { memberId: true },
+        });
         await this.outbox.add(tx, {
           type: 'wallet.debit.failed',
           aggregateType: 'wallet',
           aggregateId: t.sourceWalletId,
-          payload: { walletId: t.sourceWalletId, memberId: w?.memberId ?? null, reason: 'INSUFFICIENT_FUNDS', requestedMinor: t.amountMinor.toString() },
+          payload: {
+            walletId: t.sourceWalletId,
+            memberId: w?.memberId ?? null,
+            reason: 'INSUFFICIENT_FUNDS',
+            requestedMinor: t.amountMinor.toString(),
+          },
         });
       }
     });
@@ -135,11 +174,17 @@ export class TransactionsService {
   /** Exécute une transaction de bout en bout. Idempotente par `idempotencyKey` (R-TRX-01). */
   async execute(input: ExecuteInput): Promise<Transaction> {
     if (input.amountMinor <= 0n) throw new DomainError('VALIDATION_FAILED', 'Montant invalide');
-    const existing = await this.prisma.transaction.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
+    const existing = await this.prisma.transaction.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+    });
     if (existing) {
       if (existing.status === 'COMPLETED' || existing.status === 'REVERSED') return existing;
       if (existing.status === 'REJECTED' || existing.status === 'FAILED') {
-        throw new DomainError(existing.status === 'REJECTED' ? 'BUSINESS_RULE_VIOLATION' : 'CONFLICT', existing.rejectionReason ?? existing.failureReason ?? 'Transaction déjà traitée', { transactionId: existing.id });
+        throw new DomainError(
+          existing.status === 'REJECTED' ? 'BUSINESS_RULE_VIOLATION' : 'CONFLICT',
+          existing.rejectionReason ?? existing.failureReason ?? 'Transaction déjà traitée',
+          { transactionId: existing.id },
+        );
       }
       throw new DomainError('IDEMPOTENCY_IN_PROGRESS');
     }
@@ -164,11 +209,21 @@ export class TransactionsService {
           description: input.description ?? null,
           reversalOfId: input.reversalOfId ?? null,
           // R-TRX-07 : métadonnées d'audit obligatoires
-          metadata: { ip: meta.ip, device: meta.userAgent, country: meta.country, correlationId: meta.correlationId, source: RequestContext.current()?.source ?? 'system', ...(input.metadata ?? {}) } as object,
+          metadata: {
+            ip: meta.ip,
+            device: meta.userAgent,
+            country: meta.country,
+            correlationId: meta.correlationId,
+            source: RequestContext.current()?.source ?? 'system',
+            ...(input.metadata ?? {}),
+          } as object,
           createdAt: this.clock.now(),
         },
       });
-      await this.audit(tx, created.id, 'INITIATED', 'PENDING', { type: input.type, amountMinor: input.amountMinor.toString() });
+      await this.audit(tx, created.id, 'INITIATED', 'PENDING', {
+        type: input.type,
+        amountMinor: input.amountMinor.toString(),
+      });
       await this.outbox.add(tx, {
         type: 'transaction.initiated',
         aggregateType: 'transaction',
@@ -191,9 +246,19 @@ export class TransactionsService {
     if (input.eligibility) {
       const m = await this.members.snapshot(input.eligibility.memberId);
       if (!m || m.status === 'SUSPENDED' || m.status === 'PENDING_REVIEW') {
-        await this.reject(t, 'MEMBER-SUSPENDED', 'Compte suspendu ou en revue : aucune opération possible', 'MEMBER_NOT_ELIGIBLE');
+        await this.reject(
+          t,
+          'MEMBER-SUSPENDED',
+          'Compte suspendu ou en revue : aucune opération possible',
+          'MEMBER_NOT_ELIGIBLE',
+        );
       } else if (!kycAtLeast(m.kycLevel, input.eligibility.minKyc)) {
-        await this.reject(t, 'KYC-LEVEL', `Vérification d’identité requise (niveau ${input.eligibility.minKyc})`, 'KYC_LEVEL_INSUFFICIENT');
+        await this.reject(
+          t,
+          'KYC-LEVEL',
+          `Vérification d’identité requise (niveau ${input.eligibility.minKyc})`,
+          'KYC_LEVEL_INSUFFICIENT',
+        );
       }
     }
     if (input.compliance) {
@@ -208,26 +273,46 @@ export class TransactionsService {
         });
       } catch (e) {
         if (e instanceof DomainError && e.code === 'COMPLIANCE_VIOLATION') {
-          const first = (e.extra['violations'] as Array<{ rule: string }> | undefined)?.[0]?.rule ?? 'COMPLIANCE';
-          await this.reject(t, first, e.message, 'COMPLIANCE_VIOLATION', { violations: e.extra['violations'] });
+          const first =
+            (e.extra['violations'] as Array<{ rule: string }> | undefined)?.[0]?.rule ??
+            'COMPLIANCE';
+          await this.reject(t, first, e.message, 'COMPLIANCE_VIOLATION', {
+            violations: e.extra['violations'],
+          });
         }
         throw e;
       }
     }
     if (input.fraudCheck) {
-      const score = await this.fraud.score({ memberId: input.initiatorId, type: input.type, amountMinor: input.amountMinor, currency: input.currency });
+      const score = await this.fraud.score({
+        memberId: input.initiatorId,
+        type: input.type,
+        amountMinor: input.amountMinor,
+        currency: input.currency,
+      });
       if (score.score >= this.fraud.threshold) {
         // R-TRX-03 : bloquée par le scoring fraude → REJECTED avec alerte
         this.logger.warn(`Transaction ${t.id} bloquée par le scoring fraude (${score.score})`);
-        await this.reject(t, 'FRAUD-SCORE', `Opération bloquée par le contrôle anti-fraude (${score.reason})`, 'BUSINESS_RULE_VIOLATION');
+        await this.reject(
+          t,
+          'FRAUD-SCORE',
+          `Opération bloquée par le contrôle anti-fraude (${score.reason})`,
+          'BUSINESS_RULE_VIOLATION',
+        );
       }
     }
     if (input.sourceWalletId && !input.captureHoldId) {
       const w = await this.prisma.wallet.findUnique({ where: { id: input.sourceWalletId } });
       if (w && !w.allowNegative && w.balanceMinor - w.blockedMinor < input.amountMinor) {
-        await this.reject(t, 'BALANCE', 'Le solde disponible est insuffisant pour cette opération', 'INSUFFICIENT_FUNDS', {
-          availableMinor: (w.balanceMinor - w.blockedMinor).toString(),
-        });
+        await this.reject(
+          t,
+          'BALANCE',
+          'Le solde disponible est insuffisant pour cette opération',
+          'INSUFFICIENT_FUNDS',
+          {
+            availableMinor: (w.balanceMinor - w.blockedMinor).toString(),
+          },
+        );
       }
     }
 
@@ -235,21 +320,42 @@ export class TransactionsService {
     try {
       return await this.uow.run(
         async (tx) => {
-          await tx.transaction.update({ where: { id: t.id }, data: { status: 'VALIDATED', validatedAt: this.clock.now() } });
-          await this.outbox.add(tx, { type: 'transaction.validated', aggregateType: 'transaction', aggregateId: t.id, payload: { txId: t.id } });
+          await tx.transaction.update({
+            where: { id: t.id },
+            data: { status: 'VALIDATED', validatedAt: this.clock.now() },
+          });
+          await this.audit(tx, t.id, 'VALIDATION', 'VALIDATED', {
+            eligibility: !!input.eligibility,
+            compliance: !!input.compliance,
+            fraudCheck: !!input.fraudCheck,
+          });
+          await this.outbox.add(tx, {
+            type: 'transaction.validated',
+            aggregateType: 'transaction',
+            aggregateId: t.id,
+            payload: { txId: t.id },
+          });
           const movements = await this.ledger.post(tx, {
             transactionId: t.id,
             currency: input.currency,
             lines: input.lines,
             captureHoldId: input.captureHoldId ?? null,
           });
-          const done = await tx.transaction.update({ where: { id: t.id }, data: { status: 'COMPLETED', completedAt: this.clock.now() } });
+          const done = await tx.transaction.update({
+            where: { id: t.id },
+            data: { status: 'COMPLETED', completedAt: this.clock.now() },
+          });
           await this.audit(tx, t.id, 'EXECUTED', 'COMPLETED', { movements: movements.length });
           await this.outbox.add(tx, {
             type: 'transaction.completed',
             aggregateType: 'transaction',
             aggregateId: t.id,
-            payload: { txId: t.id, type: done.type, completedAt: done.completedAt!.toISOString(), movementIds: movements.map((m) => m.id) },
+            payload: {
+              txId: t.id,
+              type: done.type,
+              completedAt: done.completedAt!.toISOString(),
+              movementIds: movements.map((m) => m.id),
+            },
           });
           return done;
         },
@@ -260,13 +366,21 @@ export class TransactionsService {
       const reason = e instanceof Error ? e.message : String(e);
       // ROLLBACK effectué : la transaction passe en FAILED (aucun mouvement n'a été écrit)
       await this.uow.run(async (tx) => {
-        await tx.transaction.update({ where: { id: t.id }, data: { status: 'FAILED', failureCode: code, failureReason: reason.slice(0, 500) } });
+        await tx.transaction.update({
+          where: { id: t.id },
+          data: { status: 'FAILED', failureCode: code, failureReason: reason.slice(0, 500) },
+        });
         await this.audit(tx, t.id, 'EXECUTION', 'FAILED', { code, reason: reason.slice(0, 500) });
         await this.outbox.add(tx, {
           type: 'transaction.failed',
           aggregateType: 'transaction',
           aggregateId: t.id,
-          payload: { txId: t.id, initiatorId: t.initiatorId, failureCode: code, failureReason: reason.slice(0, 500) },
+          payload: {
+            txId: t.id,
+            initiatorId: t.initiatorId,
+            failureCode: code,
+            failureReason: reason.slice(0, 500),
+          },
         });
       });
       throw e;
@@ -282,8 +396,14 @@ export class TransactionsService {
     if (!original) throw new DomainError('NOT_FOUND', 'Transaction introuvable');
     const already = await this.prisma.transaction.findUnique({ where: { reversalOfId: txId } });
     if (already?.status === 'COMPLETED') return already;
-    if (original.status !== 'COMPLETED') throw new DomainError('INVALID_STATE_TRANSITION', `Transaction ${original.status} : annulation impossible`);
-    const movements = await this.prisma.walletMovement.findMany({ where: { transactionId: txId, type: { in: ['CREDIT', 'DEBIT'] } } });
+    if (original.status !== 'COMPLETED')
+      throw new DomainError(
+        'INVALID_STATE_TRANSITION',
+        `Transaction ${original.status} : annulation impossible`,
+      );
+    const movements = await this.prisma.walletMovement.findMany({
+      where: { transactionId: txId, type: { in: ['CREDIT', 'DEBIT'] } },
+    });
     const lines: PostingLine[] = movements.map((m) => ({
       walletId: m.walletId,
       direction: m.type === 'CREDIT' ? 'DEBIT' : 'CREDIT',
@@ -308,7 +428,10 @@ export class TransactionsService {
       reversalOfId: txId,
     });
     await this.uow.run(async (tx) => {
-      const res = await tx.transaction.updateMany({ where: { id: txId, status: 'COMPLETED' }, data: { status: 'REVERSED' } });
+      const res = await tx.transaction.updateMany({
+        where: { id: txId, status: 'COMPLETED' },
+        data: { status: 'REVERSED' },
+      });
       if (res.count !== 1) return;
       await this.audit(tx, txId, 'REVERSED', 'REVERSED', { reversalTxId: reversal.id, reason });
       await this.outbox.add(tx, {
@@ -323,7 +446,12 @@ export class TransactionsService {
 
   async getForActor(actor: Actor, id: string): Promise<Transaction> {
     const t = await this.prisma.transaction.findUnique({ where: { id } });
-    if (!t || (actor.role !== 'SUPER_ADMIN' && t.initiatorId !== actor.userId && t.beneficiaryId !== actor.userId)) {
+    if (
+      !t ||
+      (actor.role !== 'SUPER_ADMIN' &&
+        t.initiatorId !== actor.userId &&
+        t.beneficiaryId !== actor.userId)
+    ) {
       throw new DomainError('NOT_FOUND', 'Transaction introuvable');
     }
     return t;

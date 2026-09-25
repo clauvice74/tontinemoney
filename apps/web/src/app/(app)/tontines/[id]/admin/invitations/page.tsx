@@ -41,7 +41,8 @@ import { frenchErrorMap, zodFr } from '@/lib/zod-fr';
 
 function invitationUrl(inv: InvitationView): string | null {
   if (inv.url) return inv.url;
-  if (inv.code && typeof window !== 'undefined') return `${window.location.origin}/invitations/${inv.code}`;
+  if (inv.code && typeof window !== 'undefined')
+    return `${window.location.origin}/invitations/${inv.code}`;
   return null;
 }
 
@@ -129,7 +130,12 @@ function InvitationForm({
         </FormField>
       ) : null}
       {channel === 'PHONE' ? (
-        <FormField id="inv-phone" label="Téléphone de l’invité" error={errors.phone?.message} required>
+        <FormField
+          id="inv-phone"
+          label="Téléphone de l’invité"
+          error={errors.phone?.message}
+          required
+        >
           <Input {...form.register('phone')} type="tel" placeholder="+237…" />
         </FormField>
       ) : null}
@@ -171,8 +177,18 @@ export default function InvitationsPage() {
             {lastLink ? (
               <Alert variant="success" title="Lien d’invitation">
                 <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Input readOnly value={lastLink} aria-label="Lien d’invitation" onFocus={(e) => e.target.select()} />
-                  <Button type="button" variant="outline" size="sm" onClick={() => void copy(lastLink)}>
+                  <Input
+                    readOnly
+                    value={lastLink}
+                    aria-label="Lien d’invitation"
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void copy(lastLink)}
+                  >
                     <Copy aria-hidden="true" /> Copier
                   </Button>
                 </div>
@@ -212,7 +228,13 @@ export default function InvitationsPage() {
                       <TableRow key={inv.id}>
                         <TableCell>{label(INVITATION_CHANNEL_LABELS, inv.channel)}</TableCell>
                         <TableCell className="text-muted-foreground">
-                          {inv.email ?? inv.phone ?? (inv.channel === 'LINK' ? <Link2 className="size-4" aria-label="Lien" /> : '—')}
+                          {inv.email ??
+                            inv.phone ??
+                            (inv.channel === 'LINK' ? (
+                              <Link2 className="size-4" aria-label="Lien" />
+                            ) : (
+                              '—'
+                            ))}
                         </TableCell>
                         <TableCell>
                           <StatusBadge status={inv.status} labels={INVITATION_STATUS_LABELS} />
@@ -234,7 +256,9 @@ export default function InvitationsPage() {
                               successMessage="Invitation révoquée"
                               onConfirm={async () => {
                                 await api.delete(`/tontines/${id}/invitations/${inv.id}`);
-                                await queryClient.invalidateQueries({ queryKey: ['tontines', id, 'invitations'] });
+                                await queryClient.invalidateQueries({
+                                  queryKey: ['tontines', id, 'invitations'],
+                                });
                               }}
                             />
                           ) : null}

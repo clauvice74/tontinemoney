@@ -1,4 +1,9 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { DataCipher } from '@tontine/auth';
 import { type AppConfig } from '@tontine/config';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
@@ -83,11 +88,20 @@ export class S3DocumentStorage extends DocumentStorage {
 
   protected async putRaw(key: string, data: Buffer): Promise<void> {
     // Chiffrement applicatif + chiffrement côté serveur (SSE-S3)
-    await this.s3.send(new PutObjectCommand({ Bucket: this.config.S3_BUCKET_KYC, Key: key, Body: data, ServerSideEncryption: 'AES256' }));
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.config.S3_BUCKET_KYC,
+        Key: key,
+        Body: data,
+        ServerSideEncryption: 'AES256',
+      }),
+    );
   }
 
   protected async getRaw(key: string): Promise<Buffer> {
-    const res = await this.s3.send(new GetObjectCommand({ Bucket: this.config.S3_BUCKET_KYC, Key: key }));
+    const res = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.S3_BUCKET_KYC, Key: key }),
+    );
     return Buffer.from(await res.Body!.transformToByteArray());
   }
 
