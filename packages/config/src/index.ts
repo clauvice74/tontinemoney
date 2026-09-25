@@ -47,6 +47,9 @@ export const envSchema = z
     PSP_DEFAULT_PROVIDER: z.enum(['simulated']).default('simulated'),
     PSP_WEBHOOK_SECRET: z.string().min(16),
     PSP_WEBHOOK_TOLERANCE_SECONDS: z.coerce.number().int().min(30).default(300),
+    /** Squelettes réels (désactivés) : utilisés uniquement pour vérifier des webhooks de test. */
+    FLUTTERWAVE_WEBHOOK_HASH: z.string().default(''),
+    PAYSTACK_SECRET_KEY: z.string().default(''),
     SCHEDULER_ENABLED: bool.default('true'),
     OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional().default(''),
     METRICS_ENABLED: bool.default('true'),

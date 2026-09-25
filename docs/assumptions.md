@@ -145,3 +145,27 @@ Toute invitation porte un code secret (seul son SHA-256 est stocké). Un seul li
 ## A-32 — Délégation de création (A-04, précision)
 
 Le super-admin ne crée pas la tontine lui-même (les paramètres financiers appartiennent à l'admin) : il crée le compte avec le nom de tontine délégué. L'admin crée ensuite UNE tontine sans l'exigence TIER_3 ; la délégation est consommée atomiquement avec la création (port `ADMIN_DELEGATION` implémenté par Auth).
+
+## A-33 — Première échéance
+
+La première échéance est la première occurrence de la règle de fréquence **strictement postérieure** à la date de début : si la tontine démarre un mercredi « 1er du mois », la 1re échéance est le 1er mercredi du mois suivant. Les membres ont toujours au moins un jour pour cotiser.
+
+## A-34 — Règlement des paiements PSP
+
+Le passage d'un paiement à `COMPLETED` (webhook ou polling) et le crédit du wallet sont découplés : `payment.completed` est publié dans l'outbox et son consommateur (`payments.settlement`) exécute la transaction interne idempotente (`payment:{id}`). Un crash entre les deux est rattrapé par le relais ; un écart persistant est signalé par la réconciliation (`PAYMENT_WITHOUT_TRANSACTION`). Un webhook dont le montant ou la devise diffère n'est jamais appliqué (`AMOUNT_MISMATCH`, audit).
+
+## A-35 — PSP simulé
+
+Deux instances du simulateur (`simulated`, `simulated-backup`) permettent de démontrer le repli. Scénarios déterministes : numéro finissant par `0003` → prestataire indisponible ; `0001` → versement refusé. La confirmation USSD et la page 3-D Secure sont servies par l'API (`/api/v1/psp-sim/*`, désactivées en production). Les retraits en attente sont réglés automatiquement après 30 s par une tâche du simulateur.
+
+## A-36 — Concurrence sur une échéance
+
+Un verrou applicatif atomique (KV `incr` + TTL 60 s) garantit un seul paiement en cours par contribution ; les requêtes concurrentes reçoivent `409 IDEMPOTENCY_IN_PROGRESS`. Le grand livre reste la garantie finale (SERIALIZABLE, clés d'idempotence du hold et de la transaction).
+
+## A-37 — Emplacement des comptes de tontine (US-10.2)
+
+Les comptes de tontine sont une configuration de la tontine : ils sont gérés par le module Tontines (et non Administration) pour éviter une dépendance circulaire. Le compte principal est créé avec la tontine.
+
+## A-38 — PRIORITY_NEED au démarrage
+
+En mode besoin prioritaire, la tontine démarre sans bénéficiaire désigné pour le cycle 1 (`firstBeneficiaryId = null`) ; l'admin désigne ensuite le bénéficiaire (US-4.6). Le paiement du pot exige une désignation (`PAYOUT_NOT_READY`).

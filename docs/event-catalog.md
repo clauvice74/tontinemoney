@@ -109,3 +109,4 @@ Règles :
 | `tontine.cancelled`                         | tontines              | tontineId, reason                                                                                 | notifications                              |
 | `tontine.closure.blocked`                   | tontines              | tontineId, blockers[]                                                                             | notifications                              |
 | `admin.message.sent`                        | administration        | tontineId, messageId, recipientCount                                                              | notifications                              |
+| `tontine.beneficiary.designated`            | tontines              | tontineId, cycleId, cycleNumber, beneficiaryId, mode, proof                                       | notifications                              |

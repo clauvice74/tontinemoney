@@ -447,6 +447,21 @@ export const TEMPLATES = {
       sms: 'TontineMoney: invitation to the {tontine} tontine. Respond: {lien}',
     },
   }),
+  'tontine.beneficiary_designated': T({
+    category: 'TONTINE',
+    priority: 'MEDIUM',
+    channels: ['IN_APP', 'SMS'],
+    fr: {
+      title: 'Bénéficiaire désigné',
+      body: 'Tontine {tontine} : {beneficiaire} est le bénéficiaire du cycle {numero}.',
+      sms: 'TontineMoney : {beneficiaire} beneficiaire du cycle {numero} ({tontine}).',
+    },
+    en: {
+      title: 'Beneficiary designated',
+      body: '{tontine} tontine: {beneficiaire} is the beneficiary of cycle {numero}.',
+      sms: 'TontineMoney: {beneficiaire} is beneficiary of cycle {numero} ({tontine}).',
+    },
+  }),
   'tontine.member_added': T({
     category: 'TONTINE',
     priority: 'LOW',

@@ -4,3 +4,5 @@ export * from './tontines.service';
 export * from './invitations.service';
 export * from './domain/calendar';
 export * from './domain/draw';
+export * from './cycles.service';
+export * from './contributions.service';

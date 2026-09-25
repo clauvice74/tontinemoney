@@ -348,12 +348,30 @@ export class NotificationConsumers {
   async onTontineStarted(e: E<'tontine.started'>): Promise<void> {
     const t = await this.tontineName(e.payload.tontineId);
     const participants = await this.tontines.participantIds(e.payload.tontineId);
-    const names = await this.firstNames([e.payload.firstBeneficiaryId]);
+    const first = e.payload.firstBeneficiaryId;
+    const names = first ? await this.firstNames([first]) : new Map<string, string>();
     await this.notifications.notify({
       ...this.base(e),
       recipientIds: participants,
       template: 'tontine.started',
-      vars: { tontine: t.name, beneficiaire: names.get(e.payload.firstBeneficiaryId) ?? '' },
+      vars: { tontine: t.name, beneficiaire: first ? (names.get(first) ?? '') : '—' },
+    });
+  }
+
+  /** US-4.6 §4 : le bénéficiaire désigné est annoncé à tous les membres. */
+  @OnEvent('tontine.beneficiary.designated', { consumer: 'notifications.beneficiary-designated' })
+  async onBeneficiaryDesignated(e: E<'tontine.beneficiary.designated'>): Promise<void> {
+    const t = await this.tontineName(e.payload.tontineId);
+    const names = await this.firstNames([e.payload.beneficiaryId]);
+    await this.notifications.notify({
+      ...this.base(e),
+      recipientIds: await this.tontines.participantIds(e.payload.tontineId),
+      template: 'tontine.beneficiary_designated',
+      vars: {
+        tontine: t.name,
+        numero: e.payload.cycleNumber,
+        beneficiaire: names.get(e.payload.beneficiaryId) ?? '',
+      },
     });
   }
 

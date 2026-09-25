@@ -92,8 +92,11 @@ export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;
 
 export const respondInvitationSchema = z.object({ accept: z.boolean() });
 
-/** FIXED_ORDER — ordre de passage (cycles futurs uniquement, R-TON-08). */
-export const drawOrderSchema = z.object({ memberIds: z.array(uuidSchema).min(3).max(50) });
+/**
+ * FIXED_ORDER — ordre de passage. Avant démarrage : tous les membres actifs ; après : uniquement
+ * les passages futurs (R-TON-08), d'où un minimum de 1.
+ */
+export const drawOrderSchema = z.object({ memberIds: z.array(uuidSchema).min(1).max(50) });
 
 /** PRIORITY_NEED — demande prioritaire et désignation (A-15). */
 export const priorityRequestSchema = z.object({ reason: z.string().trim().min(10).max(1000) });

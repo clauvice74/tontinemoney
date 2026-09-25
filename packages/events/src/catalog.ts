@@ -221,7 +221,8 @@ export const EVENT_CATALOG = {
     z.object({
       tontineId: id,
       memberCount: z.number().int(),
-      firstBeneficiaryId: id,
+      /** null en mode PRIORITY_NEED tant que l'admin n'a pas désigné le bénéficiaire (A-15). */
+      firstBeneficiaryId: nullableId,
       drawProof: z.string().nullable(),
     }),
   ),
@@ -233,6 +234,17 @@ export const EVENT_CATALOG = {
       cycleNumber: z.number().int(),
       beneficiaryId: nullableId,
       dueDate: z.string(),
+    }),
+  ),
+  'tontine.beneficiary.designated': def(
+    'tontines',
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      cycleNumber: z.number().int(),
+      beneficiaryId: id,
+      mode: z.string(),
+      proof: z.string(),
     }),
   ),
   'tontine.contribution.due': def(

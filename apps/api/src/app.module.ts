@@ -10,6 +10,7 @@ import { ComplianceModule } from '@tontine/compliance';
 import { KycModule } from '@tontine/kyc';
 import { MembersModule, MembersPortsModule } from '@tontine/members';
 import { NotificationsModule } from '@tontine/notifications';
+import { PaymentsModule } from '@tontine/payments';
 import {
   JwtAuthGuard,
   PlatformModule,
@@ -43,6 +44,7 @@ export class AppModule implements NestModule {
         TransactionsModule,
         KycModule,
         TontinesModule,
+        PaymentsModule,
       ],
       controllers: [HealthController, OpsController],
       providers: [

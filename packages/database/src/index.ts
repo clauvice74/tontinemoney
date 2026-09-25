@@ -105,6 +105,7 @@ export const ALL_TABLES = [
   'pay_payments',
   'pay_status_history',
   'pay_webhook_events',
+  'pay_sim_operations',
   'ntf_templates',
   'ntf_notifications',
   'ntf_outbound_messages',

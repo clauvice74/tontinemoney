@@ -272,6 +272,19 @@ export class TontinesService {
           where: { id: t.id },
           data: { poolWalletId: pool.id, reserveWalletId: reserve.id },
         });
+        // US-10.2 : compte principal (cotisations) adossé à la cagnotte — seul compte fonctionnel en V1
+        await tx.tontineAccount.create({
+          data: {
+            tontineId: t.id,
+            name: 'Compte principal',
+            type: 'MAIN',
+            rules: {},
+            functional: true,
+            walletId: pool.id,
+            createdById: actor.userId,
+            createdAt: this.clock.now(),
+          },
+        });
         // US-4.1 §5 : le créateur est inscrit comme administrateur (et participant, A-04)
         await tx.tontineMember.create({
           data: {

@@ -65,6 +65,8 @@ export async function createApp(options: CreateAppOptions): Promise<NestExpressA
     logger: options.config.NODE_ENV === 'test' ? false : logger,
     bufferLogs: options.config.NODE_ENV !== 'test',
     bodyParser: false,
+    // Corps brut conservé pour la vérification des signatures de webhooks PSP
+    rawBody: true,
   });
   configureApp(app, options.config);
   if (options.config.NODE_ENV !== 'production' || process.env['SWAGGER_ENABLED'] === 'true') {

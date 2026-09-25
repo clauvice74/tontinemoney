@@ -8,7 +8,7 @@ describe('calendrier des échéances (A-27)', () => {
     // 2026-11-04 est un mercredi
     expect(dueDateForCycle('WEEKLY', { day: 'wednesday' }, '2026-11-02', 1)).toBe('2026-11-04');
     expect(dueDateForCycle('WEEKLY', { day: 'wednesday' }, '2026-11-02', 3)).toBe('2026-11-18');
-    expect(dueDateForCycle('WEEKLY', { day: 'wednesday' }, '2026-11-04', 1)).toBe('2026-11-04');
+    expect(dueDateForCycle('WEEKLY', { day: 'wednesday' }, '2026-11-04', 1)).toBe('2026-11-11');
   });
   it('BIWEEKLY : +14 j', () => {
     expect(dueDateForCycle('BIWEEKLY', { day: 'friday' }, '2026-11-02', 2)).toBe('2026-11-20');
@@ -28,7 +28,7 @@ describe('calendrier des échéances (A-27)', () => {
     expect(dueDateForCycle('MONTHLY', { day: 'friday', weekOfMonth: -1 }, '2026-11-01', 1)).toBe(
       '2026-11-27',
     );
-    expect(dueDateForCycle('MONTHLY', { lastDayOfMonth: true }, '2028-01-31', 2)).toBe(
+    expect(dueDateForCycle('MONTHLY', { lastDayOfMonth: true }, '2028-01-30', 2)).toBe(
       '2028-02-29',
     );
   });
@@ -38,7 +38,7 @@ describe('calendrier des échéances (A-27)', () => {
   });
   it('début de cycle = lendemain de l’échéance précédente', () => {
     expect(cycleStartDate('WEEKLY', { day: 'monday' }, '2026-11-02', 1)).toBe('2026-11-02');
-    expect(cycleStartDate('WEEKLY', { day: 'monday' }, '2026-11-02', 2)).toBe('2026-11-03');
+    expect(cycleStartDate('WEEKLY', { day: 'monday' }, '2026-11-02', 2)).toBe('2026-11-10');
   });
   it('date civile locale selon le fuseau', () => {
     const now = new Date('2026-09-24T23:30:00Z');

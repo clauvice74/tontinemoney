@@ -122,7 +122,7 @@ function firstOccurrence(frequency: Frequency, detail: FrequencyDetail, from: st
 
 /**
  * Date limite du cycle `n` (1-indexé). Le cycle 1 échoit à la première occurrence de la règle
- * à partir de la date de début ; chaque cycle suivant à l'occurrence suivante.
+ * postérieure à la date de début ; chaque cycle suivant à l'occurrence suivante.
  */
 export function dueDateForCycle(
   frequency: Frequency,
@@ -131,7 +131,9 @@ export function dueDateForCycle(
   n: number,
 ): string {
   if (n < 1) throw new Error('Numéro de cycle invalide');
-  let due = firstOccurrence(frequency, detail, startDate);
+  // A-27 : la 1re échéance est la première occurrence STRICTEMENT après la date de début
+  // (les membres disposent toujours d'au moins un jour pour cotiser).
+  let due = firstOccurrence(frequency, detail, addDays(startDate, 1));
   for (let i = 1; i < n; i++) {
     switch (frequency) {
       case 'WEEKLY':
