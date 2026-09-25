@@ -176,6 +176,10 @@ export const EVENT_CATALOG = {
     'kyc',
     z.object({ memberId: id, duplicateOfMemberId: id, similarityScore: z.number(), alertId: id }),
   ),
+  'kyc.duplicate.resolved': def(
+    'kyc',
+    z.object({ memberId: id, alertId: id, resolution: z.enum(['CONFIRMED', 'DISMISSED']) }),
+  ),
   'kyc.aml.match': def(
     'kyc',
     z.object({ memberId: id, matchId: id, listName: z.string(), score: z.number() }),

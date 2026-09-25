@@ -18,6 +18,8 @@ import {
 } from '@tontine/platform';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
+import { TransactionsService } from '@tontine/transactions';
+import { syntheticPng } from '@tontine/kyc';
 import { createApp } from '../../src/bootstrap';
 
 export const PASSWORD = 'Tontine#2026-Secure';
@@ -219,6 +221,34 @@ export class TestContext {
     return t;
   }
 
+  /** Crédite un wallet membre comme un dépôt PSP confirmé (grand livre cohérent). */
+  async fund(memberId: string, amountMinor: bigint): Promise<void> {
+    const w = await this.prisma.wallet.findUniqueOrThrow({ where: { memberId } });
+    const clearing =
+      (await this.prisma.wallet.findFirst({ where: { systemCode: 'PSP_CLEARING', currency: w.currency } })) ??
+      (await this.prisma.wallet.create({ data: { ownerType: 'SYSTEM', systemCode: 'PSP_CLEARING', currency: w.currency, allowNegative: true } }));
+    await this.app.get(TransactionsService).execute({
+      idempotencyKey: `test-fund-${randomUUID()}`,
+      type: 'DEPOSIT',
+      amountMinor,
+      currency: w.currency,
+      initiatorId: memberId,
+      beneficiaryId: memberId,
+      sourceWalletId: clearing.id,
+      destinationWalletId: w.id,
+      contextType: 'PAYMENT',
+      lines: [
+        { walletId: clearing.id, direction: 'DEBIT', amountMinor, context: 'DEPOSIT' },
+        { walletId: w.id, direction: 'CREDIT', amountMinor, context: 'DEPOSIT' },
+      ],
+    });
+  }
+
+  async balance(memberId: string): Promise<{ balance: bigint; blocked: bigint }> {
+    const w = await this.prisma.wallet.findUniqueOrThrow({ where: { memberId } });
+    return { balance: w.balanceMinor, blocked: w.blockedMinor };
+  }
+
   async addParticipant(
     tontineId: string,
     memberId: string,
@@ -228,6 +258,11 @@ export class TestContext {
       data: { tontineId, memberId, role: 'MEMBER', status },
     });
   }
+}
+
+/** Images KYC synthétiques (PNG valides) avec marqueurs de simulation optionnels. */
+export function kycImage(markers = '', width = 1200, height = 800): Buffer {
+  return syntheticPng(width, height, markers ? `SIM:${markers};${randomUUID()}` : randomUUID());
 }
 
 export function extractCookie(setCookie: string[] | string | undefined): string {

@@ -77,6 +77,16 @@ export class MembersConsumers {
     });
   }
 
+  @OnEvent('kyc.duplicate.resolved', { consumer: 'members.kyc-duplicate-resolved' })
+  async onDuplicateResolved(e: EventEnvelope<'kyc.duplicate.resolved'>): Promise<void> {
+    if (e.payload.resolution !== 'DISMISSED') return;
+    await this.members.applyTrigger(e.payload.memberId, 'duplicate.dismissed', {
+      reason: 'Doublon biométrique écarté par un agent',
+      changedBy: null,
+      changedByRole: 'KYC_AGENT',
+    });
+  }
+
   @OnEvent('kyc.expired', { consumer: 'members.kyc-expired' })
   async onKycExpired(e: EventEnvelope<'kyc.expired'>): Promise<void> {
     await this.members.setKycLevel(

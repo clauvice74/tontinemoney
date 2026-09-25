@@ -26,3 +26,4 @@ export * from './observability/metrics.service';
 export * from './observability/logger';
 export * from './platform.module';
 export * from './ports';
+export * from './resilience/circuit-breaker';
