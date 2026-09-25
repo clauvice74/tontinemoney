@@ -1,0 +1,2044 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/admin/jobs": {
+      "get": {
+        "operationId": "OpsController_listJobs_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tâches planifiées disponibles",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/jobs/{name}/run": {
+      "post": {
+        "operationId": "OpsController_runJob_v1",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Exécuter une tâche planifiée à la demande (démonstration, rattrapage)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/outbox/dead": {
+      "get": {
+        "operationId": "OpsController_dead_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Événements en DLQ (échec définitif de publication)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/outbox/{eventId}/requeue": {
+      "post": {
+        "operationId": "OpsController_requeue_v1",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remettre un événement DLQ en file",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "operationId": "OpsController_audit_v1",
+        "parameters": [
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "resourceType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 50
+                }
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "result",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["SUCCESS", "DENIED", "FAILURE"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Journal d’audit (lecture seule)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/me/notifications": {
+      "get": {
+        "operationId": "MyNotificationsController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "unread",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["true", "false"]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mes notifications in-app (historique)",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/me/notifications/{id}/read": {
+      "post": {
+        "operationId": "MyNotificationsController_read_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Marquer une notification comme lue",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/me/notifications/read-all": {
+      "post": {
+        "operationId": "MyNotificationsController_readAll_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Tout marquer comme lu",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/dev/messages": {
+      "get": {
+        "operationId": "DevMessagesController_list_v1",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 255
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "[DEV] Messages SMS/email simulés (404 en production)",
+        "tags": ["Développement"]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_doLogin_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": ["identifier", "password"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Connexion (US-1.4) — renvoie les jetons ou un défi MFA",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/login/mfa": {
+      "post": {
+        "operationId": "AuthController_loginMfa_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challengeToken": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["challengeToken", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Second facteur (TOTP, SMS ou code de récupération)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Rotation du refresh token (cookie tm_rt) et nouvel access token",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Déconnexion : révocation du refresh token et blacklist de l’access token",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon compte : rôle, statut, état d’accès, MFA",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "AuthController_sessions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes sessions actives (5 maximum)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "operationId": "AuthController_revokeSession_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Révoquer une de mes sessions",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/request-account": {
+      "post": {
+        "operationId": "AuthController_requestAccount_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL"]
+                  },
+                  "invitationCode": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "tontineName": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "captchaToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "preferredChannel",
+                  "captchaToken"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Demande de compte (US-1.3) — réponse générique, captcha, 5 / heure / IP",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/activate": {
+      "post": {
+        "operationId": "AuthController_activate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "otp": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["password"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Activation du compte par lien (48 h) ou OTP (15 min) et choix du mot de passe",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/activation/resend": {
+      "post": {
+        "operationId": "AuthController_resend_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  }
+                },
+                "required": ["identifier"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Renvoi du code d’activation (3 / heure)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgot_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  }
+                },
+                "required": ["identifier"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mot de passe oublié (US-1.5) — toujours 200, sans fuite d’information",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_reset_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "newPassword"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Nouveau mot de passe (jeton 1 h, usage unique, différent des 5 derniers)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa": {
+      "get": {
+        "operationId": "AuthController_mfaStatus_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "État de la double authentification",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/enable": {
+      "post": {
+        "operationId": "AuthController_mfaEnable_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["TOTP", "SMS"]
+                  }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activer le MFA (US-1.6) : TOTP → QR code ; SMS → code envoyé",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "operationId": "AuthController_mfaVerify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": ["code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmer le MFA ; renvoie 10 codes de récupération (affichés une seule fois)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/sms-code": {
+      "post": {
+        "operationId": "AuthController_mfaSmsCode_v1",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recevoir un code SMS (MFA SMS actif)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/disable": {
+      "post": {
+        "operationId": "AuthController_mfaDisable_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["password", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Désactiver le MFA : mot de passe + code valide (alerte envoyée)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_regenerate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Régénérer les codes de récupération",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/admin/tontine-admins": {
+      "post": {
+        "operationId": "AdminUsersController_createTontineAdmin_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string",
+                    "pattern": "^(fr|en)(-[A-Z]{2})?$"
+                  },
+                  "tontineName": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "country",
+                  "language",
+                  "tontineName"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Créer un administrateur de tontine (US-1.1)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/tontines/{tontineId}/members": {
+      "post": {
+        "operationId": "AdminUsersController_registerMember_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL"]
+                  },
+                  "dateOfBirth": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                },
+                "required": ["firstName", "lastName", "preferredChannel"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Inscrire un membre dans ma tontine (US-1.2) — admin de la tontine uniquement",
+        "tags": ["Administration — comptes"]
+      },
+      "get": {
+        "operationId": "MembersController_list_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "KYC_REQUIRED",
+                    "KYC_IN_REVIEW",
+                    "KYC_REJECTED",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING_REVIEW"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "kycLevel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["NONE", "TIER_1", "TIER_2", "TIER_3"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name_asc", "name_desc", "registered_desc", "registered_asc", "status"],
+              "default": "name_asc"
+            }
+          },
+          {
+            "name": "membership",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "PENDING_APPROVAL", "ALL"],
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membres d’une tontine : filtres, recherche, tri, pagination par curseur (US-2.3)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/access-requests": {
+      "get": {
+        "operationId": "AdminUsersController_listAccessRequests_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["PENDING", "APPROVED", "REJECTED", "EXPIRED"]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Demandes d’accès à traiter (US-10.1 super-admin ; US-2.4 admin de tontine)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/access-requests/{requestId}/decision": {
+      "post": {
+        "operationId": "AdminUsersController_decide_v1",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "enum": ["APPROVE"]
+                      },
+                      "tontineId": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    },
+                    "required": ["decision"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "enum": ["REJECT"]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": ["decision", "reason"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accepter / refuser une demande (motif obligatoire en cas de refus)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/admin/users/{userId}/unlock": {
+      "post": {
+        "operationId": "AdminUsersController_unlock_v1",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Déverrouiller un compte (R-AUTH-LOGIN-02)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "AdminUsersController_users_v1",
+        "parameters": [
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["SUPER_ADMIN", "TONTINE_ADMIN", "MEMBER", "KYC_AGENT"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING_APPROVAL",
+                    "PENDING_ACTIVATION",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "REJECTED",
+                    "EXPIRED",
+                    "INACTIVE"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rechercher des comptes (super-admin)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "operationId": "JwksController_jwks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "JWKS (RS256)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "operationId": "MembersController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon profil membre",
+        "tags": ["Membres"]
+      },
+      "patch": {
+        "operationId": "MembersController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "dateOfBirth": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": ["M", "F", "OTHER", "UNDISCLOSED"]
+                  },
+                  "language": {
+                    "type": "string",
+                    "pattern": "^(fr|en)(-[A-Z]{2})?$"
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "maxLength": 50
+                  }
+                },
+                "required": ["version"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Compléter / modifier mon profil (US-2.2) — verrou optimiste par version",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/notification-preferences": {
+      "put": {
+        "operationId": "MembersController_prefs_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL", "PUSH", "IN_APP"]
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": ["IMMEDIATE", "DAILY_DIGEST"],
+                    "default": "IMMEDIATE"
+                  },
+                  "enabledTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "SECURITY",
+                        "ACCOUNT",
+                        "TONTINE",
+                        "PAYMENT",
+                        "WALLET",
+                        "KYC",
+                        "ADMIN",
+                        "MESSAGE"
+                      ]
+                    },
+                    "maxItems": 8
+                  },
+                  "quietHours": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      },
+                      "end": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      }
+                    },
+                    "required": ["start", "end"],
+                    "additionalProperties": false,
+                    "nullable": true
+                  }
+                },
+                "required": ["preferredChannel", "enabledTypes", "quietHours"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Préférences de notification (US-8.5) — la sécurité reste toujours active",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/profile/photo": {
+      "post": {
+        "operationId": "MembersController_uploadPhoto_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Photo de profil (JPEG/PNG, 5 Mo max)",
+        "tags": ["Membres"]
+      },
+      "get": {
+        "operationId": "MembersController_photo_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ma photo de profil",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/profile/history": {
+      "get": {
+        "operationId": "MembersController_history_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique versionné de mon profil (R-MBR-06)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/{memberId}": {
+      "get": {
+        "operationId": "MembersController_getMember_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Profil d’un membre (contrôle de propriété strict)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/suspend": {
+      "post": {
+        "operationId": "MembersController_suspend_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspendre un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/reactivate": {
+      "post": {
+        "operationId": "MembersController_reactivate_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lever la suspension d’un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/wallet": {
+      "get": {
+        "operationId": "WalletsController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon portefeuille : solde total, disponible, bloqué",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/me/wallet/movements": {
+      "get": {
+        "operationId": "WalletsController_history_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["CREDIT", "DEBIT", "HOLD", "RELEASE"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "context",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "TONTINE_CONTRIBUTION",
+                    "TONTINE_PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "tontineId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique des mouvements (US-5.2) — filtré par le porteur du jeton",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/admin/wallets/{walletId}/status": {
+      "post": {
+        "operationId": "WalletsController_setStatus_v1",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACTIVE", "SUSPENDED", "LOCKED", "CLOSED"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["status", "reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Changer le statut d’un portefeuille (super-admin)",
+        "tags": ["Portefeuille"]
+      }
+    }
+  },
+  "info": {
+    "title": "TontineMoney API",
+    "description": "API REST versionnée du MVP TontineMoney (monolithe modulaire). Erreurs au format Problem Details (RFC 9457). Montants en chaînes décimales (unités majeures) + devise ISO 4217. En-tête Idempotency-Key obligatoire sur les POST financiers.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tm_rt"
+      }
+    },
+    "schemas": {}
+  }
+}

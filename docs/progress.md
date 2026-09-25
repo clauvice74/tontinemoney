@@ -6,6 +6,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (définition de termin�
 
 - **Phase 0** — analyse des specs (59 stories), 28 hypothèses, architecture, modèle de domaine, sécurité, catalogue d'événements, conventions d'API, plan.
 - **Phase 1** — monorepo pnpm/Turborepo ; Docker Compose ; Prisma 7 sans moteur natif + outil de migration hors ligne (schema engine WASM) ; migration initiale (CHECK financiers, triggers append-only, trigram) ; packages contracts/events/auth/config/platform (outbox, relais inprocess/Kafka, consommateurs idempotents, idempotence HTTP, audit, gardes, Problem Details, rate limiting, jobs, métriques) ; domaines auth, members, wallets (grand livre), notifications, ports tontines ; API NestJS ; seed de démonstration. Contrôles : format ✔ lint ✔ typecheck ✔ tests unitaires ✔ intégration 54 ✔.
+- **Phase 2** — profil versionné, liste membres (curseur, filtres, trigram, masquage), décisions d'accès, transitions de statut, détection du pays, demande de compte, mot de passe oublié. 33 tests d'intégration supplémentaires (87 au total). Contrat d'API complet publié dans `docs/api-routes.md` (base du frontend).
 
 ## Stories
 
@@ -66,7 +67,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (définition de termin�
 | US-9.2  | Validation de conformité des opérations          | ⬜     |          |       |                     |             |
 | US-9.3  | Mise à jour dynamique des règles                 | ⬜     |          |       |                     |             |
 | US-9.4  | Détection et blocage des violations              | ⬜     |          |       |                     |             |
-| US-10.1 | Validation des demandes d'accès admin            | ⬜     |          |       |                     |             |
+| US-10.1 | Validation des demandes d'accès admin            | ✅ | services/auth/src/admin.controller.ts, registration.service.ts | phase2.e2e-spec.ts (US-10.1 ×3) | Liste, profil, tontine associée, accepter / refuser avec motif, notification | Documents joints : non prévus en V1 |
 | US-10.2 | Configuration des comptes de tontine             | ⬜     |          |       |                     |             |
 | US-10.3 | Messagerie ciblée                                | ⬜     |          |       |                     |             |
 | US-10.4 | Génération de rapports financiers                | ⬜     |          |       |                     |             |
