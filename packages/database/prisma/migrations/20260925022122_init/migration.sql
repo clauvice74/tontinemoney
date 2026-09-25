@@ -272,6 +272,8 @@ CREATE TABLE "auth_users" (
     "lockReason" TEXT,
     "lastLoginAt" TIMESTAMPTZ(3),
     "createdById" UUID,
+    "delegatedTontineName" TEXT,
+    "delegatedTontineUsed" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
 
@@ -1344,6 +1346,7 @@ ALTER TABLE "pay_status_history" ADD CONSTRAINT "pay_status_history_paymentId_fk
 
 -- AddForeignKey
 ALTER TABLE "cmp_rule_history" ADD CONSTRAINT "cmp_rule_history_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "cmp_rules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 
 -- ============================================================================
 -- Contraintes et protections non exprimables dans schema.prisma

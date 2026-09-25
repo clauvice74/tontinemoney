@@ -29,8 +29,12 @@ export function forbidden(detail = 'Accès refusé'): DomainError {
 }
 
 export function invalidTransition(from: string, to: string, entity = 'ressource'): DomainError {
-  return new DomainError('INVALID_STATE_TRANSITION', `Transition ${from} → ${to} interdite pour ${entity}`, {
-    from,
-    to,
-  });
+  return new DomainError(
+    'INVALID_STATE_TRANSITION',
+    `Transition ${from} → ${to} interdite pour ${entity}`,
+    {
+      from,
+      to,
+    },
+  );
 }

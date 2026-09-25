@@ -13,7 +13,10 @@ export async function hashSecret(secret: string, cost: number): Promise<string> 
   return hash(secret, cost);
 }
 
-export async function verifySecret(secret: string, digest: string | null | undefined): Promise<boolean> {
+export async function verifySecret(
+  secret: string,
+  digest: string | null | undefined,
+): Promise<boolean> {
   if (!digest) {
     // Temps constant approximatif même sans empreinte (anti-énumération).
     await hash(secret, 4);

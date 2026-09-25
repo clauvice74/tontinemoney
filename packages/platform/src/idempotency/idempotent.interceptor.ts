@@ -26,7 +26,11 @@ export function Idempotent(scope: string): MethodDecorator {
   return applyDecorators(
     SetMetadata(IDEMPOTENT_SCOPE, scope),
     UseInterceptors(IdempotencyInterceptor),
-    ApiHeader({ name: 'Idempotency-Key', required: true, description: 'Clé unique (8-128 caractères) par opération' }),
+    ApiHeader({
+      name: 'Idempotency-Key',
+      required: true,
+      description: 'Clé unique (8-128 caractères) par opération',
+    }),
   );
 }
 
@@ -50,7 +54,12 @@ export class IdempotencyInterceptor implements NestInterceptor {
     return from(
       this.idempotency
         .execute(
-          { scope, key: parsed.data, userId, request: { body: req.body ?? null, params: req.params ?? {} } },
+          {
+            scope,
+            key: parsed.data,
+            userId,
+            request: { body: req.body ?? null, params: req.params ?? {} },
+          },
           async () => {
             const body = await lastValueFrom(next.handle());
             return { status: res.statusCode || 200, body };
@@ -59,7 +68,12 @@ export class IdempotencyInterceptor implements NestInterceptor {
         .then((result) => {
           if (result.replayed) {
             res.setHeader('Idempotent-Replayed', 'true');
-            const b = result.body as { __error?: boolean; code?: string; detail?: string; extra?: Record<string, unknown> };
+            const b = result.body as {
+              __error?: boolean;
+              code?: string;
+              detail?: string;
+              extra?: Record<string, unknown>;
+            };
             if (b && b.__error && b.code) {
               throw new DomainError(b.code as never, b.detail, b.extra ?? {});
             }

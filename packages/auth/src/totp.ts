@@ -5,7 +5,11 @@ export function generateTotpSecret(): string {
   return new OTPAuth.Secret({ size: 20 }).base32;
 }
 
-function totpFor(secretBase32: string, label = 'TontineMoney', issuer = 'TontineMoney'): OTPAuth.TOTP {
+function totpFor(
+  secretBase32: string,
+  label = 'TontineMoney',
+  issuer = 'TontineMoney',
+): OTPAuth.TOTP {
   return new OTPAuth.TOTP({
     issuer,
     label,
@@ -27,5 +31,7 @@ export function generateTotp(secretBase32: string, at: Date = new Date()): strin
 /** Vérifie un code avec une tolérance d'une période (±30 s). */
 export function verifyTotp(secretBase32: string, code: string, at: Date = new Date()): boolean {
   if (!/^\d{6}$/.test(code)) return false;
-  return totpFor(secretBase32).validate({ token: code, timestamp: at.getTime(), window: 1 }) !== null;
+  return (
+    totpFor(secretBase32).validate({ token: code, timestamp: at.getTime(), window: 1 }) !== null
+  );
 }

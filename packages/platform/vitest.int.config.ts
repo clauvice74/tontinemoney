@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.int-spec.ts'],
     fileParallelism: false,
+    globalSetup: ['../../packages/database/scripts/test-global-setup.mjs'],
     testTimeout: 30_000,
     hookTimeout: 30_000,
   },

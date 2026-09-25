@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { applyPercentBps, formatMoney, fromMinor, moneyInputSchema, percentToBps, toMinor } from './money';
+import {
+  applyPercentBps,
+  formatMoney,
+  fromMinor,
+  moneyInputSchema,
+  percentToBps,
+  toMinor,
+} from './money';
 
 describe('Money (A-13)', () => {
   it('convertit les devises sans décimales (XAF)', () => {
@@ -47,7 +54,10 @@ describe('Money (A-13)', () => {
   });
 
   it('valide un montant saisi via zod', () => {
-    expect(moneyInputSchema.parse({ amount: '100', currency: 'xaf' })).toEqual({ currency: 'XAF', minor: 100n });
+    expect(moneyInputSchema.parse({ amount: '100', currency: 'xaf' })).toEqual({
+      currency: 'XAF',
+      minor: 100n,
+    });
     expect(moneyInputSchema.safeParse({ amount: '0', currency: 'XAF' }).success).toBe(false);
     expect(moneyInputSchema.safeParse({ amount: '1.5', currency: 'XAF' }).success).toBe(false);
   });

@@ -23,7 +23,11 @@ export class RequestContextMiddleware implements NestMiddleware {
       if (!this.metrics.enabled) return;
       const route = (req.route?.path as string | undefined) ?? 'unmatched';
       const seconds = Number(process.hrtime.bigint() - started) / 1e9;
-      this.metrics.httpRequests.inc({ method: req.method, route, status_class: `${Math.floor(res.statusCode / 100)}xx` });
+      this.metrics.httpRequests.inc({
+        method: req.method,
+        route,
+        status_class: `${Math.floor(res.statusCode / 100)}xx`,
+      });
       this.metrics.httpDuration.observe({ method: req.method, route }, seconds);
     });
     const devCountry = req.header('x-dev-country');

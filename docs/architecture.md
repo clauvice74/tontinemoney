@@ -96,9 +96,11 @@ Voir `docs/domain-model.md`.
 ## 5. Flux transverses
 
 ### 5.1 Requête HTTP
+
 `CorrelationMiddleware` (x-correlation-id) → `JwtAuthGuard` → `RolesGuard` → garde de propriété (`@OwnsResource`, `TontineAccessService`) → `ZodValidationPipe` → contrôleur → service de domaine → `$transaction` Prisma (écriture métier + audit + outbox) → réponse. Les erreurs sont normalisées par `ProblemDetailsFilter` (RFC 9457).
 
 ### 5.2 Événements
+
 ```
 Service ──(même transaction SQL)──► outbox_events
 OutboxRelay (poll 250 ms, FOR UPDATE SKIP LOCKED)
@@ -107,31 +109,35 @@ OutboxRelay (poll 250 ms, FOR UPDATE SKIP LOCKED)
 Handler : insert processed_events(consumer, event_id) ON CONFLICT DO NOTHING
           → si déjà présent : ignoré (idempotence)
 ```
+
 Retry avec backoff exponentiel ; après `maxAttempts`, l'événement passe en `DEAD` (DLQ consultable par le super-admin).
 
 ### 5.3 Opération financière
+
 Voir `docs/domain-model.md` §Grand livre. Toute écriture monétaire passe par `LedgerService.post()` (package `wallets`) qui :
+
 1. verrouille les wallets concernés par ordre d'identifiant croissant (`FOR UPDATE`) ;
 2. vérifie statut, devise, solde disponible ;
 3. insère les écritures (somme débits = somme crédits) ;
 4. met à jour les soldes projetés avec contrôle de version ;
 5. écrit les événements dans l'outbox ;
-le tout en isolation `SERIALIZABLE` avec retry borné (3) sur conflit `40001`.
+   le tout en isolation `SERIALIZABLE` avec retry borné (3) sur conflit `40001`.
 
 ### 5.4 Tâches planifiées
+
 `@nestjs/schedule` déclenche des jobs idempotents (expiration des holds, démarrage des tontines, retards, rappels, expiration KYC, réconciliation, expiration des demandes d'accès, relais outbox). Chaque job est aussi exécutable à la demande par le super-admin (`POST /api/v1/admin/jobs/{name}/run`) pour les démonstrations et les tests E2E.
 
 ## 6. Fournisseurs externes (tous simulés)
 
-| Interface | Adaptateur local | Adaptateurs préparés |
-|---|---|---|
-| `DocumentStorage` | disque chiffré / MinIO | S3 |
-| `OcrProvider`, `FaceMatchProvider`, `BiometricIndex`, `LivenessProvider` | simulés déterministes | Smile Identity / Onfido |
-| `AmlScreeningProvider` (sanctions + PEP) | liste de test embarquée | — |
-| `PaymentProvider` | `SimulatedPsp` (mobile money, carte, retrait, remboursement, webhooks, relevés) | `FlutterwaveProvider`, `PaystackProvider` (squelettes non câblés, lèvent `ProviderDisabledError`) |
-| `SmsProvider` | simulé (table + logs) | Twilio / Africa's Talking |
-| `EmailProvider` | SMTP (Mailpit) | SendGrid |
-| `CaptchaVerifier`, `GeoIpResolver`, `FraudScoringPort` | simulés | hCaptcha, MaxMind |
+| Interface                                                                | Adaptateur local                                                                | Adaptateurs préparés                                                                              |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `DocumentStorage`                                                        | disque chiffré / MinIO                                                          | S3                                                                                                |
+| `OcrProvider`, `FaceMatchProvider`, `BiometricIndex`, `LivenessProvider` | simulés déterministes                                                           | Smile Identity / Onfido                                                                           |
+| `AmlScreeningProvider` (sanctions + PEP)                                 | liste de test embarquée                                                         | —                                                                                                 |
+| `PaymentProvider`                                                        | `SimulatedPsp` (mobile money, carte, retrait, remboursement, webhooks, relevés) | `FlutterwaveProvider`, `PaystackProvider` (squelettes non câblés, lèvent `ProviderDisabledError`) |
+| `SmsProvider`                                                            | simulé (table + logs)                                                           | Twilio / Africa's Talking                                                                         |
+| `EmailProvider`                                                          | SMTP (Mailpit)                                                                  | SendGrid                                                                                          |
+| `CaptchaVerifier`, `GeoIpResolver`, `FraudScoringPort`                   | simulés                                                                         | hCaptcha, MaxMind                                                                                 |
 
 Le comportement des simulateurs est **déterministe** (dérivé des entrées) afin que les tests soient reproductibles. Exemple : un selfie dont l'empreinte contient `facematch:72` produit un score de 72 %.
 
@@ -144,9 +150,9 @@ Le comportement des simulateurs est **déterministe** (dérivé des entrées) af
 
 ## 8. Extraction future en microservices
 
-| Aujourd'hui | Demain |
-|---|---|
-| Port synchrone TypeScript | Client HTTP/gRPC généré depuis le contrat |
-| Outbox → dispatcher in-process | Outbox → Redpanda (déjà supporté) |
-| Tables préfixées dans une base | Base dédiée par service |
+| Aujourd'hui                               | Demain                                                                                             |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Port synchrone TypeScript                 | Client HTTP/gRPC généré depuis le contrat                                                          |
+| Outbox → dispatcher in-process            | Outbox → Redpanda (déjà supporté)                                                                  |
+| Tables préfixées dans une base            | Base dédiée par service                                                                            |
 | Transaction SQL englobant wallet + ledger | Inchangé (même service `wallets`) ; les autres domaines utilisent déjà des sagas avec compensation |

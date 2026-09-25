@@ -55,6 +55,8 @@ export type UserMinAggregateOutputType = {
   lockReason: string | null
   lastLoginAt: Date | null
   createdById: string | null
+  delegatedTontineName: string | null
+  delegatedTontineUsed: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +82,8 @@ export type UserMaxAggregateOutputType = {
   lockReason: string | null
   lastLoginAt: Date | null
   createdById: string | null
+  delegatedTontineName: string | null
+  delegatedTontineUsed: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -105,6 +109,8 @@ export type UserCountAggregateOutputType = {
   lockReason: number
   lastLoginAt: number
   createdById: number
+  delegatedTontineName: number
+  delegatedTontineUsed: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -140,6 +146,8 @@ export type UserMinAggregateInputType = {
   lockReason?: true
   lastLoginAt?: true
   createdById?: true
+  delegatedTontineName?: true
+  delegatedTontineUsed?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -165,6 +173,8 @@ export type UserMaxAggregateInputType = {
   lockReason?: true
   lastLoginAt?: true
   createdById?: true
+  delegatedTontineName?: true
+  delegatedTontineUsed?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -190,6 +200,8 @@ export type UserCountAggregateInputType = {
   lockReason?: true
   lastLoginAt?: true
   createdById?: true
+  delegatedTontineName?: true
+  delegatedTontineUsed?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -302,6 +314,8 @@ export type UserGroupByOutputType = {
   lockReason: string | null
   lastLoginAt: Date | null
   createdById: string | null
+  delegatedTontineName: string | null
+  delegatedTontineUsed: boolean
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -350,6 +364,8 @@ export type UserWhereInput = {
   lockReason?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdById?: Prisma.UuidNullableFilter<"User"> | string | null
+  delegatedTontineName?: Prisma.StringNullableFilter<"User"> | string | null
+  delegatedTontineUsed?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   passwordHistory?: Prisma.PasswordHistoryListRelationFilter
@@ -381,6 +397,8 @@ export type UserOrderByWithRelationInput = {
   lockReason?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
+  delegatedTontineName?: Prisma.SortOrderInput | Prisma.SortOrder
+  delegatedTontineUsed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   passwordHistory?: Prisma.PasswordHistoryOrderByRelationAggregateInput
@@ -415,6 +433,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lockReason?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdById?: Prisma.UuidNullableFilter<"User"> | string | null
+  delegatedTontineName?: Prisma.StringNullableFilter<"User"> | string | null
+  delegatedTontineUsed?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   passwordHistory?: Prisma.PasswordHistoryListRelationFilter
@@ -446,6 +466,8 @@ export type UserOrderByWithAggregationInput = {
   lockReason?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
+  delegatedTontineName?: Prisma.SortOrderInput | Prisma.SortOrder
+  delegatedTontineUsed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -479,6 +501,8 @@ export type UserScalarWhereWithAggregatesInput = {
   lockReason?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdById?: Prisma.UuidNullableWithAggregatesFilter<"User"> | string | null
+  delegatedTontineName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  delegatedTontineUsed?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -504,6 +528,8 @@ export type UserCreateInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -535,6 +561,8 @@ export type UserUncheckedCreateInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -566,6 +594,8 @@ export type UserUpdateInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -597,6 +627,8 @@ export type UserUncheckedUpdateInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -628,6 +660,8 @@ export type UserCreateManyInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -653,6 +687,8 @@ export type UserUpdateManyMutationInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -678,6 +714,8 @@ export type UserUncheckedUpdateManyInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -703,6 +741,8 @@ export type UserCountOrderByAggregateInput = {
   lockReason?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  delegatedTontineName?: Prisma.SortOrder
+  delegatedTontineUsed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -732,6 +772,8 @@ export type UserMaxOrderByAggregateInput = {
   lockReason?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  delegatedTontineName?: Prisma.SortOrder
+  delegatedTontineUsed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -757,6 +799,8 @@ export type UserMinOrderByAggregateInput = {
   lockReason?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  delegatedTontineName?: Prisma.SortOrder
+  delegatedTontineUsed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -895,6 +939,8 @@ export type UserCreateWithoutPasswordHistoryInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
@@ -925,6 +971,8 @@ export type UserUncheckedCreateWithoutPasswordHistoryInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
@@ -971,6 +1019,8 @@ export type UserUpdateWithoutPasswordHistoryInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
@@ -1001,6 +1051,8 @@ export type UserUncheckedUpdateWithoutPasswordHistoryInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -1031,6 +1083,8 @@ export type UserCreateWithoutTokensInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -1061,6 +1115,8 @@ export type UserUncheckedCreateWithoutTokensInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -1107,6 +1163,8 @@ export type UserUpdateWithoutTokensInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -1137,6 +1195,8 @@ export type UserUncheckedUpdateWithoutTokensInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -1167,6 +1227,8 @@ export type UserCreateWithoutSessionsInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -1197,6 +1259,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -1243,6 +1307,8 @@ export type UserUpdateWithoutSessionsInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -1273,6 +1339,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -1303,6 +1371,8 @@ export type UserCreateWithoutRecoveryCodesInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -1333,6 +1403,8 @@ export type UserUncheckedCreateWithoutRecoveryCodesInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -1379,6 +1451,8 @@ export type UserUpdateWithoutRecoveryCodesInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -1409,6 +1483,8 @@ export type UserUncheckedUpdateWithoutRecoveryCodesInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -1439,6 +1515,8 @@ export type UserCreateWithoutKnownDevicesInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -1469,6 +1547,8 @@ export type UserUncheckedCreateWithoutKnownDevicesInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -1515,6 +1595,8 @@ export type UserUpdateWithoutKnownDevicesInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -1545,6 +1627,8 @@ export type UserUncheckedUpdateWithoutKnownDevicesInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -1575,6 +1659,8 @@ export type UserCreateWithoutAccessRequestsInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryCreateNestedManyWithoutUserInput
@@ -1605,6 +1691,8 @@ export type UserUncheckedCreateWithoutAccessRequestsInput = {
   lockReason?: string | null
   lastLoginAt?: Date | string | null
   createdById?: string | null
+  delegatedTontineName?: string | null
+  delegatedTontineUsed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
@@ -1651,6 +1739,8 @@ export type UserUpdateWithoutAccessRequestsInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUpdateManyWithoutUserNestedInput
@@ -1681,6 +1771,8 @@ export type UserUncheckedUpdateWithoutAccessRequestsInput = {
   lockReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  delegatedTontineUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHistory?: Prisma.PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
@@ -1787,6 +1879,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lockReason?: boolean
   lastLoginAt?: boolean
   createdById?: boolean
+  delegatedTontineName?: boolean
+  delegatedTontineUsed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   passwordHistory?: boolean | Prisma.User$passwordHistoryArgs<ExtArgs>
@@ -1819,6 +1913,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lockReason?: boolean
   lastLoginAt?: boolean
   createdById?: boolean
+  delegatedTontineName?: boolean
+  delegatedTontineUsed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1844,6 +1940,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lockReason?: boolean
   lastLoginAt?: boolean
   createdById?: boolean
+  delegatedTontineName?: boolean
+  delegatedTontineUsed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1869,11 +1967,13 @@ export type UserSelectScalar = {
   lockReason?: boolean
   lastLoginAt?: boolean
   createdById?: boolean
+  delegatedTontineName?: boolean
+  delegatedTontineUsed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "status" | "firstName" | "lastName" | "countryCode" | "language" | "preferredChannel" | "mfaEnabled" | "mfaType" | "mfaSecretEnc" | "mfaPendingSecretEnc" | "failedLoginCount" | "lockedUntil" | "lockReason" | "lastLoginAt" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "status" | "firstName" | "lastName" | "countryCode" | "language" | "preferredChannel" | "mfaEnabled" | "mfaType" | "mfaSecretEnc" | "mfaPendingSecretEnc" | "failedLoginCount" | "lockedUntil" | "lockReason" | "lastLoginAt" | "createdById" | "delegatedTontineName" | "delegatedTontineUsed" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   passwordHistory?: boolean | Prisma.User$passwordHistoryArgs<ExtArgs>
   tokens?: boolean | Prisma.User$tokensArgs<ExtArgs>
@@ -1917,6 +2017,11 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lockReason: string | null
     lastLoginAt: Date | null
     createdById: string | null
+    /**
+     * A-04 : tontine réservée par le super-admin lors de la création d'un admin délégué.
+     */
+    delegatedTontineName: string | null
+    delegatedTontineUsed: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -2368,6 +2473,8 @@ export interface UserFieldRefs {
   readonly lockReason: Prisma.FieldRef<"User", 'String'>
   readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdById: Prisma.FieldRef<"User", 'String'>
+  readonly delegatedTontineName: Prisma.FieldRef<"User", 'String'>
+  readonly delegatedTontineUsed: Prisma.FieldRef<"User", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

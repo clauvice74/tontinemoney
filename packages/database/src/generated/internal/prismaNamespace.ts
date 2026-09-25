@@ -4081,6 +4081,8 @@ export const UserScalarFieldEnum = {
   lockReason: 'lockReason',
   lastLoginAt: 'lastLoginAt',
   createdById: 'createdById',
+  delegatedTontineName: 'delegatedTontineName',
+  delegatedTontineUsed: 'delegatedTontineUsed',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

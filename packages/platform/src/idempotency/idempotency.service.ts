@@ -44,7 +44,9 @@ export class IdempotencyService {
     fn: () => Promise<{ status: number; body: T }>,
   ): Promise<IdempotentResult<T>> {
     const requestHash = requestFingerprint(params.request);
-    const where = { scope_userId_key: { scope: params.scope, userId: params.userId, key: params.key } };
+    const where = {
+      scope_userId_key: { scope: params.scope, userId: params.userId, key: params.key },
+    };
     let recordId: string;
     try {
       const rec = await this.prisma.idempotencyKey.create({
@@ -63,25 +65,44 @@ export class IdempotencyService {
       if (!existing) throw new DomainError('IDEMPOTENCY_IN_PROGRESS');
       if (existing.requestHash !== requestHash) throw new DomainError('IDEMPOTENCY_KEY_REUSED');
       if (existing.status === 'IN_PROGRESS') throw new DomainError('IDEMPOTENCY_IN_PROGRESS');
-      return { status: existing.responseStatus ?? 200, body: existing.responseBody as T, replayed: true };
+      return {
+        status: existing.responseStatus ?? 200,
+        body: existing.responseBody as T,
+        replayed: true,
+      };
     }
 
     try {
       const result = await fn();
       await this.prisma.idempotencyKey.update({
         where: { id: recordId },
-        data: { status: 'COMPLETED', responseStatus: result.status, responseBody: result.body as object },
+        data: {
+          status: 'COMPLETED',
+          responseStatus: result.status,
+          responseBody: result.body as object,
+        },
       });
       return { ...result, replayed: false };
     } catch (error) {
-      if (error instanceof DomainError && error.status >= 400 && error.status < 500 && error.status !== 409 && error.status !== 429) {
+      if (
+        error instanceof DomainError &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 409 &&
+        error.status !== 429
+      ) {
         // Erreur métier déterministe : mémorisée pour un rejeu cohérent.
         await this.prisma.idempotencyKey.update({
           where: { id: recordId },
           data: {
             status: 'COMPLETED',
             responseStatus: error.status,
-            responseBody: { __error: true, code: error.code, detail: error.message, extra: error.extra } as object,
+            responseBody: {
+              __error: true,
+              code: error.code,
+              detail: error.message,
+              extra: error.extra,
+            } as object,
           },
         });
       } else {
@@ -93,7 +114,9 @@ export class IdempotencyService {
   }
 
   async purgeExpired(): Promise<number> {
-    const res = await this.prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lt: this.clock.now() } } });
+    const res = await this.prisma.idempotencyKey.deleteMany({
+      where: { expiresAt: { lt: this.clock.now() } },
+    });
     return res.count;
   }
 }

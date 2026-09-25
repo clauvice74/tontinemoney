@@ -39,13 +39,25 @@ export const registerMemberSchema = z
   })
   .superRefine((v, ctx) => {
     if (!v.email && !v.phone) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: 'Au moins un identifiant requis' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['email'],
+        message: 'Au moins un identifiant requis',
+      });
     }
     if (v.preferredChannel === 'SMS' && !v.phone) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['phone'], message: 'Téléphone requis pour le canal SMS' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['phone'],
+        message: 'Téléphone requis pour le canal SMS',
+      });
     }
     if (v.preferredChannel === 'EMAIL' && !v.email) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: 'Email requis pour le canal email' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['email'],
+        message: 'Email requis pour le canal email',
+      });
     }
   });
 export type RegisterMemberInput = z.infer<typeof registerMemberSchema>;
@@ -63,11 +75,7 @@ export const requestAccountSchema = z.object({
 });
 export type RequestAccountInput = z.infer<typeof requestAccountSchema>;
 
-export const identifierSchema = z
-  .string()
-  .trim()
-  .min(3)
-  .max(255);
+export const identifierSchema = z.string().trim().min(3).max(255);
 
 /** US-1.4 */
 export const loginSchema = z.object({
@@ -89,7 +97,10 @@ export const activateAccountSchema = z
   .object({
     token: z.string().min(10).max(512).optional(),
     identifier: identifierSchema.optional(),
-    otp: z.string().regex(/^\d{6}$/).optional(),
+    otp: z
+      .string()
+      .regex(/^\d{6}$/)
+      .optional(),
     password: passwordSchema,
   })
   .refine((v) => !!v.token || (!!v.identifier && !!v.otp), {
@@ -109,7 +120,12 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 /** US-1.6 */
 export const mfaEnableSchema = z.object({ type: z.enum(['TOTP', 'SMS']) });
-export const mfaVerifySchema = z.object({ code: z.string().trim().regex(/^\d{6}$/) });
+export const mfaVerifySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/),
+});
 export const mfaDisableSchema = z.object({
   password: z.string().min(1).max(256),
   code: z.string().trim().min(6).max(12),
@@ -119,7 +135,10 @@ export const mfaRecoveryAckSchema = z.object({ acknowledged: z.literal(true) });
 /** US-10.1 — décision sur une demande d'accès. */
 export const accessDecisionSchema = z.discriminatedUnion('decision', [
   z.object({ decision: z.literal('APPROVE'), tontineId: uuidSchema.optional() }),
-  z.object({ decision: z.literal('REJECT'), reason: z.string().trim().min(1, 'Le motif est obligatoire').max(1000) }),
+  z.object({
+    decision: z.literal('REJECT'),
+    reason: z.string().trim().min(1, 'Le motif est obligatoire').max(1000),
+  }),
 ]);
 export type AccessDecisionInput = z.infer<typeof accessDecisionSchema>;
 

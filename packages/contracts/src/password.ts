@@ -31,7 +31,8 @@ export interface PasswordCheck {
 /** Politique : ≥ 12 caractères, minuscule, majuscule, chiffre, symbole, pas un mot de passe courant. */
 export function checkPasswordPolicy(password: string): PasswordCheck {
   const failures: string[] = [];
-  if (password.length < PASSWORD_MIN_LENGTH) failures.push(`au moins ${PASSWORD_MIN_LENGTH} caractères`);
+  if (password.length < PASSWORD_MIN_LENGTH)
+    failures.push(`au moins ${PASSWORD_MIN_LENGTH} caractères`);
   if (password.length > 128) failures.push('au plus 128 caractères');
   if (!/[a-z]/.test(password)) failures.push('une minuscule');
   if (!/[A-Z]/.test(password)) failures.push('une majuscule');

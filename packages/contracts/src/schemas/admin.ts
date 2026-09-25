@@ -33,7 +33,14 @@ export const targetedMessageSchema = z.object({
 export type TargetedMessageInput = z.infer<typeof targetedMessageSchema>;
 
 /** US-10.4 — rapports financiers. */
-export const REPORT_KINDS = ['CYCLE', 'MONTHLY', 'ANNUAL', 'CONTRIBUTIONS', 'PENALTIES', 'FINAL'] as const;
+export const REPORT_KINDS = [
+  'CYCLE',
+  'MONTHLY',
+  'ANNUAL',
+  'CONTRIBUTIONS',
+  'PENALTIES',
+  'FINAL',
+] as const;
 export const reportQuerySchema = z.object({
   kind: z.enum(REPORT_KINDS),
   format: z.enum(['pdf', 'csv', 'json']).default('json'),

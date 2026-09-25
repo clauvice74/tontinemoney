@@ -16,8 +16,15 @@ export interface CreatePrismaOptions {
 /** Options du client Prisma 7 (sans moteur natif) connecté via l'adaptateur `pg`. */
 export function prismaClientOptions(options: CreatePrismaOptions) {
   // Session en UTC : l'adaptateur transmet les horodatages sans fuseau.
-  const adapter = new PrismaPg({ connectionString: options.url, max: options.poolSize ?? 10, options: '-c TimeZone=UTC' });
-  return { adapter, log: options.log ? (['query', 'warn', 'error'] as const) : (['warn', 'error'] as const) } as const;
+  const adapter = new PrismaPg({
+    connectionString: options.url,
+    max: options.poolSize ?? 10,
+    options: '-c TimeZone=UTC',
+  });
+  return {
+    adapter,
+    log: options.log ? (['query', 'warn', 'error'] as const) : (['warn', 'error'] as const),
+  } as const;
 }
 
 export function createPrismaClient(options: CreatePrismaOptions): PrismaClient {
@@ -52,7 +59,8 @@ export function isUniqueViolation(error: unknown, field?: string): boolean {
 /** Vrai si l'erreur provient d'une contrainte CHECK (ex. solde négatif) ou d'un trigger append-only. */
 export function isCheckViolation(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error);
-  const meta = error instanceof Prisma.PrismaClientKnownRequestError ? JSON.stringify(error.meta ?? {}) : '';
+  const meta =
+    error instanceof Prisma.PrismaClientKnownRequestError ? JSON.stringify(error.meta ?? {}) : '';
   return /23514|check constraint|append-only/i.test(`${msg} ${meta}`);
 }
 
@@ -107,7 +115,10 @@ export const ALL_TABLES = [
   'adm_messages',
 ] as const;
 
-export async function truncateAll(client: PrismaClient, keep: readonly string[] = []): Promise<void> {
+export async function truncateAll(
+  client: PrismaClient,
+  keep: readonly string[] = [],
+): Promise<void> {
   const tables = ALL_TABLES.filter((t) => !keep.includes(t))
     .map((t) => `"${t}"`)
     .join(', ');

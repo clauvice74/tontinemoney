@@ -54,8 +54,12 @@ describe('ZodValidationPipe', () => {
   });
 
   it('mappe les codes métier spécifiques', () => {
-    const pipe = new ZodValidationPipe(z.object({ a: z.string().refine(() => false, 'Au moins un identifiant requis') }));
-    expect(() => pipe.transform({ a: 'x' })).toThrow(expect.objectContaining({ code: 'MISSING_IDENTIFIER' }));
+    const pipe = new ZodValidationPipe(
+      z.object({ a: z.string().refine(() => false, 'Au moins un identifiant requis') }),
+    );
+    expect(() => pipe.transform({ a: 'x' })).toThrow(
+      expect.objectContaining({ code: 'MISSING_IDENTIFIER' }),
+    );
   });
 });
 
@@ -71,7 +75,9 @@ describe('RequestContext', () => {
 
 describe('Empreinte de requête', () => {
   it('est indépendante de l’ordre des clés', () => {
-    expect(requestFingerprint({ a: 1, b: { c: 2, d: 3 } })).toBe(requestFingerprint({ b: { d: 3, c: 2 }, a: 1 }));
+    expect(requestFingerprint({ a: 1, b: { c: 2, d: 3 } })).toBe(
+      requestFingerprint({ b: { d: 3, c: 2 }, a: 1 }),
+    );
     expect(requestFingerprint({ a: 1 })).not.toBe(requestFingerprint({ a: 2 }));
   });
 });

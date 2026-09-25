@@ -43,8 +43,15 @@ export class TokenVerificationError extends Error {
 }
 
 export async function generateRsaKeyMaterial(kid = `dev-${Date.now()}`): Promise<KeyMaterial> {
-  const { privateKey, publicKey } = await generateKeyPair('RS256', { modulusLength: 2048, extractable: true });
-  return { kid, privateKeyPem: await exportPKCS8(privateKey), publicKeyPem: await exportSPKI(publicKey) };
+  const { privateKey, publicKey } = await generateKeyPair('RS256', {
+    modulusLength: 2048,
+    extractable: true,
+  });
+  return {
+    kid,
+    privateKeyPem: await exportPKCS8(privateKey),
+    publicKeyPem: await exportSPKI(publicKey),
+  };
 }
 
 /**
@@ -58,7 +65,11 @@ export class JwtKeyStore {
     private readonly issuer: string,
   ) {}
 
-  static async create(active: KeyMaterial, previous: KeyMaterial[] = [], issuer = 'tontinemoney'): Promise<JwtKeyStore> {
+  static async create(
+    active: KeyMaterial,
+    previous: KeyMaterial[] = [],
+    issuer = 'tontinemoney',
+  ): Promise<JwtKeyStore> {
     const privateKey = await importPKCS8(active.privateKeyPem, 'RS256');
     const keys: JWK[] = [];
     for (const km of [active, ...previous]) {
@@ -80,7 +91,11 @@ export class JwtKeyStore {
   ): Promise<{ token: string; jti: string; expiresAt: Date }> {
     const iat = Math.floor(now.getTime() / 1000);
     const jti = claims.jti ?? randomUUID();
-    const token = await new SignJWT({ role: claims.role, tontineIds: claims.tontineIds, sid: claims.sid })
+    const token = await new SignJWT({
+      role: claims.role,
+      tontineIds: claims.tontineIds,
+      sid: claims.sid,
+    })
       .setProtectedHeader({ alg: 'RS256', kid: this.active.kid, typ: 'JWT' })
       .setSubject(claims.sub)
       .setIssuer(this.issuer)
@@ -122,7 +137,8 @@ export class JwtKeyStore {
       };
     } catch (e) {
       if (e instanceof TokenVerificationError) throw e;
-      if (e instanceof joseErrors.JWTExpired) throw new TokenVerificationError('Jeton expiré', true);
+      if (e instanceof joseErrors.JWTExpired)
+        throw new TokenVerificationError('Jeton expiré', true);
       throw new TokenVerificationError('Jeton invalide');
     }
   }

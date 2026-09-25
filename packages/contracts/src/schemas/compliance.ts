@@ -14,7 +14,10 @@ export const complianceValidateSchema = z.object({
 
 /** US-9.3 — règle dynamique. `params` dépend du type. */
 export const complianceRuleSchema = z.object({
-  code: z.string().trim().regex(/^[A-Z]{2}-[A-Z0-9-]{3,40}$/, 'Code attendu : CC-NOM-REGLE'),
+  code: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{2}-[A-Z0-9-]{3,40}$/, 'Code attendu : CC-NOM-REGLE'),
   countryCode: countryCodeSchema,
   ruleType: z.enum(COMPLIANCE_RULE_TYPES),
   operationTypes: z.array(z.enum(OPERATION_TYPES)).min(1),

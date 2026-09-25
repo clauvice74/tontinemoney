@@ -20,6 +20,7 @@
     "db:reset": "dotenv -e ../../.env -- node scripts/migrate.mjs reset"
   },
   "dependencies": {
+    "@node-rs/bcrypt": "1.10.7",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "@tontine/auth": "workspace:*",

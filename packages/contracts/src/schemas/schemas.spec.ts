@@ -3,7 +3,11 @@ import { createTontineSchema, registerMemberSchema, createTontineAdminSchema } f
 
 describe('Schémas de validation', () => {
   it('US-1.2 : au moins un identifiant requis', () => {
-    const r = registerMemberSchema.safeParse({ firstName: 'Jean', lastName: 'Dupont', preferredChannel: 'EMAIL' });
+    const r = registerMemberSchema.safeParse({
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      preferredChannel: 'EMAIL',
+    });
     expect(r.success).toBe(false);
     expect(JSON.stringify(r.error?.issues)).toContain('Au moins un identifiant requis');
   });
@@ -34,7 +38,10 @@ describe('Schémas de validation', () => {
     };
     expect(createTontineSchema.safeParse(base).success).toBe(false);
     expect(
-      createTontineSchema.safeParse({ ...base, frequencyDetail: { day: 'wednesday', weekOfMonth: 1 } }).success,
+      createTontineSchema.safeParse({
+        ...base,
+        frequencyDetail: { day: 'wednesday', weekOfMonth: 1 },
+      }).success,
     ).toBe(true);
   });
 

@@ -28,7 +28,8 @@ export class AuditService {
         resourceId: entry.resourceId ?? null,
         result: entry.result,
         actorId: entry.actorId ?? ctx?.actor?.userId ?? null,
-        actorRole: entry.actorRole ?? ctx?.actor?.role ?? (ctx?.source === 'http' ? 'ANONYMOUS' : 'SYSTEM'),
+        actorRole:
+          entry.actorRole ?? ctx?.actor?.role ?? (ctx?.source === 'http' ? 'ANONYMOUS' : 'SYSTEM'),
         ip: ctx?.ip ?? null,
         userAgent: ctx?.userAgent?.slice(0, 255) ?? null,
         country: ctx?.country ?? null,

@@ -71,11 +71,12 @@ function loadMigrationsList() {
 }
 
 async function engine() {
-  const [{ SchemaEngine }, { PrismaPg }, { bindMigrationAwareSqlAdapterFactory }] = await Promise.all([
-    import('@prisma/schema-engine-wasm'),
-    import('@prisma/adapter-pg'),
-    import('@prisma/driver-adapter-utils'),
-  ]);
+  const [{ SchemaEngine }, { PrismaPg }, { bindMigrationAwareSqlAdapterFactory }] =
+    await Promise.all([
+      import('@prisma/schema-engine-wasm'),
+      import('@prisma/adapter-pg'),
+      import('@prisma/driver-adapter-utils'),
+    ]);
   const schema = readFileSync(schemaPath, 'utf8');
   // L'adaptateur découpe les scripts sur « ; » : on exécute plutôt le script d'un bloc
   // (fonctions plpgsql, commentaires contenant des points-virgules).
@@ -149,17 +150,24 @@ async function deploy() {
     );
     const failed = rows.filter((r) => !r.finished_at && !r.rolled_back_at);
     if (failed.length) {
-      fail(`Migration(s) en échec à résoudre avant de continuer : ${failed.map((r) => r.migration_name).join(', ')}`);
+      fail(
+        `Migration(s) en échec à résoudre avant de continuer : ${failed.map((r) => r.migration_name).join(', ')}`,
+      );
     }
-    const applied = new Map(rows.filter((r) => r.finished_at).map((r) => [r.migration_name, r.checksum]));
+    const applied = new Map(
+      rows.filter((r) => r.finished_at).map((r) => [r.migration_name, r.checksum]),
+    );
     let count = 0;
     for (const dir of loadMigrationsList().migrationDirectories) {
-      if (dir.migrationFile.content.tag !== 'ok') fail(`${dir.path} : ${dir.migrationFile.content.value}`);
+      if (dir.migrationFile.content.tag !== 'ok')
+        fail(`${dir.path} : ${dir.migrationFile.content.value}`);
       const script = dir.migrationFile.content.value;
       const checksum = createHash('sha256').update(script).digest('hex');
       if (applied.has(dir.path)) {
         if (applied.get(dir.path) !== checksum) {
-          console.warn(`⚠ La migration ${dir.path} a été modifiée après application (checksum différent)`);
+          console.warn(
+            `⚠ La migration ${dir.path} a été modifiée après application (checksum différent)`,
+          );
         }
         continue;
       }
@@ -174,7 +182,10 @@ async function deploy() {
         await client.query('COMMIT');
       } catch (e) {
         await client.query('ROLLBACK');
-        await client.query('UPDATE "_prisma_migrations" SET logs = $2 WHERE id = $1', [id, String(e?.message ?? e)]);
+        await client.query('UPDATE "_prisma_migrations" SET logs = $2 WHERE id = $1', [
+          id,
+          String(e?.message ?? e),
+        ]);
         fail(`Échec de ${dir.path} : ${e?.message ?? e}`);
       }
       await client.query(
@@ -207,7 +218,8 @@ async function status() {
   }
   const names = new Set(applied.map((r) => r.migration_name));
   const all = loadMigrationsList().migrationDirectories.map((d) => d.path);
-  for (const name of all) console.log(`${names.has(name) ? '✔ appliquée ' : '… en attente'}  ${name}`);
+  for (const name of all)
+    console.log(`${names.has(name) ? '✔ appliquée ' : '… en attente'}  ${name}`);
   const pending = all.filter((n) => !names.has(n));
   process.exitCode = pending.length ? 2 : 0;
 }
@@ -217,7 +229,9 @@ async function status() {
  * calculé par différence entre deux datamodels (aucune base fantôme nécessaire).
  */
 function latestSnapshot() {
-  const dirs = loadMigrationsList().migrationDirectories.map((d) => d.path).reverse();
+  const dirs = loadMigrationsList()
+    .migrationDirectories.map((d) => d.path)
+    .reverse();
   for (const d of dirs) {
     const snap = join(migrationsDir, d, 'schema.prisma');
     if (existsSync(snap)) return readFileSync(snap, 'utf8');
@@ -249,7 +263,10 @@ async function newMigration(name) {
     console.log('✔ Aucun changement de schéma détecté');
     return;
   }
-  const stamp = new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:TZ.]/g, '')
+    .slice(0, 14);
   const dir = join(migrationsDir, `${stamp}_${name}`);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'migration.sql'), `${sql}\n`);

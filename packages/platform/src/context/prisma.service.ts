@@ -7,7 +7,10 @@ import { APP_CONFIG } from './tokens';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
   constructor(@Inject(APP_CONFIG) config: AppConfig) {
-    const o = prismaClientOptions({ url: config.DATABASE_URL, poolSize: config.NODE_ENV === 'test' ? 5 : 20 });
+    const o = prismaClientOptions({
+      url: config.DATABASE_URL,
+      poolSize: config.NODE_ENV === 'test' ? 5 : 20,
+    });
     super({ adapter: o.adapter, log: [...o.log] });
   }
 

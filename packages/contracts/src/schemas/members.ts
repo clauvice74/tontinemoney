@@ -53,7 +53,9 @@ export const listMembersQuerySchema = z.object({
   registeredFrom: isoDateSchema.optional(),
   registeredTo: isoDateSchema.optional(),
   search: z.string().trim().min(1).max(100).optional(),
-  sort: z.enum(['name_asc', 'name_desc', 'registered_desc', 'registered_asc', 'status']).default('name_asc'),
+  sort: z
+    .enum(['name_asc', 'name_desc', 'registered_desc', 'registered_asc', 'status'])
+    .default('name_asc'),
   membership: z.enum(['ACTIVE', 'PENDING_APPROVAL', 'ALL']).default('ALL'),
 });
 export type ListMembersQuery = z.infer<typeof listMembersQuerySchema>;

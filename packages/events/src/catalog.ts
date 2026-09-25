@@ -40,10 +40,19 @@ export const EVENT_CATALOG = {
   'user.activated': def('auth', z.object({ userId: id })),
   'user.login': def(
     'auth',
-    z.object({ userId: id, ip: z.string(), userAgent: z.string(), mfaUsed: z.boolean(), newDevice: z.boolean() }),
+    z.object({
+      userId: id,
+      ip: z.string(),
+      userAgent: z.string(),
+      mfaUsed: z.boolean(),
+      newDevice: z.boolean(),
+    }),
   ),
   'user.logout': def('auth', z.object({ userId: id, sessionId: id })),
-  'user.locked': def('auth', z.object({ userId: id, reason: z.string(), attemptCount: z.number().int() })),
+  'user.locked': def(
+    'auth',
+    z.object({ userId: id, reason: z.string(), attemptCount: z.number().int() }),
+  ),
   'user.unlocked': def('auth', z.object({ userId: id, unlockedBy: id })),
   'user.password.reset': def('auth', z.object({ userId: id })),
   'user.mfa.enabled': def('auth', z.object({ userId: id, mfaType: z.enum(['TOTP', 'SMS']) })),
@@ -58,12 +67,21 @@ export const EVENT_CATALOG = {
       reason: z.string().nullable(),
     }),
   ),
-  'user.security.alert': def('auth', z.object({ userId: id, kind: z.string(), detail: z.string() })),
+  'user.security.alert': def(
+    'auth',
+    z.object({ userId: id, kind: z.string(), detail: z.string() }),
+  ),
 
   // --- members ---
   'member.created': def(
     'members',
-    z.object({ memberId: id, country: z.string().nullable(), language: z.string(), status: z.string(), currency: currency.nullable() }),
+    z.object({
+      memberId: id,
+      country: z.string().nullable(),
+      language: z.string(),
+      status: z.string(),
+      currency: currency.nullable(),
+    }),
   ),
   'member.updated': def(
     'members',
@@ -85,21 +103,45 @@ export const EVENT_CATALOG = {
     }),
   ),
   'member.kyc.required': def('members', z.object({ memberId: id })),
-  'member.suspended': def('members', z.object({ memberId: id, reason: z.string(), suspendedBy: z.string() })),
-  'member.reactivated': def('members', z.object({ memberId: id, reason: z.string(), reactivatedBy: z.string() })),
+  'member.suspended': def(
+    'members',
+    z.object({ memberId: id, reason: z.string(), suspendedBy: z.string() }),
+  ),
+  'member.reactivated': def(
+    'members',
+    z.object({ memberId: id, reason: z.string(), reactivatedBy: z.string() }),
+  ),
   'member.decision': def(
     'members',
-    z.object({ memberId: id, tontineId: id, decision: z.enum(['ACCEPTED', 'REJECTED']), reason: z.string().nullable(), decidedBy: id }),
+    z.object({
+      memberId: id,
+      tontineId: id,
+      decision: z.enum(['ACCEPTED', 'REJECTED']),
+      reason: z.string().nullable(),
+      decidedBy: id,
+    }),
   ),
 
   // --- kyc ---
   'kyc.submitted': def(
     'kyc',
-    z.object({ memberId: id, requestId: id, kycLevel: z.string(), documentTypes: z.array(z.string()) }),
+    z.object({
+      memberId: id,
+      requestId: id,
+      kycLevel: z.string(),
+      documentTypes: z.array(z.string()),
+    }),
   ),
   'kyc.verified': def(
     'kyc',
-    z.object({ memberId: id, requestId: id, kycLevel: z.string(), verifiedAt: z.string(), verifiedBy: z.string() }),
+    z.object({
+      memberId: id,
+      requestId: id,
+      kycLevel: z.string(),
+      verifiedAt: z.string(),
+      verifiedBy: z.string(),
+      documentCountry: z.string().nullable(),
+    }),
   ),
   'kyc.rejected': def(
     'kyc',
@@ -113,9 +155,17 @@ export const EVENT_CATALOG = {
   ),
   'kyc.review.required': def(
     'kyc',
-    z.object({ memberId: id, requestId: id, failedSteps: z.array(z.string()), scores: z.record(z.string(), z.number()) }),
+    z.object({
+      memberId: id,
+      requestId: id,
+      failedSteps: z.array(z.string()),
+      scores: z.record(z.string(), z.number()),
+    }),
   ),
-  'kyc.supplement.requested': def('kyc', z.object({ memberId: id, requestId: id, message: z.string() })),
+  'kyc.supplement.requested': def(
+    'kyc',
+    z.object({ memberId: id, requestId: id, message: z.string() }),
+  ),
   'kyc.expiring': def('kyc', z.object({ memberId: id, requestId: id, daysLeft: z.number().int() })),
   'kyc.expired': def(
     'kyc',
@@ -134,27 +184,52 @@ export const EVENT_CATALOG = {
   // --- tontines ---
   'tontine.created': def(
     'tontines',
-    z.object({ tontineId: id, createdBy: id, type: z.string(), params: z.record(z.string(), z.unknown()) }),
+    z.object({
+      tontineId: id,
+      createdBy: id,
+      type: z.string(),
+      params: z.record(z.string(), z.unknown()),
+    }),
   ),
   'tontine.invitation.sent': def(
     'tontines',
     z.object({ tontineId: id, invitationId: id, channel: z.string(), invitedUserId: nullableId }),
   ),
-  'tontine.member.added': def('tontines', z.object({ tontineId: id, memberId: id, position: z.number().int().nullable() })),
-  'tontine.member.removed': def('tontines', z.object({ tontineId: id, memberId: id, reason: z.string() })),
+  'tontine.member.added': def(
+    'tontines',
+    z.object({ tontineId: id, memberId: id, position: z.number().int().nullable() }),
+  ),
+  'tontine.member.removed': def(
+    'tontines',
+    z.object({ tontineId: id, memberId: id, reason: z.string() }),
+  ),
   'tontine.member.suspended': def(
     'tontines',
     z.object({ tontineId: id, memberId: id, consecutiveDefaults: z.number().int() }),
   ),
   'tontine.ready': def('tontines', z.object({ tontineId: id, memberCount: z.number().int() })),
-  'tontine.start.blocked': def('tontines', z.object({ tontineId: id, blockers: z.array(z.string()) })),
+  'tontine.start.blocked': def(
+    'tontines',
+    z.object({ tontineId: id, blockers: z.array(z.string()) }),
+  ),
   'tontine.started': def(
     'tontines',
-    z.object({ tontineId: id, memberCount: z.number().int(), firstBeneficiaryId: id, drawProof: z.string().nullable() }),
+    z.object({
+      tontineId: id,
+      memberCount: z.number().int(),
+      firstBeneficiaryId: id,
+      drawProof: z.string().nullable(),
+    }),
   ),
   'tontine.cycle.started': def(
     'tontines',
-    z.object({ tontineId: id, cycleId: id, cycleNumber: z.number().int(), beneficiaryId: nullableId, dueDate: z.string() }),
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      cycleNumber: z.number().int(),
+      beneficiaryId: nullableId,
+      dueDate: z.string(),
+    }),
   ),
   'tontine.contribution.due': def(
     'tontines',
@@ -170,11 +245,25 @@ export const EVENT_CATALOG = {
   ),
   'tontine.contribution.received': def(
     'tontines',
-    z.object({ tontineId: id, cycleId: id, contributionId: id, memberId: id, amountMinor: minor, transactionId: id }),
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      contributionId: id,
+      memberId: id,
+      amountMinor: minor,
+      transactionId: id,
+    }),
   ),
   'tontine.contribution.late': def(
     'tontines',
-    z.object({ tontineId: id, cycleId: id, contributionId: id, memberId: id, penaltyMinor: minor, currency }),
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      contributionId: id,
+      memberId: id,
+      penaltyMinor: minor,
+      currency,
+    }),
   ),
   'tontine.contribution.defaulted': def(
     'tontines',
@@ -182,7 +271,14 @@ export const EVENT_CATALOG = {
   ),
   'tontine.payout.initiated': def(
     'tontines',
-    z.object({ tontineId: id, cycleId: id, beneficiaryId: id, totalMinor: minor, currency, partial: z.boolean() }),
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      beneficiaryId: id,
+      totalMinor: minor,
+      currency,
+      partial: z.boolean(),
+    }),
   ),
   'tontine.cycle.completed': def(
     'tontines',
@@ -202,7 +298,10 @@ export const EVENT_CATALOG = {
     'tontines',
     z.object({ tontineId: id, totalCycles: z.number().int(), totalMinor: minor, currency }),
   ),
-  'tontine.closure.blocked': def('tontines', z.object({ tontineId: id, blockers: z.array(z.string()) })),
+  'tontine.closure.blocked': def(
+    'tontines',
+    z.object({ tontineId: id, blockers: z.array(z.string()) }),
+  ),
 
   // --- wallets ---
   'wallet.created': def('wallets', z.object({ walletId: id, memberId: nullableId, currency })),
@@ -222,15 +321,32 @@ export const EVENT_CATALOG = {
   ),
   'wallet.hold.created': def(
     'wallets',
-    z.object({ walletId: id, holdId: id, amountMinor: minor, context: z.string(), referenceId: z.string().nullable() }),
+    z.object({
+      walletId: id,
+      holdId: id,
+      amountMinor: minor,
+      context: z.string(),
+      referenceId: z.string().nullable(),
+    }),
   ),
   'wallet.hold.released': def(
     'wallets',
-    z.object({ walletId: id, holdId: id, amountMinor: minor, outcome: z.enum(['RELEASED', 'CAPTURED']) }),
+    z.object({
+      walletId: id,
+      holdId: id,
+      amountMinor: minor,
+      outcome: z.enum(['RELEASED', 'CAPTURED']),
+    }),
   ),
   'wallet.hold.expired': def(
     'wallets',
-    z.object({ walletId: id, holdId: id, amountMinor: minor, context: z.string(), referenceId: z.string().nullable() }),
+    z.object({
+      walletId: id,
+      holdId: id,
+      amountMinor: minor,
+      context: z.string(),
+      referenceId: z.string().nullable(),
+    }),
   ),
   'wallet.debit.failed': def(
     'wallets',
@@ -262,11 +378,21 @@ export const EVENT_CATALOG = {
   ),
   'transaction.rejected': def(
     'transactions',
-    z.object({ txId: id, initiatorId: nullableId, rejectionRule: z.string(), rejectionReason: z.string() }),
+    z.object({
+      txId: id,
+      initiatorId: nullableId,
+      rejectionRule: z.string(),
+      rejectionReason: z.string(),
+    }),
   ),
   'transaction.failed': def(
     'transactions',
-    z.object({ txId: id, initiatorId: nullableId, failureCode: z.string(), failureReason: z.string() }),
+    z.object({
+      txId: id,
+      initiatorId: nullableId,
+      failureCode: z.string(),
+      failureReason: z.string(),
+    }),
   ),
   'transaction.reversed': def(
     'transactions',
@@ -274,13 +400,25 @@ export const EVENT_CATALOG = {
   ),
   'reconciliation.completed': def(
     'transactions',
-    z.object({ reportId: id, kind: z.string(), discrepancies: z.number().int(), alert: z.boolean() }),
+    z.object({
+      reportId: id,
+      kind: z.string(),
+      discrepancies: z.number().int(),
+      alert: z.boolean(),
+    }),
   ),
 
   // --- payments ---
   'payment.initiated': def(
     'payments',
-    z.object({ paymentId: id, type: z.string(), method: z.string(), amountMinor: minor, currency, memberId: id }),
+    z.object({
+      paymentId: id,
+      type: z.string(),
+      method: z.string(),
+      amountMinor: minor,
+      currency,
+      memberId: id,
+    }),
   ),
   'payment.processing': def('payments', z.object({ paymentId: id, provider: z.string() })),
   'payment.completed': def(
@@ -307,7 +445,12 @@ export const EVENT_CATALOG = {
   // --- compliance ---
   'compliance.rule.updated': def(
     'compliance',
-    z.object({ ruleCode: z.string(), country: z.string(), version: z.number().int(), change: z.string() }),
+    z.object({
+      ruleCode: z.string(),
+      country: z.string(),
+      version: z.number().int(),
+      change: z.string(),
+    }),
   ),
   'compliance.violation.detected': def(
     'compliance',
@@ -323,12 +466,21 @@ export const EVENT_CATALOG = {
   'compliance.user.suspended': def('compliance', z.object({ memberId: id, reason: z.string() })),
 
   // --- fraude (A-14) ---
-  'fraud.user.flagged': def('administration', z.object({ memberId: id, reason: z.string(), flaggedBy: z.string() })),
+  'fraud.user.flagged': def(
+    'administration',
+    z.object({ memberId: id, reason: z.string(), flaggedBy: z.string() }),
+  ),
 
   // --- notifications ---
   'notification.created': def(
     'notifications',
-    z.object({ notificationId: id, memberId: id, type: z.string(), channel: z.string(), priority: z.string() }),
+    z.object({
+      notificationId: id,
+      memberId: id,
+      type: z.string(),
+      channel: z.string(),
+      priority: z.string(),
+    }),
   ),
   'notification.sent': def(
     'notifications',
@@ -336,7 +488,12 @@ export const EVENT_CATALOG = {
   ),
   'notification.failed': def(
     'notifications',
-    z.object({ notificationId: id, channel: z.string(), attempts: z.number().int(), dead: z.boolean() }),
+    z.object({
+      notificationId: id,
+      channel: z.string(),
+      attempts: z.number().int(),
+      dead: z.boolean(),
+    }),
   ),
 
   // --- administration ---

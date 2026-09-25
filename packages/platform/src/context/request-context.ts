@@ -9,6 +9,8 @@ export interface Actor {
   tontineIds: string[];
   jti: string;
   tokenExp: number;
+  /** Vrai si la session a été ouverte avec un second facteur. */
+  mfa: boolean;
 }
 
 export interface RequestContextData {
@@ -50,7 +52,12 @@ export const RequestContext = {
     const store = storage.getStore();
     if (store) store.actor = actor;
   },
-  metadata(): { ip: string | null; userAgent: string | null; country: string | null; correlationId: string } {
+  metadata(): {
+    ip: string | null;
+    userAgent: string | null;
+    country: string | null;
+    correlationId: string;
+  } {
     const s = storage.getStore();
     return {
       ip: s?.ip ?? null,

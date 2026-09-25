@@ -46,7 +46,12 @@ describe('Platform (intégration Postgres)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [PlatformModule.forRoot({ config: testConfig(), clock: new FixedClock('2026-09-24T10:00:00Z') })],
+      imports: [
+        PlatformModule.forRoot({
+          config: testConfig(),
+          clock: new FixedClock('2026-09-24T10:00:00Z'),
+        }),
+      ],
       providers: [TestConsumers],
     }).compile();
     await moduleRef.init();
@@ -69,7 +74,12 @@ describe('Platform (intégration Postgres)', () => {
 
   const emit = (userId = randomUUID()) =>
     uow.run((tx) =>
-      outbox.add(tx, { type: 'user.activated', aggregateType: 'user', aggregateId: userId, payload: { userId } }),
+      outbox.add(tx, {
+        type: 'user.activated',
+        aggregateType: 'user',
+        aggregateId: userId,
+        payload: { userId },
+      }),
     );
 
   it('publie l’événement écrit dans la transaction et propage la corrélation', async () => {
@@ -84,7 +94,12 @@ describe('Platform (intégration Postgres)', () => {
   it('n’écrit rien si la transaction métier échoue (outbox transactionnel)', async () => {
     await expect(
       uow.run(async (tx) => {
-        await outbox.add(tx, { type: 'user.activated', aggregateType: 'user', aggregateId: randomUUID(), payload: { userId: randomUUID() } });
+        await outbox.add(tx, {
+          type: 'user.activated',
+          aggregateType: 'user',
+          aggregateId: randomUUID(),
+          payload: { userId: randomUUID() },
+        });
         throw new Error('rollback');
       }),
     ).rejects.toThrow('rollback');
@@ -100,7 +115,10 @@ describe('Platform (intégration Postgres)', () => {
     expect(row.status).toBe('PENDING');
     expect(row.lastError).toContain('échec simulé');
     // Rejeu immédiat (on force l’échéance)
-    await prisma.outboxEvent.update({ where: { id: env.eventId }, data: { nextAttemptAt: new Date(Date.now() - 1000) } });
+    await prisma.outboxEvent.update({
+      where: { id: env.eventId },
+      data: { nextAttemptAt: new Date(Date.now() - 1000) },
+    });
     await relay.drain();
     expect(received.filter((r) => r.consumer === 'test-a')).toHaveLength(1);
     expect(received.filter((r) => r.consumer === 'test-b')).toHaveLength(1);
@@ -112,7 +130,10 @@ describe('Platform (intégration Postgres)', () => {
     failNext = 1000;
     const env = await emit();
     for (let i = 0; i < OUTBOX_MAX_ATTEMPTS; i++) {
-      await prisma.outboxEvent.update({ where: { id: env.eventId }, data: { nextAttemptAt: new Date(Date.now() - 1000) } });
+      await prisma.outboxEvent.update({
+        where: { id: env.eventId },
+        data: { nextAttemptAt: new Date(Date.now() - 1000) },
+      });
       await relay.drain(1);
     }
     const row = await prisma.outboxEvent.findUniqueOrThrow({ where: { id: env.eventId } });
@@ -120,7 +141,9 @@ describe('Platform (intégration Postgres)', () => {
     await relay.requeue(env.eventId);
     failNext = 0;
     await relay.drain();
-    expect((await prisma.outboxEvent.findUniqueOrThrow({ where: { id: env.eventId } })).status).toBe('PUBLISHED');
+    expect(
+      (await prisma.outboxEvent.findUniqueOrThrow({ where: { id: env.eventId } })).status,
+    ).toBe('PUBLISHED');
   });
 
   it('idempotence HTTP : rejeu, requête différente, clé en cours', async () => {
@@ -140,13 +163,20 @@ describe('Platform (intégration Postgres)', () => {
 
     // Clé en cours de traitement
     let release!: () => void;
-    const pending = idem.execute({ scope: 'test', key: 'key-inflight', userId, request: {} }, () =>
-      new Promise((r) => {
-        release = () => r({ status: 200, body: {} });
-      }),
+    const pending = idem.execute(
+      { scope: 'test', key: 'key-inflight', userId, request: {} },
+      () =>
+        new Promise<{ status: number; body: unknown }>((r) => {
+          release = () => r({ status: 200, body: {} });
+        }),
     );
     await new Promise((r) => setTimeout(r, 50));
-    await expect(idem.execute({ scope: 'test', key: 'key-inflight', userId, request: {} }, async () => ({ status: 200, body: {} }))).rejects.toMatchObject({ code: 'IDEMPOTENCY_IN_PROGRESS' });
+    await expect(
+      idem.execute({ scope: 'test', key: 'key-inflight', userId, request: {} }, async () => ({
+        status: 200,
+        body: {},
+      })),
+    ).rejects.toMatchObject({ code: 'IDEMPOTENCY_IN_PROGRESS' });
     release();
     await pending;
   });
@@ -158,7 +188,10 @@ describe('Platform (intégration Postgres)', () => {
         throw new DomainError('INSUFFICIENT_FUNDS');
       }),
     ).rejects.toMatchObject({ code: 'INSUFFICIENT_FUNDS' });
-    const replay = await idem.execute({ scope: 't', key: 'biz-error-1', userId, request: {} }, async () => ({ status: 200, body: 'jamais' }));
+    const replay = await idem.execute(
+      { scope: 't', key: 'biz-error-1', userId, request: {} },
+      async () => ({ status: 200, body: 'jamais' }),
+    );
     expect(replay.replayed).toBe(true);
     expect((replay.body as unknown as { code: string }).code).toBe('INSUFFICIENT_FUNDS');
 
@@ -167,13 +200,20 @@ describe('Platform (intégration Postgres)', () => {
         throw new Error('panne');
       }),
     ).rejects.toThrow('panne');
-    const retry = await idem.execute({ scope: 't', key: 'tech-error-1', userId, request: {} }, async () => ({ status: 200, body: 'ok' }));
+    const retry = await idem.execute(
+      { scope: 't', key: 'tech-error-1', userId, request: {} },
+      async () => ({ status: 200, body: 'ok' }),
+    );
     expect(retry).toEqual({ status: 200, body: 'ok', replayed: false });
   });
 
   it('les tables d’audit sont en ajout seul (trigger)', async () => {
-    const row = await prisma.auditLog.create({ data: { action: 'x', resourceType: 'y', result: 'SUCCESS' } });
-    const err = await prisma.auditLog.update({ where: { id: row.id }, data: { action: 'z' } }).catch((e: unknown) => e);
+    const row = await prisma.auditLog.create({
+      data: { action: 'x', resourceType: 'y', result: 'SUCCESS' },
+    });
+    const err = await prisma.auditLog
+      .update({ where: { id: row.id }, data: { action: 'z' } })
+      .catch((e: unknown) => e);
     expect(isCheckViolation(err)).toBe(true);
     const del = await prisma.auditLog.delete({ where: { id: row.id } }).catch((e: unknown) => e);
     expect(isCheckViolation(del)).toBe(true);

@@ -12,7 +12,8 @@ export const PERMISSION = 'tontine:permission';
 export const Public = (): MethodDecorator & ClassDecorator => SetMetadata(IS_PUBLIC, true);
 
 /** Restreint la route à certains rôles plateforme. */
-export const Roles = (...roles: PlatformRole[]): MethodDecorator & ClassDecorator => SetMetadata(ROLES, roles);
+export const Roles = (...roles: PlatformRole[]): MethodDecorator & ClassDecorator =>
+  SetMetadata(ROLES, roles);
 
 /** Restreint la route à une permission RBAC (packages/auth/src/rbac.ts). */
 export const RequirePermission = (permission: Permission): MethodDecorator & ClassDecorator =>

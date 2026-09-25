@@ -18,7 +18,12 @@ const noInternalImports = {
           message: 'Importer uniquement le point d’entrée public du package (@tontine/<pkg>).',
         },
         {
-          group: ['../../services/*', '../../../services/*', '../../packages/*', '../../../packages/*'],
+          group: [
+            '../../services/*',
+            '../../../services/*',
+            '../../packages/*',
+            '../../../packages/*',
+          ],
           message: 'Import relatif inter-package interdit : utiliser @tontine/<pkg>.',
         },
       ],
@@ -28,7 +33,19 @@ const noInternalImports = {
 
 function createConfig({ tsconfigRootDir, node = true, extraIgnores = [] } = {}) {
   return tseslint.config(
-    { ignores: ['eslint.config.js', '*.config.mjs', '**/generated/**', 'scripts/**/*.mjs', 'dist/**', '.next/**', 'coverage/**', 'node_modules/**', ...extraIgnores] },
+    {
+      ignores: [
+        'eslint.config.js',
+        '*.config.mjs',
+        '**/generated/**',
+        'scripts/**/*.mjs',
+        'dist/**',
+        '.next/**',
+        'coverage/**',
+        'node_modules/**',
+        ...extraIgnores,
+      ],
+    },
     js.configs.recommended,
     ...tseslint.configs.recommended,
     {

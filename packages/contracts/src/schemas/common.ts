@@ -3,12 +3,7 @@ import { COUNTRY_CODES, isE164, normalizePhone } from '../countries';
 
 export const uuidSchema = z.string().uuid();
 
-export const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .max(255)
-  .email('Format email invalide');
+export const emailSchema = z.string().trim().toLowerCase().max(255).email('Format email invalide');
 
 export const phoneSchema = z
   .string()

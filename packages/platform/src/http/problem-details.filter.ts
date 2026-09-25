@@ -1,5 +1,16 @@
-import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Logger } from '@nestjs/common';
-import { ERROR_CATALOG, type ErrorCode, type ProblemDetails, problemType } from '@tontine/contracts';
+import {
+  type ArgumentsHost,
+  Catch,
+  type ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
+import {
+  ERROR_CATALOG,
+  type ErrorCode,
+  type ProblemDetails,
+  problemType,
+} from '@tontine/contracts';
 import { type Response } from 'express';
 import { ZodError } from 'zod';
 import { RequestContext } from '../context/request-context';
@@ -56,7 +67,8 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       return this.base('VALIDATION_FAILED', 'Données invalides', zodIssues(exception));
     }
     const multerCode = (exception as { code?: string } | null)?.code;
-    if (multerCode === 'LIMIT_FILE_SIZE') return this.base('FILE_TOO_LARGE', 'Fichier trop volumineux');
+    if (multerCode === 'LIMIT_FILE_SIZE')
+      return this.base('FILE_TOO_LARGE', 'Fichier trop volumineux');
     if (typeof multerCode === 'string' && multerCode.startsWith('LIMIT_')) {
       return this.base('VALIDATION_FAILED', 'Envoi de fichier invalide');
     }
@@ -67,11 +79,18 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       p.status = status;
       return p;
     }
-    const p = this.base('INTERNAL_ERROR', this.exposeInternal && exception instanceof Error ? exception.message : undefined);
+    const p = this.base(
+      'INTERNAL_ERROR',
+      this.exposeInternal && exception instanceof Error ? exception.message : undefined,
+    );
     return p;
   }
 
-  private base(code: ErrorCode, detail?: string, errors?: Array<{ path: string; message: string }>): ProblemDetails {
+  private base(
+    code: ErrorCode,
+    detail?: string,
+    errors?: Array<{ path: string; message: string }>,
+  ): ProblemDetails {
     return {
       type: problemType(code),
       title: ERROR_CATALOG[code].title,

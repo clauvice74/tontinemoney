@@ -79,7 +79,11 @@ export class RedisKvStore extends KvStore {
 
   constructor(url: string) {
     super();
-    this.client = new Redis(url, { lazyConnect: false, maxRetriesPerRequest: 2, enableOfflineQueue: true });
+    this.client = new Redis(url, {
+      lazyConnect: false,
+      maxRetriesPerRequest: 2,
+      enableOfflineQueue: true,
+    });
   }
 
   async get(key: string): Promise<string | null> {

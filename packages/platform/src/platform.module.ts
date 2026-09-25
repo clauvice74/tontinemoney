@@ -61,9 +61,9 @@ export class PlatformModule {
       module: PlatformModule,
       imports: [DiscoveryModule],
       providers,
-      exports: providers.filter((p): p is Exclude<Provider, never> => p !== EventHandlerExplorer).map((p) =>
-        typeof p === 'function' ? p : (p as { provide: unknown }).provide,
-      ) as never,
+      exports: providers
+        .filter((p): p is Exclude<Provider, never> => p !== EventHandlerExplorer)
+        .map((p) => (typeof p === 'function' ? p : (p as { provide: unknown }).provide)) as never,
     };
   }
 }

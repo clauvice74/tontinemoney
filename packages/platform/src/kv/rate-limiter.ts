@@ -14,7 +14,10 @@ export interface RateLimitRule {
 export class RateLimiter {
   constructor(private readonly kv: KvStore) {}
 
-  async hit(rule: RateLimitRule, subject: string): Promise<{ count: number; allowed: boolean; retryAfter: number }> {
+  async hit(
+    rule: RateLimitRule,
+    subject: string,
+  ): Promise<{ count: number; allowed: boolean; retryAfter: number }> {
     const key = `rl:${rule.name}:${subject}`;
     const count = await this.kv.incr(key, rule.windowSeconds);
     const allowed = count <= rule.limit;

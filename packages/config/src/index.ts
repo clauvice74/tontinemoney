@@ -4,14 +4,14 @@ import { z } from 'zod';
  * Schéma de configuration (variables d'environnement). Toute variable est validée au démarrage :
  * l'API refuse de démarrer avec une configuration invalide.
  */
-const bool = z
-  .enum(['true', 'false', '1', '0'])
-  .transform((v) => v === 'true' || v === '1');
+const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+    LOG_LEVEL: z
+      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+      .default('info'),
     API_PORT: z.coerce.number().int().default(4000),
     API_PUBLIC_URL: z.string().url().default('http://localhost:4000'),
     WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
@@ -54,16 +54,32 @@ export const envSchema = z
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production') {
       if (!env.JWT_PRIVATE_KEY_PEM || !env.JWT_PUBLIC_KEY_PEM) {
-        ctx.addIssue({ code: 'custom', path: ['JWT_PRIVATE_KEY_PEM'], message: 'Clés JWT obligatoires en production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['JWT_PRIVATE_KEY_PEM'],
+          message: 'Clés JWT obligatoires en production',
+        });
       }
       if (!env.COOKIE_SECURE) {
-        ctx.addIssue({ code: 'custom', path: ['COOKIE_SECURE'], message: 'Cookies sécurisés obligatoires en production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['COOKIE_SECURE'],
+          message: 'Cookies sécurisés obligatoires en production',
+        });
       }
       if (env.PSP_WEBHOOK_SECRET.startsWith('dev-only')) {
-        ctx.addIssue({ code: 'custom', path: ['PSP_WEBHOOK_SECRET'], message: 'Secret de webhook de dev interdit en production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['PSP_WEBHOOK_SECRET'],
+          message: 'Secret de webhook de dev interdit en production',
+        });
       }
       if (env.BCRYPT_COST < 12) {
-        ctx.addIssue({ code: 'custom', path: ['BCRYPT_COST'], message: 'BCRYPT_COST ≥ 12 en production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['BCRYPT_COST'],
+          message: 'BCRYPT_COST ≥ 12 en production',
+        });
       }
     }
   });
@@ -80,7 +96,9 @@ export class ConfigValidationError extends Error {
 export function loadConfig(source: Record<string, string | undefined> = process.env): AppConfig {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
-    throw new ConfigValidationError(parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`));
+    throw new ConfigValidationError(
+      parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+    );
   }
   return parsed.data;
 }
@@ -90,7 +108,9 @@ export function testConfig(overrides: Partial<Record<keyof AppConfig, string>> =
   return loadConfig({
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',
-    DATABASE_URL: process.env['DATABASE_URL_TEST'] ?? 'postgresql://tontine:tontine@localhost:5432/tontinemoney_test',
+    DATABASE_URL:
+      process.env['DATABASE_URL_TEST'] ??
+      'postgresql://tontine:tontine@localhost:5432/tontinemoney_test',
     KV_DRIVER: 'memory',
     EMAIL_DRIVER: 'memory',
     BCRYPT_COST: '4',

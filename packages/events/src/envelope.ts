@@ -61,7 +61,8 @@ export function buildEnvelope<T extends EventType>(
 
 /** Valide une enveloppe reçue du bus (Kafka) avant dispatch. */
 export function parseEnvelope(raw: unknown): EventEnvelope {
-  if (typeof raw !== 'object' || raw === null) throw new EventValidationError('Enveloppe absente', null);
+  if (typeof raw !== 'object' || raw === null)
+    throw new EventValidationError('Enveloppe absente', null);
   const e = raw as Record<string, unknown>;
   const type = e['eventType'];
   if (typeof type !== 'string' || !isEventType(type)) {
@@ -69,12 +70,24 @@ export function parseEnvelope(raw: unknown): EventEnvelope {
   }
   const entry = EVENT_CATALOG[type];
   if (e['eventVersion'] !== entry.version) {
-    throw new EventValidationError(`Version non supportée pour ${type}: ${String(e['eventVersion'])}`, null);
+    throw new EventValidationError(
+      `Version non supportée pour ${type}: ${String(e['eventVersion'])}`,
+      null,
+    );
   }
   const payload = entry.payload.safeParse(e['payload']);
-  if (!payload.success) throw new EventValidationError(`Payload invalide pour ${type}`, payload.error.issues);
-  for (const field of ['eventId', 'occurredAt', 'correlationId', 'producer', 'aggregateType', 'aggregateId']) {
-    if (typeof e[field] !== 'string') throw new EventValidationError(`Champ manquant : ${field}`, null);
+  if (!payload.success)
+    throw new EventValidationError(`Payload invalide pour ${type}`, payload.error.issues);
+  for (const field of [
+    'eventId',
+    'occurredAt',
+    'correlationId',
+    'producer',
+    'aggregateType',
+    'aggregateId',
+  ]) {
+    if (typeof e[field] !== 'string')
+      throw new EventValidationError(`Champ manquant : ${field}`, null);
   }
   return { ...(e as unknown as EventEnvelope), payload: payload.data as EventEnvelope['payload'] };
 }

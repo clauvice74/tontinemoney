@@ -124,12 +124,20 @@ export const moneyInputSchema = z
     try {
       const minor = toMinor(v.amount, v.currency);
       if (minor <= 0n) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['amount'], message: 'Le montant doit être > 0' });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['amount'],
+          message: 'Le montant doit être > 0',
+        });
         return z.NEVER;
       }
       return { currency: v.currency as CurrencyCode, minor };
     } catch (e) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['amount'], message: (e as Error).message });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['amount'],
+        message: (e as Error).message,
+      });
       return z.NEVER;
     }
   });

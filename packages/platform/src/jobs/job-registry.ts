@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnApplicationBootstrap,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { type AppConfig } from '@tontine/config';
 import { CronJob } from 'cron';
@@ -23,7 +29,10 @@ export interface JobRunResult {
 }
 
 function lockKey(name: string): bigint {
-  return BigInt.asIntN(64, BigInt(`0x${createHash('sha256').update(`job:${name}`).digest('hex').slice(0, 16)}`));
+  return BigInt.asIntN(
+    64,
+    BigInt(`0x${createHash('sha256').update(`job:${name}`).digest('hex').slice(0, 16)}`),
+  );
 }
 
 /** Registre des tâches planifiées : planification cron + exécution manuelle, verrou consultatif. */
@@ -74,7 +83,11 @@ export class JobRegistry implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   list(): ScheduledJobOptions[] {
-    return [...this.jobs.values()].map(({ name, cron, description }) => ({ name, cron, description }));
+    return [...this.jobs.values()].map(({ name, cron, description }) => ({
+      name,
+      cron,
+      description,
+    }));
   }
 
   async run(name: string, trigger: 'cron' | 'manual' | 'test' = 'manual'): Promise<JobRunResult> {
@@ -93,7 +106,10 @@ export class JobRegistry implements OnApplicationBootstrap, OnApplicationShutdow
     if (!record) return { name, status: 'SKIPPED', summary: { reason: 'déjà en cours' } };
     try {
       const summary =
-        (await RequestContext.run({ source: 'job', correlationId: `job-${name}-${record.id}` }, () => job.run())) ?? {};
+        (await RequestContext.run(
+          { source: 'job', correlationId: `job-${name}-${record.id}` },
+          () => job.run(),
+        )) ?? {};
       await this.prisma.jobRun.update({
         where: { id: record.id },
         data: { status: 'SUCCESS', finishedAt: new Date(), summary: summary as object },

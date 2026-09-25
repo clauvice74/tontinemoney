@@ -25,7 +25,12 @@ describe('Enveloppe d’événement', () => {
   it('refuse un payload non conforme au catalogue', () => {
     expect(() =>
       buildEnvelope(
-        { type: 'user.activated', aggregateType: 'user', aggregateId: userId, payload: { userId: 'x' } },
+        {
+          type: 'user.activated',
+          aggregateType: 'user',
+          aggregateId: userId,
+          payload: { userId: 'x' },
+        },
         { correlationId: 'c' },
       ),
     ).toThrow(EventValidationError);

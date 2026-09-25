@@ -14,5 +14,9 @@ if (!env.PRISMA_SCHEMA_ENGINE_BINARY) {
   chmodSync(stub, 0o755);
   env.PRISMA_SCHEMA_ENGINE_BINARY = stub;
 }
-const res = spawnSync('prisma', ['generate'], { stdio: 'inherit', env, shell: process.platform === 'win32' });
+const res = spawnSync('prisma', ['generate'], {
+  stdio: 'inherit',
+  env,
+  shell: process.platform === 'win32',
+});
 process.exit(res.status ?? 1);

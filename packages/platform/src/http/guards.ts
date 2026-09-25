@@ -24,7 +24,10 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return true;
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     const req = context.switchToHttp().getRequest<Request>();
     const header = req.header('authorization');
     const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : null;
@@ -55,15 +58,28 @@ export class RolesGuard implements CanActivate {
     if (context.getType() !== 'http') return true;
     const targets = [context.getHandler(), context.getClass()];
     const roles = this.reflector.getAllAndOverride<PlatformRole[] | undefined>(ROLES, targets);
-    const permission = this.reflector.getAllAndOverride<Permission | undefined>(PERMISSION, targets);
+    const permission = this.reflector.getAllAndOverride<Permission | undefined>(
+      PERMISSION,
+      targets,
+    );
     if (!roles && !permission) return true;
     const actor = RequestContext.actor;
     if (!actor) throw new DomainError('UNAUTHENTICATED');
-    const allowed = (!roles || roles.includes(actor.role)) && (!permission || can(actor.role, permission));
+    const allowed =
+      (!roles || roles.includes(actor.role)) && (!permission || can(actor.role, permission));
     if (!allowed) {
       const req = context.switchToHttp().getRequest<Request>();
       await this.monitor.record('route', `${req.method} ${req.route?.path ?? req.path}`, 'role');
       throw new DomainError('FORBIDDEN');
+    }
+    // US-1.6 : MFA obligatoire pour le super-admin sur les opérations d'administration plateforme.
+    const adminRoute =
+      (roles?.includes('SUPER_ADMIN') ?? false) || (permission?.startsWith('platform.') ?? false);
+    if (actor.role === 'SUPER_ADMIN' && adminRoute && !actor.mfa) {
+      throw new DomainError(
+        'MFA_REQUIRED',
+        'Double authentification obligatoire pour les opérations super-admin',
+      );
     }
     return true;
   }

@@ -26,14 +26,22 @@ export class ZodValidationPipe<S extends ZodTypeAny> implements PipeTransform<un
             : issues.some((i) => i.message === 'Le motif est obligatoire')
               ? 'REASON_REQUIRED'
               : 'VALIDATION_FAILED';
-      throw new DomainError(code, issues.map((i) => `${i.path} : ${i.message}`).join(' ; '), {}, issues);
+      throw new DomainError(
+        code,
+        issues.map((i) => `${i.path} : ${i.message}`).join(' ; '),
+        {},
+        issues,
+      );
     }
     return res.data;
   }
 }
 
 export function jsonSchemaOf(schema: ZodTypeAny): Record<string, unknown> {
-  const json = zodToJsonSchema(schema, { target: 'openApi3', $refStrategy: 'none' }) as Record<string, unknown>;
+  const json = zodToJsonSchema(schema, { target: 'openApi3', $refStrategy: 'none' }) as Record<
+    string,
+    unknown
+  >;
   delete json['$schema'];
   return json;
 }

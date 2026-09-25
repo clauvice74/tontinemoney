@@ -3,7 +3,15 @@ import { DRAW_MODES, INCOMPLETE_POLICIES, TONTINE_FREQUENCIES } from '../enums';
 import { amountStringSchema, currencySchema } from '../money';
 import { emailSchema, isoDateSchema, phoneSchema, reasonSchema, uuidSchema } from './common';
 
-const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+const WEEKDAYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 export const WEEKDAY_VALUES = WEEKDAYS;
 
@@ -16,7 +24,9 @@ export const WEEKDAY_VALUES = WEEKDAYS;
 export const frequencyDetailSchema = z
   .object({
     day: z.enum(WEEKDAYS).optional(),
-    weekOfMonth: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(-1)]).optional(),
+    weekOfMonth: z
+      .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(-1)])
+      .optional(),
     lastDayOfMonth: z.boolean().optional(),
   })
   .strict();
@@ -52,7 +62,11 @@ export const createTontineSchema = z
   .strict()
   .superRefine((v, ctx) => {
     if ((v.frequency === 'WEEKLY' || v.frequency === 'BIWEEKLY') && !v.frequencyDetail.day) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['frequencyDetail', 'day'], message: 'Jour de la semaine requis' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['frequencyDetail', 'day'],
+        message: 'Jour de la semaine requis',
+      });
     }
     if (
       v.frequency === 'MONTHLY' &&

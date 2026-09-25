@@ -31,7 +31,9 @@ describe('hachage', () => {
   });
 
   it('SHA-256 déterministe', () => {
-    expect(sha256Hex('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+    expect(sha256Hex('abc')).toBe(
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    );
   });
 
   it('OTP à 6 chiffres', () => {
@@ -83,7 +85,10 @@ describe('JWT RS256', () => {
     const newKey = await generateRsaKeyMaterial('k2');
     const oldStore = await JwtKeyStore.create(oldKey);
     const store = await JwtKeyStore.create(newKey, [oldKey]);
-    const legacy = await oldStore.sign({ sub: 'u1', role: 'MEMBER', tontineIds: ['t1'], sid: 's1' }, 900);
+    const legacy = await oldStore.sign(
+      { sub: 'u1', role: 'MEMBER', tontineIds: ['t1'], sid: 's1' },
+      900,
+    );
     const claims = await store.verify(legacy.token);
     expect(claims).toMatchObject({ sub: 'u1', role: 'MEMBER', tontineIds: ['t1'], sid: 's1' });
     expect(store.publicJwks.keys.map((k) => k.kid)).toEqual(['k2', 'k1']);
@@ -93,7 +98,9 @@ describe('JWT RS256', () => {
     const store = await JwtKeyStore.create(await generateRsaKeyMaterial('k'));
     const now = new Date('2026-01-01T00:00:00Z');
     const t = await store.sign({ sub: 'u', role: 'MEMBER', tontineIds: [], sid: 's' }, 900, now);
-    await expect(store.verify(t.token, new Date(now.getTime() + 901_000))).rejects.toMatchObject({ expired: true });
+    await expect(store.verify(t.token, new Date(now.getTime() + 901_000))).rejects.toMatchObject({
+      expired: true,
+    });
     const other = await JwtKeyStore.create(await generateRsaKeyMaterial('k'));
     await expect(other.verify(t.token, now)).rejects.toBeInstanceOf(TokenVerificationError);
   });

@@ -48,7 +48,10 @@ export class KafkaTransport implements EventTransport {
     if (topics.length === 0) return;
     const admin = this.kafka.admin();
     await admin.connect();
-    await admin.createTopics({ topics: topics.map((topic) => ({ topic, numPartitions: 3 })), waitForLeaders: true });
+    await admin.createTopics({
+      topics: topics.map((topic) => ({ topic, numPartitions: 3 })),
+      waitForLeaders: true,
+    });
     await admin.disconnect();
     this.consumer = this.kafka.consumer({ groupId: this.groupId });
     await this.consumer.connect();
@@ -60,7 +63,9 @@ export class KafkaTransport implements EventTransport {
           await this.dispatcher.dispatch(parseEnvelope(JSON.parse(message.value.toString('utf8'))));
         } catch (e) {
           // Laisser Kafka rejouer le message : le dispatcher est idempotent.
-          this.logger.error(`Échec de traitement du message ${topic} : ${e instanceof Error ? e.message : e}`);
+          this.logger.error(
+            `Échec de traitement du message ${topic} : ${e instanceof Error ? e.message : e}`,
+          );
           throw e;
         }
       },

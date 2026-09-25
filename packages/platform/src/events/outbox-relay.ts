@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnApplicationBootstrap,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { type AppConfig } from '@tontine/config';
 import { type EventEnvelope } from '@tontine/events';
 import { PrismaService } from '../context/prisma.service';
@@ -129,7 +135,10 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
             nextAttemptAt: new Date(Date.now() + backoffSeconds * 1000),
           },
         });
-        if (dead) this.logger.error(`Événement ${row.eventType} ${row.id} placé en DLQ après ${row.attempts} tentatives`);
+        if (dead)
+          this.logger.error(
+            `Événement ${row.eventType} ${row.id} placé en DLQ après ${row.attempts} tentatives`,
+          );
       }
     }
     return rows.length;

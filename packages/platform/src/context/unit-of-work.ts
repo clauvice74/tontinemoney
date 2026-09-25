@@ -24,7 +24,8 @@ export class UnitOfWork {
     for (;;) {
       try {
         return await this.prisma.$transaction(fn, {
-          isolationLevel: Prisma.TransactionIsolationLevel[options.isolationLevel ?? 'ReadCommitted'],
+          isolationLevel:
+            Prisma.TransactionIsolationLevel[options.isolationLevel ?? 'ReadCommitted'],
           timeout: options.timeoutMs ?? 15_000,
           maxWait: 10_000,
         });

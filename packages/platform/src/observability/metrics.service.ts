@@ -32,9 +32,21 @@ export class MetricsService {
       buckets: [0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2, 5],
       registers: [this.registry],
     });
-    this.outboxPending = new Gauge({ name: 'outbox_pending_events', help: 'Événements en attente', registers: [this.registry] });
-    this.outboxDead = new Gauge({ name: 'outbox_dead_events', help: 'Événements en DLQ', registers: [this.registry] });
-    this.activeHolds = new Gauge({ name: 'wallet_active_holds', help: 'Holds actifs', registers: [this.registry] });
+    this.outboxPending = new Gauge({
+      name: 'outbox_pending_events',
+      help: 'Événements en attente',
+      registers: [this.registry],
+    });
+    this.outboxDead = new Gauge({
+      name: 'outbox_dead_events',
+      help: 'Événements en DLQ',
+      registers: [this.registry],
+    });
+    this.activeHolds = new Gauge({
+      name: 'wallet_active_holds',
+      help: 'Holds actifs',
+      registers: [this.registry],
+    });
     this.jobRuns = new Counter({
       name: 'job_runs_total',
       help: 'Exécutions de tâches planifiées',

@@ -14,7 +14,9 @@ export class EventDispatchError extends Error {
   constructor(readonly failures: Array<{ consumer: string; error: unknown }>) {
     super(
       `Échec de ${failures.length} consommateur(s) : ${failures
-        .map((f) => `${f.consumer} (${f.error instanceof Error ? f.error.message : String(f.error)})`)
+        .map(
+          (f) => `${f.consumer} (${f.error instanceof Error ? f.error.message : String(f.error)})`,
+        )
         .join('; ')}`,
     );
     this.name = 'EventDispatchError';

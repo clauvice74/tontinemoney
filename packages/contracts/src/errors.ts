@@ -32,7 +32,10 @@ export const ERROR_CATALOG = {
   OTP_EXPIRED: { status: 410, title: 'Code expiré, demandez un renvoi' },
   FILE_TOO_LARGE: { status: 413, title: 'Fichier trop volumineux' },
   UNSUPPORTED_MEDIA_TYPE: { status: 415, title: 'Type de fichier non accepté' },
-  IDEMPOTENCY_KEY_REUSED: { status: 422, title: 'Clé d’idempotence réutilisée avec une requête différente' },
+  IDEMPOTENCY_KEY_REUSED: {
+    status: 422,
+    title: 'Clé d’idempotence réutilisée avec une requête différente',
+  },
   INSUFFICIENT_FUNDS: { status: 422, title: 'Solde insuffisant' },
   CURRENCY_MISMATCH: { status: 422, title: 'Devises incompatibles' },
   WALLET_NOT_OPERATIONAL: { status: 422, title: 'Portefeuille indisponible pour cette opération' },
