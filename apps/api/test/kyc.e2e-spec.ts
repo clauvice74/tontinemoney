@@ -464,3 +464,17 @@ describe('A-03 — niveau 3', () => {
     );
   });
 });
+
+describe('A-18 — rétention des documents KYC', () => {
+  it('recensement des dossiers échus en dry-run, sans suppression', async () => {
+    const { token } = await applicant();
+    created(await submit(token));
+    await ctx.drain();
+    const before = await ctx.prisma.kycDocument.count();
+    ctx.clock.advanceDays(7 * 365 + 3);
+    const run = await ctx.jobs.run('kyc.retention-dry-run', 'test');
+    expect(run.summary).toMatchObject({ expiredRequests: 1, dryRun: true });
+    expect(run.summary['documents']).toBe(before);
+    expect(await ctx.prisma.kycDocument.count()).toBe(before);
+  });
+});

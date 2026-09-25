@@ -136,3 +136,17 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 | GET 🔒 | `/admin/outbox/dead` · POST `/admin/outbox/{id}/requeue` | DLQ événements    |
 | GET 🔒 | `/admin/audit-logs`                                      | journal d'audit   |
 | GET    | `/health`, `/health/ready`, `/metrics` (sans préfixe)    | santé, Prometheus |
+
+## Compléments (phases 4 à 6)
+
+| Méthode | Route                                                                                                       | Description                                                      |
+| ------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| POST 🔒 | `/tontines/{id}/start` · GET `/tontines/{id}/start-check`                                                   | démarrage manuel (date atteinte) / blocages (admin)              |
+| GET 🔒  | `/tontines/{id}/closure-check`                                                                              | blocages de clôture (admin)                                      |
+| GET 🔒  | `/me/contributions?status`                                                                                  | mes échéances toutes tontines                                    |
+| GET 🔒  | `/admin/tontines`                                                                                           | toutes les tontines (super-admin)                                |
+| POST 🔒 | `/psp-sim/payouts/{reference}/settle`                                                                       | **simulateur** : règlement d'un retrait (super-admin, hors prod) |
+| GET 🔒  | `/tontines/{id}/reports?kind=CYCLE\|MONTHLY\|ANNUAL\|CONTRIBUTIONS\|PENALTIES\|FINAL&format=json\|csv\|pdf` | rapports (admin de la tontine)                                   |
+| GET 🔒  | `/admin/reconciliation/{id}?format=json\|csv\|pdf`                                                          | détail / export d'une réconciliation                             |
+
+La référence exhaustive et à jour est `docs/openapi.json` (généré depuis le code : `node --env-file=../../.env dist/openapi.js` dans `apps/api`).

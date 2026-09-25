@@ -190,4 +190,28 @@ export class KycMaintenanceService {
     }
     return { screened: active.length, newMatches };
   }
+
+  /**
+   * A-18 — politique de rétention : recense les dossiers KYC dont la durée de conservation (7 ans)
+   * est échue. Mode « dry-run » uniquement en V1 : aucune suppression automatique (décision
+   * juridique et purge sécurisée du stockage à valider avant production).
+   */
+  @ScheduledJob({
+    name: 'kyc.retention-dry-run',
+    cron: '0 0 4 * * 0',
+    description: 'Rétention KYC : recensement des dossiers échus (dry-run, aucune suppression)',
+  })
+  async retentionDryRun(): Promise<{ expiredRequests: number; documents: number; dryRun: true }> {
+    const now = this.clock.now();
+    const requests = await this.prisma.kycRequest.findMany({
+      where: { retentionUntil: { lt: now } },
+      select: { id: true },
+    });
+    const documents = requests.length
+      ? await this.prisma.kycDocument.count({
+          where: { requestId: { in: requests.map((r) => r.id) } },
+        })
+      : 0;
+    return { expiredRequests: requests.length, documents, dryRun: true };
+  }
 }
