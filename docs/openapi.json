@@ -1693,6 +1693,351 @@
         "tags": ["Membres"]
       }
     },
+    "/api/v1/members": {
+      "get": {
+        "operationId": "MembersController_directoryList_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "KYC_REQUIRED",
+                    "KYC_IN_REVIEW",
+                    "KYC_REJECTED",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING_REVIEW"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "kycLevel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["NONE", "TIER_1", "TIER_2", "TIER_3"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "complianceStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["COMPLIANT", "RESTRICTED", "UNDER_REVIEW", "NON_COMPLIANT", "SUSPENDED"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name_asc", "name_desc", "registered_desc", "registered_asc", "status"],
+              "default": "registered_desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Annuaire des membres (personnel) : filtres, recherche, tri, pagination par curseur",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/search": {
+      "get": {
+        "operationId": "MembersController_search_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "KYC_REQUIRED",
+                    "KYC_IN_REVIEW",
+                    "KYC_REJECTED",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING_REVIEW"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "kycLevel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["NONE", "TIER_1", "TIER_2", "TIER_3"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "complianceStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["COMPLIANT", "RESTRICTED", "UNDER_REVIEW", "NON_COMPLIANT", "SUSPENDED"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name_asc", "name_desc", "registered_desc", "registered_asc", "status"],
+              "default": "registered_desc"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rechercher un membre par nom, e-mail ou téléphone (personnel)",
+        "tags": ["Membres"]
+      }
+    },
     "/api/v1/members/{memberId}": {
       "get": {
         "operationId": "MembersController_getMember_v1",
@@ -1720,9 +2065,185 @@
         "tags": ["Membres"]
       }
     },
+    "/api/v1/members/{memberId}/history": {
+      "get": {
+        "operationId": "MembersController_memberHistory_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique d’un membre (le membre lui-même ou le personnel ; accès journalisé)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/{memberId}/status": {
+      "get": {
+        "operationId": "MembersController_memberStatus_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Statut d’un membre (le membre lui-même ou le personnel)",
+        "tags": ["Membres"]
+      },
+      "patch": {
+        "description": "Les autres statuts découlent du parcours KYC et ne peuvent pas être imposés manuellement.",
+        "operationId": "MembersController_changeStatus_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["SUSPENDED", "ACTIVE"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["status", "reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspendre (SUSPENDED) ou réactiver (ACTIVE) un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
     "/api/v1/admin/members/{memberId}/suspend": {
       "post": {
-        "operationId": "MembersController_suspend_v1",
+        "operationId": "MembersController_suspend[0]_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspendre un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/{memberId}/suspend": {
+      "post": {
+        "operationId": "MembersController_suspend[1]_v1",
         "parameters": [
           {
             "name": "memberId",
@@ -1768,7 +2289,53 @@
     },
     "/api/v1/admin/members/{memberId}/reactivate": {
       "post": {
-        "operationId": "MembersController_reactivate_v1",
+        "operationId": "MembersController_reactivate[0]_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lever la suspension d’un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/{memberId}/reactivate": {
+      "post": {
+        "operationId": "MembersController_reactivate[1]_v1",
         "parameters": [
           {
             "name": "memberId",

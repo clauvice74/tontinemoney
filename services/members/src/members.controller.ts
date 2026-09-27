@@ -14,12 +14,21 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { isPlatformStaff } from '@tontine/auth';
 import {
   PROFILE_PHOTO_MAX_BYTES,
+  type ChangeMemberStatusInput,
   type ListMembersQuery,
+  type MemberDirectoryParams,
+  type MemberHistoryQuery,
+  type MemberSearchQuery,
   type NotificationPrefs,
   type UpdateProfileInput,
+  changeMemberStatusSchema,
   listMembersQuerySchema,
+  memberDirectoryQuerySchema,
+  memberHistoryQuerySchema,
+  memberSearchQuerySchema,
   notificationPrefsSchema,
   suspendMemberSchema,
   updateProfileSchema,
@@ -31,6 +40,7 @@ import {
   ApiZodQuery,
   CurrentUser,
   DomainError,
+  RequirePermission,
   Roles,
   TONTINE_ACCESS,
   type TontineAccessPort,
@@ -126,6 +136,26 @@ export class MembersController {
     };
   }
 
+  @Get('members')
+  @RequirePermission('platform.members.read')
+  @ApiOperation({
+    summary: 'Annuaire des membres (personnel) : filtres, recherche, tri, pagination par curseur',
+  })
+  @ApiZodQuery(memberDirectoryQuerySchema)
+  async directoryList(@ZodQuery(memberDirectoryQuerySchema) q: MemberDirectoryParams) {
+    await this.members.auditAccess(null, 'member.directory.read_by_staff');
+    return this.directory.listPlatform(q);
+  }
+
+  @Get('members/search')
+  @RequirePermission('platform.members.read')
+  @ApiOperation({ summary: 'Rechercher un membre par nom, e-mail ou téléphone (personnel)' })
+  @ApiZodQuery(memberSearchQuerySchema)
+  async search(@ZodQuery(memberSearchQuerySchema) { q, ...filters }: MemberSearchQuery) {
+    await this.members.auditAccess(null, 'member.directory.read_by_staff');
+    return this.directory.listPlatform({ ...filters, search: q });
+  }
+
   /**
    * US-2.5 — isolation : un membre ne voit que son propre profil ; un administrateur de tontine
    * partagée voit une vue restreinte ; un co-participant ne voit que nom et prénom.
@@ -145,6 +175,57 @@ export class MembersController {
       const m = await this.members.get(memberId);
       return { id: m.id, firstName: m.firstName, lastName: m.lastName, view: 'NAME_ONLY' };
     }
+    await this.denied.record('member', memberId, 'not-owner');
+    throw new DomainError('FORBIDDEN');
+  }
+
+  @Get('members/:memberId/history')
+  @ApiOperation({
+    summary: 'Historique d’un membre (le membre lui-même ou le personnel ; accès journalisé)',
+  })
+  @ApiZodQuery(memberHistoryQuerySchema)
+  async memberHistory(
+    @CurrentUser() actor: Actor,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ZodQuery(memberHistoryQuerySchema) q: MemberHistoryQuery,
+  ) {
+    await this.assertSelfOrStaff(actor, memberId);
+    const page = await this.members.historyPage(memberId, q);
+    if (memberId !== actor.userId)
+      await this.members.auditAccess(memberId, 'member.history.read_by_staff');
+    return page;
+  }
+
+  @Get('members/:memberId/status')
+  @ApiOperation({ summary: 'Statut d’un membre (le membre lui-même ou le personnel)' })
+  async memberStatus(
+    @CurrentUser() actor: Actor,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+  ) {
+    await this.assertSelfOrStaff(actor, memberId);
+    return this.members.statusView(memberId, isPlatformStaff(actor.role));
+  }
+
+  @Patch('members/:memberId/status')
+  @Roles('SUPER_ADMIN')
+  @ApiOperation({
+    summary: 'Suspendre (SUSPENDED) ou réactiver (ACTIVE) un membre (super-admin)',
+    description:
+      'Les autres statuts découlent du parcours KYC et ne peuvent pas être imposés manuellement.',
+  })
+  @ApiZodBody(changeMemberStatusSchema)
+  async changeStatus(
+    @CurrentUser() actor: Actor,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ZodBody(changeMemberStatusSchema) body: ChangeMemberStatusInput,
+  ) {
+    return body.status === 'SUSPENDED'
+      ? this.suspendMember(actor, memberId, body.reason)
+      : this.reactivateMember(actor, memberId, body.reason);
+  }
+
+  private async assertSelfOrStaff(actor: Actor, memberId: string): Promise<void> {
+    if (memberId === actor.userId || isPlatformStaff(actor.role)) return;
     await this.denied.record('member', memberId, 'not-owner');
     throw new DomainError('FORBIDDEN');
   }
@@ -173,7 +254,7 @@ export class MembersController {
     return this.directory.list(tontineId, q);
   }
 
-  @Post('admin/members/:memberId/suspend')
+  @Post(['admin/members/:memberId/suspend', 'members/:memberId/suspend'])
   @Roles('SUPER_ADMIN')
   @HttpCode(200)
   @ApiOperation({ summary: 'Suspendre un membre (super-admin)' })
@@ -183,17 +264,10 @@ export class MembersController {
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @ZodBody(suspendMemberSchema) body: { reason: string },
   ) {
-    await this.members.get(memberId);
-    const changed = await this.members.applyTrigger(memberId, 'admin.suspend', {
-      reason: body.reason,
-      changedBy: actor.userId,
-      changedByRole: 'SUPER_ADMIN',
-    });
-    if (!changed) throw new DomainError('INVALID_STATE_TRANSITION', 'Membre déjà suspendu');
-    return toMemberView(await this.members.get(memberId));
+    return this.suspendMember(actor, memberId, body.reason);
   }
 
-  @Post('admin/members/:memberId/reactivate')
+  @Post(['admin/members/:memberId/reactivate', 'members/:memberId/reactivate'])
   @Roles('SUPER_ADMIN')
   @HttpCode(200)
   @ApiOperation({ summary: 'Lever la suspension d’un membre (super-admin)' })
@@ -203,9 +277,24 @@ export class MembersController {
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @ZodBody(suspendMemberSchema) body: { reason: string },
   ) {
+    return this.reactivateMember(actor, memberId, body.reason);
+  }
+
+  private async suspendMember(actor: Actor, memberId: string, reason: string) {
+    await this.members.get(memberId);
+    const changed = await this.members.applyTrigger(memberId, 'admin.suspend', {
+      reason,
+      changedBy: actor.userId,
+      changedByRole: 'SUPER_ADMIN',
+    });
+    if (!changed) throw new DomainError('INVALID_STATE_TRANSITION', 'Membre déjà suspendu');
+    return toMemberView(await this.members.get(memberId));
+  }
+
+  private async reactivateMember(actor: Actor, memberId: string, reason: string) {
     await this.members.get(memberId);
     const changed = await this.members.applyTrigger(memberId, 'admin.reactivate', {
-      reason: body.reason,
+      reason,
       changedBy: actor.userId,
       changedByRole: 'SUPER_ADMIN',
     });

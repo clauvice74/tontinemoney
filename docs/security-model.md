@@ -24,7 +24,8 @@ Double contrôle systématique :
    - `/me/*` et `/members/{memberId}/*` : `memberId === token.sub` sauf rôle administrateur habilité ;
    - ressources de tontine : `TontineAccessService.assertAdmin(tontineId, userId)` ou `assertParticipant(...)` ;
    - listes financières : filtrage forcé par `token.sub` côté requête, jamais par un paramètre client ;
-   - documents KYC : `KYC_AGENT`, `SUPER_ADMIN` (lecture journalisée) et le système uniquement.
+   - documents KYC : `KYC_AGENT`, `SUPER_ADMIN` (lecture journalisée) et le système uniquement ;
+   - annuaire et historique des membres (`GET /members`, `/members/{id}/history`) : permission `platform.members.read` (`SUPER_ADMIN`, `KYC_AGENT`), coordonnées masquées dans les listes, lecture journalisée.
 
 Tout refus produit un `audit_logs.result = DENIED` ; un compteur Redis déclenche une alerte si > 20 refus / 10 min pour un même utilisateur (US-2.5).
 

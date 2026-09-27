@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   type KycLevel,
+  type MemberHistoryQuery,
   type MemberStatus,
   type UpdateProfileInput,
   type NotificationPrefs,
+  buildPage,
+  decodeCursor,
   maskEmail,
   maskPhone,
 } from '@tontine/contracts';
@@ -97,6 +100,8 @@ export function toLimitedView(m: Member) {
     createdAt: m.createdAt.toISOString(),
   };
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const TIER_ORDER: KycLevel[] = ['NONE', 'TIER_1', 'TIER_2', 'TIER_3'];
 export const kycRank = (l: KycLevel) => TIER_ORDER.indexOf(l);
@@ -648,7 +653,69 @@ export class MembersService {
     });
   }
 
-  async auditAccess(memberId: string, action: string): Promise<void> {
+  /** Historique paginé par curseur `(createdAt, id)`, le plus récent d'abord. */
+  async historyPage(memberId: string, q: MemberHistoryQuery) {
+    await this.get(memberId);
+    const cursor = decodeCursor(q.cursor);
+    const before = cursor && typeof cursor.k === 'string' ? new Date(cursor.k) : null;
+    const after =
+      cursor && before && !Number.isNaN(before.getTime()) && UUID.test(cursor.id)
+        ? { OR: [{ createdAt: { lt: before } }, { createdAt: before, id: { lt: cursor.id } }] }
+        : {};
+    const rows = await this.prisma.memberAuditLog.findMany({
+      where: { memberId, ...after },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: q.limit + 1,
+    });
+    const { items, nextCursor } = buildPage(rows, q.limit, (r) => r.createdAt.toISOString());
+    return {
+      data: items.map((r) => ({
+        id: r.id,
+        action: r.action,
+        trigger: r.trigger,
+        changedBy: r.changedBy,
+        changedByRole: r.changedByRole,
+        oldValues: r.oldValues,
+        newValues: r.newValues,
+        createdAt: r.createdAt.toISOString(),
+      })),
+      page: { nextCursor, limit: q.limit },
+    };
+  }
+
+  /**
+   * Statut courant et dernier changement de statut. Le motif n'est exposé qu'au personnel
+   * (`withReason`) : une suspension pour suspicion de fraude ne doit pas être révélée au membre.
+   */
+  async statusView(memberId: string, withReason: boolean) {
+    const m = await this.get(memberId);
+    const last = await this.prisma.memberAuditLog.findFirst({
+      where: { memberId, action: { in: ['STATUS_CHANGED', 'SUSPENDED', 'REACTIVATED'] } },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    });
+    const newValues = (last?.newValues ?? null) as { status?: unknown; reason?: unknown } | null;
+    return {
+      id: m.id,
+      status: m.status,
+      kycLevel: m.kycLevel,
+      complianceStatus: m.complianceStatus,
+      lastChange: last
+        ? {
+            at: last.createdAt.toISOString(),
+            trigger: last.trigger,
+            ...(withReason
+              ? {
+                  reason: typeof newValues?.reason === 'string' ? newValues.reason : null,
+                  changedBy: last.changedBy,
+                  changedByRole: last.changedByRole,
+                }
+              : {}),
+          }
+        : null,
+    };
+  }
+
+  async auditAccess(memberId: string | null, action: string): Promise<void> {
     await this.audit.record({
       action,
       resourceType: 'member',

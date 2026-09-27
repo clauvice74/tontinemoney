@@ -8,6 +8,7 @@ export const PERMISSIONS = [
   'platform.tontine-admins.create',
   'platform.access-requests.decide',
   'platform.users.unlock',
+  'platform.members.read',
   'platform.members.suspend',
   'platform.fraud.flag',
   'platform.jobs.run',
@@ -33,7 +34,7 @@ export const ROLE_PERMISSIONS: Record<PlatformRole, readonly Permission[]> = {
   SUPER_ADMIN: PERMISSIONS,
   TONTINE_ADMIN: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
   MEMBER: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
-  KYC_AGENT: ['member.self', 'kyc.review', 'kyc.documents.read'],
+  KYC_AGENT: ['member.self', 'platform.members.read', 'kyc.review', 'kyc.documents.read'],
 };
 
 export function can(role: PlatformRole, permission: Permission): boolean {

@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { GENDERS, KYC_LEVELS, MEMBER_STATUSES, NOTIFICATION_CATEGORIES } from '../enums';
+import {
+  COMPLIANCE_STATUSES,
+  GENDERS,
+  KYC_LEVELS,
+  MEMBER_STATUSES,
+  NOTIFICATION_CATEGORIES,
+} from '../enums';
 import {
   countryCodeSchema,
   emailSchema,
@@ -68,3 +74,47 @@ export const memberDecisionSchema = z.discriminatedUnion('decision', [
 export type MemberDecisionInput = z.infer<typeof memberDecisionSchema>;
 
 export const suspendMemberSchema = z.object({ reason: reasonSchema });
+
+/** Annuaire plateforme des membres (personnel : SUPER_ADMIN, KYC_AGENT). */
+export const memberDirectoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    cursor: z.string().max(512).optional(),
+    status: z.enum(MEMBER_STATUSES).optional(),
+    kycLevel: z.enum(KYC_LEVELS).optional(),
+    complianceStatus: z.enum(COMPLIANCE_STATUSES).optional(),
+    country: countryCodeSchema.optional(),
+    registeredFrom: isoDateSchema.optional(),
+    registeredTo: isoDateSchema.optional(),
+    search: z.string().trim().min(1).max(100).optional(),
+    sort: z
+      .enum(['name_asc', 'name_desc', 'registered_desc', 'registered_asc', 'status'])
+      .default('registered_desc'),
+  })
+  .strict();
+export type MemberDirectoryParams = z.infer<typeof memberDirectoryQuerySchema>;
+
+/** `GET /members/search` : mêmes filtres que l'annuaire, terme de recherche `q` obligatoire. */
+export const memberSearchQuerySchema = memberDirectoryQuerySchema
+  .omit({ search: true })
+  .extend({ q: z.string().trim().min(2).max(100) })
+  .strict();
+export type MemberSearchQuery = z.infer<typeof memberSearchQuerySchema>;
+
+/** Historique d'un membre (journal `mbr_audit_logs`), le plus récent d'abord. */
+export const memberHistoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    cursor: z.string().max(512).optional(),
+  })
+  .strict();
+export type MemberHistoryQuery = z.infer<typeof memberHistoryQuerySchema>;
+
+/**
+ * Changement de statut administratif. Seules la suspension et la levée de suspension sont
+ * manuelles ; les autres statuts résultent du parcours KYC (US-2.6).
+ */
+export const changeMemberStatusSchema = z
+  .object({ status: z.enum(['SUSPENDED', 'ACTIVE']), reason: reasonSchema })
+  .strict();
+export type ChangeMemberStatusInput = z.infer<typeof changeMemberStatusSchema>;
