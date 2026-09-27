@@ -27,6 +27,7 @@ pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :809
 | Messages simulés (SMS/email) | http://localhost:3000/dev/messages (codes OTP, liens d'activation)            |
 | Mailpit                      | http://localhost:8025                                                         |
 | Grafana / Prometheus         | http://localhost:3001 · http://localhost:9090                                 |
+| Redpanda Console · Jaeger    | http://localhost:8088 · http://localhost:16686                                |
 | Console MinIO                | http://localhost:9001                                                         |
 
 Les clés JWT de développement sont générées automatiquement dans `.keys/` au premier démarrage (ou `pnpm keys:generate`).

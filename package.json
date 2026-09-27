@@ -31,7 +31,8 @@
     "test:e2e:local": "bash infrastructure/scripts/e2e-local.sh",
     "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build",
     "db:roles": "pnpm --filter @tontine/database db:roles",
-    "arch:check": "node infrastructure/scripts/check-data-ownership.mjs"
+    "arch:check": "node infrastructure/scripts/check-data-ownership.mjs",
+    "kafka:topics": "pnpm --filter @tontine/platform kafka:topics"
   },
   "devDependencies": {
     "prettier": "3.9.9",

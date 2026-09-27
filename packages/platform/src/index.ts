@@ -9,6 +9,8 @@ export * from './events/on-event.decorator';
 export * from './events/event-dispatcher';
 export * from './events/outbox-relay';
 export * from './events/event-transport';
+export * from './events/inbox-processor';
+export * from './events/dead-letters';
 export * from './idempotency/idempotency.service';
 export * from './idempotency/idempotent.interceptor';
 export * from './audit/audit.service';

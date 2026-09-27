@@ -1,7 +1,10 @@
 import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  type Actor,
   ApiZodQuery,
+  CurrentUser,
+  DeadLetterService,
   JobRegistry,
   OutboxRelay,
   PrismaService,
@@ -9,6 +12,11 @@ import {
   ZodQuery,
 } from '@tontine/platform';
 import { z } from 'zod';
+
+const deadLettersQuery = z.object({
+  status: z.enum(['OPEN', 'REPLAYED', 'DISCARDED']).default('OPEN'),
+  limit: z.coerce.number().int().min(1).max(200).default(100),
+});
 
 const auditQuery = z.object({
   actorId: z.string().uuid().optional(),
@@ -27,6 +35,7 @@ export class OpsController {
     private readonly jobs: JobRegistry,
     private readonly relay: OutboxRelay,
     private readonly prisma: PrismaService,
+    private readonly deadLetters: DeadLetterService,
   ) {}
 
   @Get('jobs')
@@ -74,6 +83,35 @@ export class OpsController {
   @ApiOperation({ summary: 'Remettre un événement DLQ en file' })
   async requeue(@Param('eventId', ParseUUIDPipe) eventId: string): Promise<void> {
     await this.relay.requeue(eventId);
+  }
+
+  @Get('events/dead-letters')
+  @RequirePermission('platform.outbox.inspect')
+  @ApiOperation({
+    summary: 'Messages rejetés par les consommateurs (validation ou traitement, étape 3)',
+  })
+  @ApiZodQuery(deadLettersQuery)
+  async deadLetterList(@ZodQuery(deadLettersQuery) q: z.infer<typeof deadLettersQuery>) {
+    return { data: await this.deadLetters.list(q.status, q.limit) };
+  }
+
+  @Post('events/dead-letters/:id/replay')
+  @RequirePermission('platform.outbox.inspect')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Rejouer un message rejeté (validation puis traitement idempotent) ; 422 si toujours en échec',
+  })
+  async deadLetterReplay(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
+    return this.deadLetters.replay(actor.userId, id);
+  }
+
+  @Post('events/dead-letters/:id/discard')
+  @RequirePermission('platform.outbox.inspect')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Abandonner un message rejeté (conservé pour l’audit)' })
+  async deadLetterDiscard(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
+    return this.deadLetters.discard(actor.userId, id);
   }
 
   @Get('audit-logs')

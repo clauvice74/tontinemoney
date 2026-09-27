@@ -15,6 +15,7 @@ export class MetricsService {
   readonly activeHolds: Gauge;
   readonly jobRuns: Counter<'job' | 'status'>;
   readonly businessEvents: Counter<'type'>;
+  readonly deadLetters: Counter<'stage'>;
 
   constructor(@Inject(APP_CONFIG) config: AppConfig) {
     this.enabled = config.METRICS_ENABLED;
@@ -57,6 +58,12 @@ export class MetricsService {
       name: 'business_events_total',
       help: 'Événements métier publiés',
       labelNames: ['type'],
+      registers: [this.registry],
+    });
+    this.deadLetters = new Counter({
+      name: 'event_dead_letters_total',
+      help: 'Messages rejetés par les consommateurs (validation ou traitement)',
+      labelNames: ['stage'],
       registers: [this.registry],
     });
   }

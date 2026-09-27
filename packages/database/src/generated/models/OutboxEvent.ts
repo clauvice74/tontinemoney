@@ -43,6 +43,7 @@ export type OutboxEventMinAggregateOutputType = {
   eventVersion: number | null;
   aggregateType: string | null;
   aggregateId: string | null;
+  tenantId: string | null;
   producer: string | null;
   correlationId: string | null;
   causationId: string | null;
@@ -62,6 +63,7 @@ export type OutboxEventMaxAggregateOutputType = {
   eventVersion: number | null;
   aggregateType: string | null;
   aggregateId: string | null;
+  tenantId: string | null;
   producer: string | null;
   correlationId: string | null;
   causationId: string | null;
@@ -81,6 +83,7 @@ export type OutboxEventCountAggregateOutputType = {
   eventVersion: number;
   aggregateType: number;
   aggregateId: number;
+  tenantId: number;
   producer: number;
   correlationId: number;
   causationId: number;
@@ -114,6 +117,7 @@ export type OutboxEventMinAggregateInputType = {
   eventVersion?: true;
   aggregateType?: true;
   aggregateId?: true;
+  tenantId?: true;
   producer?: true;
   correlationId?: true;
   causationId?: true;
@@ -133,6 +137,7 @@ export type OutboxEventMaxAggregateInputType = {
   eventVersion?: true;
   aggregateType?: true;
   aggregateId?: true;
+  tenantId?: true;
   producer?: true;
   correlationId?: true;
   causationId?: true;
@@ -152,6 +157,7 @@ export type OutboxEventCountAggregateInputType = {
   eventVersion?: true;
   aggregateType?: true;
   aggregateId?: true;
+  tenantId?: true;
   producer?: true;
   correlationId?: true;
   causationId?: true;
@@ -262,6 +268,7 @@ export type OutboxEventGroupByOutputType = {
   eventVersion: number;
   aggregateType: string;
   aggregateId: string;
+  tenantId: string | null;
   producer: string;
   correlationId: string;
   causationId: string | null;
@@ -302,6 +309,7 @@ export type OutboxEventWhereInput = {
   eventVersion?: Prisma.IntFilter<'OutboxEvent'> | number;
   aggregateType?: Prisma.StringFilter<'OutboxEvent'> | string;
   aggregateId?: Prisma.StringFilter<'OutboxEvent'> | string;
+  tenantId?: Prisma.StringNullableFilter<'OutboxEvent'> | string | null;
   producer?: Prisma.StringFilter<'OutboxEvent'> | string;
   correlationId?: Prisma.StringFilter<'OutboxEvent'> | string;
   causationId?: Prisma.StringNullableFilter<'OutboxEvent'> | string | null;
@@ -322,6 +330,7 @@ export type OutboxEventOrderByWithRelationInput = {
   eventVersion?: Prisma.SortOrder;
   aggregateType?: Prisma.SortOrder;
   aggregateId?: Prisma.SortOrder;
+  tenantId?: Prisma.SortOrderInput | Prisma.SortOrder;
   producer?: Prisma.SortOrder;
   correlationId?: Prisma.SortOrder;
   causationId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -346,6 +355,7 @@ export type OutboxEventWhereUniqueInput = Prisma.AtLeast<
     eventVersion?: Prisma.IntFilter<'OutboxEvent'> | number;
     aggregateType?: Prisma.StringFilter<'OutboxEvent'> | string;
     aggregateId?: Prisma.StringFilter<'OutboxEvent'> | string;
+    tenantId?: Prisma.StringNullableFilter<'OutboxEvent'> | string | null;
     producer?: Prisma.StringFilter<'OutboxEvent'> | string;
     correlationId?: Prisma.StringFilter<'OutboxEvent'> | string;
     causationId?: Prisma.StringNullableFilter<'OutboxEvent'> | string | null;
@@ -368,6 +378,7 @@ export type OutboxEventOrderByWithAggregationInput = {
   eventVersion?: Prisma.SortOrder;
   aggregateType?: Prisma.SortOrder;
   aggregateId?: Prisma.SortOrder;
+  tenantId?: Prisma.SortOrderInput | Prisma.SortOrder;
   producer?: Prisma.SortOrder;
   correlationId?: Prisma.SortOrder;
   causationId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -400,6 +411,7 @@ export type OutboxEventScalarWhereWithAggregatesInput = {
   eventVersion?: Prisma.IntWithAggregatesFilter<'OutboxEvent'> | number;
   aggregateType?: Prisma.StringWithAggregatesFilter<'OutboxEvent'> | string;
   aggregateId?: Prisma.StringWithAggregatesFilter<'OutboxEvent'> | string;
+  tenantId?: Prisma.StringNullableWithAggregatesFilter<'OutboxEvent'> | string | null;
   producer?: Prisma.StringWithAggregatesFilter<'OutboxEvent'> | string;
   correlationId?: Prisma.StringWithAggregatesFilter<'OutboxEvent'> | string;
   causationId?: Prisma.StringNullableWithAggregatesFilter<'OutboxEvent'> | string | null;
@@ -420,6 +432,7 @@ export type OutboxEventCreateInput = {
   eventVersion: number;
   aggregateType: string;
   aggregateId: string;
+  tenantId?: string | null;
   producer: string;
   correlationId: string;
   causationId?: string | null;
@@ -440,6 +453,7 @@ export type OutboxEventUncheckedCreateInput = {
   eventVersion: number;
   aggregateType: string;
   aggregateId: string;
+  tenantId?: string | null;
   producer: string;
   correlationId: string;
   causationId?: string | null;
@@ -460,6 +474,7 @@ export type OutboxEventUpdateInput = {
   eventVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   aggregateType?: Prisma.StringFieldUpdateOperationsInput | string;
   aggregateId?: Prisma.StringFieldUpdateOperationsInput | string;
+  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   producer?: Prisma.StringFieldUpdateOperationsInput | string;
   correlationId?: Prisma.StringFieldUpdateOperationsInput | string;
   causationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -480,6 +495,7 @@ export type OutboxEventUncheckedUpdateInput = {
   eventVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   aggregateType?: Prisma.StringFieldUpdateOperationsInput | string;
   aggregateId?: Prisma.StringFieldUpdateOperationsInput | string;
+  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   producer?: Prisma.StringFieldUpdateOperationsInput | string;
   correlationId?: Prisma.StringFieldUpdateOperationsInput | string;
   causationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -500,6 +516,7 @@ export type OutboxEventCreateManyInput = {
   eventVersion: number;
   aggregateType: string;
   aggregateId: string;
+  tenantId?: string | null;
   producer: string;
   correlationId: string;
   causationId?: string | null;
@@ -520,6 +537,7 @@ export type OutboxEventUpdateManyMutationInput = {
   eventVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   aggregateType?: Prisma.StringFieldUpdateOperationsInput | string;
   aggregateId?: Prisma.StringFieldUpdateOperationsInput | string;
+  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   producer?: Prisma.StringFieldUpdateOperationsInput | string;
   correlationId?: Prisma.StringFieldUpdateOperationsInput | string;
   causationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -540,6 +558,7 @@ export type OutboxEventUncheckedUpdateManyInput = {
   eventVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   aggregateType?: Prisma.StringFieldUpdateOperationsInput | string;
   aggregateId?: Prisma.StringFieldUpdateOperationsInput | string;
+  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   producer?: Prisma.StringFieldUpdateOperationsInput | string;
   correlationId?: Prisma.StringFieldUpdateOperationsInput | string;
   causationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -560,6 +579,7 @@ export type OutboxEventCountOrderByAggregateInput = {
   eventVersion?: Prisma.SortOrder;
   aggregateType?: Prisma.SortOrder;
   aggregateId?: Prisma.SortOrder;
+  tenantId?: Prisma.SortOrder;
   producer?: Prisma.SortOrder;
   correlationId?: Prisma.SortOrder;
   causationId?: Prisma.SortOrder;
@@ -586,6 +606,7 @@ export type OutboxEventMaxOrderByAggregateInput = {
   eventVersion?: Prisma.SortOrder;
   aggregateType?: Prisma.SortOrder;
   aggregateId?: Prisma.SortOrder;
+  tenantId?: Prisma.SortOrder;
   producer?: Prisma.SortOrder;
   correlationId?: Prisma.SortOrder;
   causationId?: Prisma.SortOrder;
@@ -605,6 +626,7 @@ export type OutboxEventMinOrderByAggregateInput = {
   eventVersion?: Prisma.SortOrder;
   aggregateType?: Prisma.SortOrder;
   aggregateId?: Prisma.SortOrder;
+  tenantId?: Prisma.SortOrder;
   producer?: Prisma.SortOrder;
   correlationId?: Prisma.SortOrder;
   causationId?: Prisma.SortOrder;
@@ -669,6 +691,7 @@ export type OutboxEventSelect<
     eventVersion?: boolean;
     aggregateType?: boolean;
     aggregateId?: boolean;
+    tenantId?: boolean;
     producer?: boolean;
     correlationId?: boolean;
     causationId?: boolean;
@@ -694,6 +717,7 @@ export type OutboxEventSelectCreateManyAndReturn<
     eventVersion?: boolean;
     aggregateType?: boolean;
     aggregateId?: boolean;
+    tenantId?: boolean;
     producer?: boolean;
     correlationId?: boolean;
     causationId?: boolean;
@@ -719,6 +743,7 @@ export type OutboxEventSelectUpdateManyAndReturn<
     eventVersion?: boolean;
     aggregateType?: boolean;
     aggregateId?: boolean;
+    tenantId?: boolean;
     producer?: boolean;
     correlationId?: boolean;
     causationId?: boolean;
@@ -741,6 +766,7 @@ export type OutboxEventSelectScalar = {
   eventVersion?: boolean;
   aggregateType?: boolean;
   aggregateId?: boolean;
+  tenantId?: boolean;
   producer?: boolean;
   correlationId?: boolean;
   causationId?: boolean;
@@ -763,6 +789,7 @@ export type OutboxEventOmit<
   | 'eventVersion'
   | 'aggregateType'
   | 'aggregateId'
+  | 'tenantId'
   | 'producer'
   | 'correlationId'
   | 'causationId'
@@ -790,6 +817,7 @@ export type $OutboxEventPayload<
       eventVersion: number;
       aggregateType: string;
       aggregateId: string;
+      tenantId: string | null;
       producer: string;
       correlationId: string;
       causationId: string | null;
@@ -1376,6 +1404,7 @@ export interface OutboxEventFieldRefs {
   readonly eventVersion: Prisma.FieldRef<'OutboxEvent', 'Int'>;
   readonly aggregateType: Prisma.FieldRef<'OutboxEvent', 'String'>;
   readonly aggregateId: Prisma.FieldRef<'OutboxEvent', 'String'>;
+  readonly tenantId: Prisma.FieldRef<'OutboxEvent', 'String'>;
   readonly producer: Prisma.FieldRef<'OutboxEvent', 'String'>;
   readonly correlationId: Prisma.FieldRef<'OutboxEvent', 'String'>;
   readonly causationId: Prisma.FieldRef<'OutboxEvent', 'String'>;

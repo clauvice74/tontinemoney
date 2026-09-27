@@ -8,6 +8,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/OutboxEvent';
+export type * from './models/EventDeadLetter';
 export type * from './models/ProcessedEvent';
 export type * from './models/IdempotencyKey';
 export type * from './models/AuditLog';

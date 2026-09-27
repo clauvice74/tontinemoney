@@ -184,11 +184,12 @@ Nouvelles lectures associées : GET `/kyc/{memberId}` (personnel `kyc.review`, a
 
 ## Exploitation
 
-| GET 🔒 | `/admin/jobs` · POST `/admin/jobs/{name}/run`            | tâches planifiées |
-| ------ | -------------------------------------------------------- | ----------------- |
-| GET 🔒 | `/admin/outbox/dead` · POST `/admin/outbox/{id}/requeue` | DLQ événements    |
-| GET 🔒 | `/admin/audit-logs`                                      | journal d'audit   |
-| GET    | `/health`, `/health/ready`, `/metrics` (sans préfixe)    | santé, Prometheus |
+| GET 🔒 | `/admin/jobs` · POST `/admin/jobs/{name}/run`                                                          | tâches planifiées                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| GET 🔒 | `/admin/outbox/dead` · POST `/admin/outbox/{id}/requeue`                                               | DLQ événements                                                                                        |
+| GET 🔒 | `/admin/events/dead-letters?status&limit` · POST `/admin/events/dead-letters/{id}/replay` · `/discard` | messages rejetés par les consommateurs (étape 3, A-52) ; rejeu : 422 si toujours invalide ou en échec |
+| GET 🔒 | `/admin/audit-logs`                                                                                    | journal d'audit                                                                                       |
+| GET    | `/health`, `/health/ready`, `/metrics` (sans préfixe)                                                  | santé, Prometheus                                                                                     |
 
 ## Compléments (phases 4 à 6)
 

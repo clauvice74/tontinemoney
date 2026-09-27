@@ -31,6 +31,7 @@ export class OutboxService {
         aggregateType: env.aggregateType,
         aggregateId: env.aggregateId,
         producer: env.producer,
+        tenantId: env.tenantId,
         correlationId: env.correlationId,
         causationId: env.causationId,
         payload: env.payload as object,

@@ -12,6 +12,7 @@ Source de vérité exécutable : `packages/events/src/catalog.ts` (schéma zod p
   "occurredAt": "2026-09-24T12:00:00.000Z",
   "correlationId": "id de la requête HTTP ou du job d'origine",
   "causationId": "eventId de l'événement qui a causé celui-ci, sinon null",
+  "tenantId": null,
   "producer": "tontines",
   "aggregateType": "tontine",
   "aggregateId": "uuid",
@@ -25,7 +26,9 @@ Règles :
 - Les montants sont transmis en unités mineures sous forme de chaîne (`"50000"`) avec la devise.
 - Aucun secret (jeton, OTP, mot de passe) ni document dans un payload.
 - Publication uniquement via l'outbox, dans la transaction SQL qui produit le changement.
-- Topic Kafka = `eventType` ; clé de partition = `aggregateId`.
+- Topic Kafka versionné = `<eventType>.v<eventVersion>` (ex. `payment.completed.v1`) ; clé de partition = `aggregateId` (ordre garanti par agrégat) ; en-têtes `eventId`, `eventType`, `eventVersion`, `producer`, `correlationId`, `causationId`, `tenantId`. Création : `pnpm kafka:topics` (idempotent, 7 jours de rétention).
+- `tenantId` : réservé (plateforme mono-opérateur, toujours `null`) ; lecteur tolérant pour les messages qui ne le portent pas (A-52).
+- Consommation (`InboxProcessor`) : validation (JSON, type connu, version supportée, payload conforme, cohérence du topic) → rejet immédiat si invalide ; traitement idempotent par consommateur (`processed_events`) avec `EVENT_CONSUMER_MAX_ATTEMPTS` tentatives et attente exponentielle → rejet si l'échec persiste. Tout rejet est consigné dans `platform.event_dead_letters` et publié sur `tontinemoney.dead-letter.v1` (30 jours, en-têtes `x-dlq-*`), puis acquitté : un message ne bloque jamais sa partition. Rejeu ou abandon par le super-admin (`/admin/events/dead-letters`).
 
 ## Événements (v1)
 

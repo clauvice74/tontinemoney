@@ -48,6 +48,12 @@ export { Prisma };
  */
 export type OutboxEvent = Prisma.OutboxEventModel;
 /**
+ * Model EventDeadLetter
+ * Messages rejetés par les consommateurs (étape 3, A-52) : enveloppe invalide, version non
+ * supportée ou consommateur en échec après réessais. Rejouables par le super-admin.
+ */
+export type EventDeadLetter = Prisma.EventDeadLetterModel;
+/**
  * Model ProcessedEvent
  *
  */

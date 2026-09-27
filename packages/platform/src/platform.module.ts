@@ -9,6 +9,7 @@ import { UnitOfWork } from './context/unit-of-work';
 import { EventDispatcher } from './events/event-dispatcher';
 import { EventHandlerExplorer } from './events/event-handler.explorer';
 import { OutboxRelay } from './events/outbox-relay';
+import { DeadLetterService, DeadLetterStore } from './events/dead-letters';
 import { OutboxService } from './events/outbox.service';
 import { AccessDeniedMonitor } from './http/access-denied.monitor';
 import { IdempotencyInterceptor } from './idempotency/idempotent.interceptor';
@@ -49,6 +50,8 @@ export class PlatformModule {
       OutboxService,
       EventDispatcher,
       EventHandlerExplorer,
+      DeadLetterStore,
+      DeadLetterService,
       OutboxRelay,
       IdempotencyService,
       IdempotencyInterceptor,

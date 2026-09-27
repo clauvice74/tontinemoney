@@ -391,6 +391,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   OutboxEvent: 'OutboxEvent',
+  EventDeadLetter: 'EventDeadLetter',
   ProcessedEvent: 'ProcessedEvent',
   IdempotencyKey: 'IdempotencyKey',
   AuditLog: 'AuditLog',
@@ -465,6 +466,7 @@ export type TypeMap<
   meta: {
     modelProps:
       | 'outboxEvent'
+      | 'eventDeadLetter'
       | 'processedEvent'
       | 'idempotencyKey'
       | 'auditLog'
@@ -592,6 +594,81 @@ export type TypeMap<
         count: {
           args: Prisma.OutboxEventCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.OutboxEventCountAggregateOutputType> | number;
+        };
+      };
+    };
+    EventDeadLetter: {
+      payload: Prisma.$EventDeadLetterPayload<ExtArgs>;
+      fields: Prisma.EventDeadLetterFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.EventDeadLetterFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.EventDeadLetterFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        findFirst: {
+          args: Prisma.EventDeadLetterFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.EventDeadLetterFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        findMany: {
+          args: Prisma.EventDeadLetterFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>[];
+        };
+        create: {
+          args: Prisma.EventDeadLetterCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        createMany: {
+          args: Prisma.EventDeadLetterCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.EventDeadLetterCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>[];
+        };
+        delete: {
+          args: Prisma.EventDeadLetterDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        update: {
+          args: Prisma.EventDeadLetterUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        deleteMany: {
+          args: Prisma.EventDeadLetterDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.EventDeadLetterUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.EventDeadLetterUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>[];
+        };
+        upsert: {
+          args: Prisma.EventDeadLetterUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventDeadLetterPayload>;
+        };
+        aggregate: {
+          args: Prisma.EventDeadLetterAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventDeadLetter>;
+        };
+        groupBy: {
+          args: Prisma.EventDeadLetterGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.EventDeadLetterGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.EventDeadLetterCountArgs<ExtArgs>;
+          result:
+            runtime.Types.Utils.Optional<Prisma.EventDeadLetterCountAggregateOutputType> | number;
         };
       };
     };
@@ -4611,6 +4688,7 @@ export const OutboxEventScalarFieldEnum = {
   eventVersion: 'eventVersion',
   aggregateType: 'aggregateType',
   aggregateId: 'aggregateId',
+  tenantId: 'tenantId',
   producer: 'producer',
   correlationId: 'correlationId',
   causationId: 'causationId',
@@ -4627,6 +4705,30 @@ export const OutboxEventScalarFieldEnum = {
 
 export type OutboxEventScalarFieldEnum =
   (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum];
+
+export const EventDeadLetterScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  topic: 'topic',
+  partition: 'partition',
+  offset: 'offset',
+  eventId: 'eventId',
+  eventType: 'eventType',
+  eventVersion: 'eventVersion',
+  stage: 'stage',
+  consumers: 'consumers',
+  reason: 'reason',
+  rawMessage: 'rawMessage',
+  headers: 'headers',
+  attempts: 'attempts',
+  status: 'status',
+  resolvedBy: 'resolvedBy',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type EventDeadLetterScalarFieldEnum =
+  (typeof EventDeadLetterScalarFieldEnum)[keyof typeof EventDeadLetterScalarFieldEnum];
 
 export const ProcessedEventScalarFieldEnum = {
   consumer: 'consumer',
@@ -6839,6 +6941,7 @@ export type PrismaClientOptions =
   PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter;
 export type GlobalOmitConfig = {
   outboxEvent?: Prisma.OutboxEventOmit;
+  eventDeadLetter?: Prisma.EventDeadLetterOmit;
   processedEvent?: Prisma.ProcessedEventOmit;
   idempotencyKey?: Prisma.IdempotencyKeyOmit;
   auditLog?: Prisma.AuditLogOmit;

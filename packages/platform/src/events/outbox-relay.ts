@@ -10,6 +10,7 @@ import { type EventEnvelope } from '@tontine/events';
 import { PrismaService } from '../context/prisma.service';
 import { APP_CONFIG } from '../context/tokens';
 import { MetricsService } from '../observability/metrics.service';
+import { DeadLetterStore } from './dead-letters';
 import { EventDispatcher } from './event-dispatcher';
 import { type EventTransport, InProcessTransport, KafkaTransport } from './event-transport';
 
@@ -20,6 +21,7 @@ interface ClaimedRow {
   aggregateType: string;
   aggregateId: string;
   producer: string;
+  tenantId: string | null;
   correlationId: string;
   causationId: string | null;
   payload: unknown;
@@ -48,10 +50,21 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
     dispatcher: EventDispatcher,
     private readonly metrics: MetricsService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    deadLetters: DeadLetterStore,
   ) {
     this.transport =
       config.EVENT_TRANSPORT === 'kafka'
-        ? new KafkaTransport(config.KAFKA_BROKERS.split(','), dispatcher)
+        ? new KafkaTransport(
+            {
+              brokers: config.KAFKA_BROKERS.split(',').map((b) => b.trim()),
+              clientId: config.KAFKA_CLIENT_ID,
+              groupId: config.KAFKA_GROUP_ID,
+              partitions: config.KAFKA_TOPIC_PARTITIONS,
+              maxAttempts: config.EVENT_CONSUMER_MAX_ATTEMPTS,
+            },
+            dispatcher,
+            deadLetters,
+          )
         : new InProcessTransport(dispatcher);
   }
 
@@ -102,7 +115,7 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
         LIMIT ${BATCH_SIZE}
         FOR UPDATE SKIP LOCKED
       )
-      RETURNING "id", "eventType", "eventVersion", "aggregateType", "aggregateId", "producer",
+      RETURNING "id", "eventType", "eventVersion", "aggregateType", "aggregateId", "producer", "tenantId",
                 "correlationId", "causationId", "payload", "occurredAt", "attempts"`;
     rows.sort((a, b) => a.occurredAt.getTime() - b.occurredAt.getTime());
     for (const row of rows) {
@@ -113,6 +126,7 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
         aggregateType: row.aggregateType,
         aggregateId: row.aggregateId,
         producer: row.producer,
+        tenantId: row.tenantId,
         correlationId: row.correlationId,
         causationId: row.causationId,
         occurredAt: row.occurredAt.toISOString(),

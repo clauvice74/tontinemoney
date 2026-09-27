@@ -118,7 +118,9 @@ Handler : insert processed_events(consumer, event_id) ON CONFLICT DO NOTHING
           → si déjà présent : ignoré (idempotence)
 ```
 
-Retry avec backoff exponentiel ; après `maxAttempts`, l'événement passe en `DEAD` (DLQ consultable par le super-admin).
+Retry avec backoff exponentiel ; après `maxAttempts`, l'événement passe en `DEAD` (DLQ producteur consultable par le super-admin).
+
+Transport Kafka (étape 3, A-52) : topics versionnés `<type>.v<version>`, consommation par `InboxProcessor` (validation, dispatch idempotent, réessais bornés), messages rejetés consignés dans `platform.event_dead_letters` et publiés sur `tontinemoney.dead-letter.v1`, rejouables par le super-admin.
 
 ### 5.3 Opération financière
 

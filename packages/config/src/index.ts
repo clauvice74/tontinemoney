@@ -21,6 +21,11 @@ export const envSchema = z
     KV_DRIVER: z.enum(['redis', 'memory']).default('redis'),
     EVENT_TRANSPORT: z.enum(['inprocess', 'kafka']).default('inprocess'),
     KAFKA_BROKERS: z.string().default('localhost:19092'),
+    KAFKA_CLIENT_ID: z.string().min(1).default('tontinemoney-api'),
+    KAFKA_GROUP_ID: z.string().min(1).default('tontinemoney-api'),
+    KAFKA_TOPIC_PARTITIONS: z.coerce.number().int().min(1).max(64).default(3),
+    /** Tentatives de traitement d'un message Kafka avant rejet (file des messages rejetés). */
+    EVENT_CONSUMER_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(3),
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().min(50).default(250),
     JWT_PRIVATE_KEY_PEM: z.string().optional().default(''),
     JWT_PUBLIC_KEY_PEM: z.string().optional().default(''),

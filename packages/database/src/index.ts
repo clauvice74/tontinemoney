@@ -89,6 +89,7 @@ export function isCheckViolation(error: unknown): boolean {
 /** Tables tronquées entre les tests d'intégration (ordre sans importance avec CASCADE). */
 export const ALL_TABLES = [
   'outbox_events',
+  'event_dead_letters',
   'processed_events',
   'idempotency_keys',
   'audit_logs',

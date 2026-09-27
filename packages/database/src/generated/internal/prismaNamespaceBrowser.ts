@@ -49,6 +49,7 @@ export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
   OutboxEvent: 'OutboxEvent',
+  EventDeadLetter: 'EventDeadLetter',
   ProcessedEvent: 'ProcessedEvent',
   IdempotencyKey: 'IdempotencyKey',
   AuditLog: 'AuditLog',
@@ -126,6 +127,7 @@ export const OutboxEventScalarFieldEnum = {
   eventVersion: 'eventVersion',
   aggregateType: 'aggregateType',
   aggregateId: 'aggregateId',
+  tenantId: 'tenantId',
   producer: 'producer',
   correlationId: 'correlationId',
   causationId: 'causationId',
@@ -142,6 +144,30 @@ export const OutboxEventScalarFieldEnum = {
 
 export type OutboxEventScalarFieldEnum =
   (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum];
+
+export const EventDeadLetterScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  topic: 'topic',
+  partition: 'partition',
+  offset: 'offset',
+  eventId: 'eventId',
+  eventType: 'eventType',
+  eventVersion: 'eventVersion',
+  stage: 'stage',
+  consumers: 'consumers',
+  reason: 'reason',
+  rawMessage: 'rawMessage',
+  headers: 'headers',
+  attempts: 'attempts',
+  status: 'status',
+  resolvedBy: 'resolvedBy',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type EventDeadLetterScalarFieldEnum =
+  (typeof EventDeadLetterScalarFieldEnum)[keyof typeof EventDeadLetterScalarFieldEnum];
 
 export const ProcessedEventScalarFieldEnum = {
   consumer: 'consumer',

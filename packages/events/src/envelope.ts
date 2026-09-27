@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { EVENT_CATALOG, type EventPayload, type EventType, isEventType } from './catalog';
 
-/** Enveloppe normalisée (prompt §13 : eventId, eventType, eventVersion, occurredAt, correlationId, causationId, producer, payload). */
+/**
+ * Enveloppe normalisée (eventId, eventType, eventVersion, occurredAt, producer, correlationId,
+ * causationId, aggregateId, tenantId, payload). `tenantId` : plateforme mono-locataire, toujours
+ * null aujourd'hui ; le champ est réservé pour une exploitation multi-opérateurs (A-52).
+ */
 export interface EventEnvelope<T extends EventType = EventType> {
   eventId: string;
   eventType: T;
@@ -12,8 +16,17 @@ export interface EventEnvelope<T extends EventType = EventType> {
   producer: string;
   aggregateType: string;
   aggregateId: string;
+  tenantId: string | null;
   payload: EventPayload<T>;
 }
+
+/** Topic Kafka d'un type d'événement : la version fait partie du nom (`payment.completed.v1`). */
+export function topicFor(eventType: string, version: number): string {
+  return `${eventType}.v${version}`;
+}
+
+/** Topic des messages rejetés par les consommateurs (schéma invalide, version, échecs répétés). */
+export const DEAD_LETTER_TOPIC = 'tontinemoney.dead-letter.v1';
 
 export interface NewEvent<T extends EventType = EventType> {
   type: T;
@@ -22,6 +35,7 @@ export interface NewEvent<T extends EventType = EventType> {
   payload: EventPayload<T>;
   correlationId?: string | null;
   causationId?: string | null;
+  tenantId?: string | null;
   occurredAt?: Date;
 }
 
@@ -55,6 +69,7 @@ export function buildEnvelope<T extends EventType>(
     producer: entry.producer,
     aggregateType: event.aggregateType,
     aggregateId: event.aggregateId,
+    tenantId: event.tenantId ?? null,
     payload: parsed.data as EventPayload<T>,
   };
 }
@@ -89,5 +104,18 @@ export function parseEnvelope(raw: unknown): EventEnvelope {
     if (typeof e[field] !== 'string')
       throw new EventValidationError(`Champ manquant : ${field}`, null);
   }
-  return { ...(e as unknown as EventEnvelope), payload: payload.data as EventEnvelope['payload'] };
+  for (const field of ['causationId', 'tenantId']) {
+    const v = e[field];
+    if (v !== undefined && v !== null && typeof v !== 'string')
+      throw new EventValidationError(`Champ invalide : ${field}`, null);
+  }
+  if (Number.isNaN(Date.parse(String(e['occurredAt']))))
+    throw new EventValidationError('Horodatage invalide : occurredAt', null);
+  // Lecteur tolérant : un message antérieur sans tenantId / causationId reste valide
+  return {
+    ...(e as unknown as EventEnvelope),
+    causationId: (e['causationId'] as string | null | undefined) ?? null,
+    tenantId: (e['tenantId'] as string | null | undefined) ?? null,
+    payload: payload.data as EventEnvelope['payload'],
+  };
 }

@@ -166,6 +166,9 @@ importers:
       eslint:
         specifier: 9.39.5
         version: 9.39.5(jiti@2.7.0)
+      kafkajs:
+        specifier: 2.2.4
+        version: 2.2.4
       supertest:
         specifier: 7.1.4
         version: 7.1.4
@@ -694,6 +697,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@22.18.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.20.6)(yaml@2.9.1))
+      dotenv-cli:
+        specifier: 8.0.0
+        version: 8.0.0
       eslint:
         specifier: 9.39.5
         version: 9.39.5(jiti@2.7.0)

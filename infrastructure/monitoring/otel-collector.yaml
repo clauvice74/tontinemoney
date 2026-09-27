@@ -6,6 +6,11 @@ receivers:
 processors:
   batch: {}
 exporters:
+  # Traces vers Jaeger (OTLP gRPC interne) ; résumé dans les journaux du collecteur
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
   debug:
     verbosity: basic
 service:
@@ -13,4 +18,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [otlp/jaeger, debug]
