@@ -25,8 +25,6 @@ let reporting: NestExpressApplication;
 let reportingRelay: OutboxRelay;
 let monolithUrl: string;
 
-const SECRET = 'test-internal-secret-0123456789abcdef';
-
 beforeAll(async () => {
   ctx = await createTestContext({
     EVENT_TRANSPORT: 'postgres',
@@ -133,7 +131,12 @@ describe('Reporting extrait (processus distinct)', () => {
 });
 
 describe('Ports internes (monolithe)', () => {
-  const call = (path: string, args: unknown[], caller = 'reporting', secret = SECRET) => {
+  const call = (
+    path: string,
+    args: unknown[],
+    caller = 'reporting',
+    secret = ctx.config.INTERNAL_SERVICE_SECRET,
+  ) => {
     const body = encodeWire(args);
     return request(monolithUrl)
       .post(`/api/v1/internal/ports/${path}`)
@@ -149,8 +152,7 @@ describe('Ports internes (monolithe)', () => {
     expect(JSON.parse(ok.text).v).toMatchObject({ ok: true });
     expect((await call('members.query/snapshots', [[u.id]], 'intrus')).status).toBe(401);
     expect(
-      (await call('members.query/snapshots', [[u.id]], 'reporting', 'mauvais-secret-000000000000'))
-        .status,
+      (await call('members.query/snapshots', [[u.id]], 'reporting', 'x'.repeat(40))).status,
     ).toBe(401);
     expect((await call('wallets.query/memberBalance', [u.id])).status).toBe(200);
     expect((await call('tontines.access/resolveInvitationCode', ['x'])).status).toBe(404);
