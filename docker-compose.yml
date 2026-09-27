@@ -31,7 +31,7 @@ services:
       # Nœud unique : sujets internes (dont l'attribution des producer id) en réplication 1
       - --mode dev-container
       - --smp 1
-      - --memory 512M
+      - --memory 2G
       - --overprovisioned
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
