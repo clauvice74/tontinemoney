@@ -107,6 +107,9 @@ describe('routage et en-têtes', () => {
       '/api/v1/a%2fb',
       '/api/v1/%61dmin/users',
       '/api/v1/%41DMIN',
+      '/api/v1/internal/payments/notifications',
+      '/api/v1/payments/webhooks/simulated',
+      '/api/v1/webhooks/payments/simulated',
     ]) {
       const res = await api.get(p);
       expect(res.status, p).toBe(404);

@@ -87,6 +87,8 @@ jobs:
       - run: pnpm db:migrate
       - name: Tests d'intégration (API + Postgres)
         run: pnpm --filter @tontine/api test:coverage
+      - name: Tests d'intégration (Payment Gateway + Postgres)
+        run: pnpm --filter @tontine/payment-gateway test:int
       - uses: actions/upload-artifact@v4
         if: always()
         with:

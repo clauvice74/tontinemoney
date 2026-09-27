@@ -4,6 +4,7 @@ import { type AppConfig } from '@tontine/config';
 import { ComplianceService } from '@tontine/compliance';
 import {
   type DepositInput,
+  type PaymentNotification,
   type WithdrawalInput,
   maskPhone,
   moneyView,
@@ -102,8 +103,37 @@ export class PaymentsService {
     @Inject(APP_CONFIG) config: AppConfig,
   ) {
     this.cipher = new DataCipher(config.DATA_ENCRYPTION_KEY);
+    const gateway = config.PAYMENT_GATEWAY_URL.replace(/\/$/, '');
     for (const sim of this.registry.allSimulated()) {
-      sim.setWebhookSink((provider, headers, raw) => this.receiveWebhook(provider, headers, raw));
+      sim.setWebhookSink((provider, headers, raw) =>
+        config.PSP_WEBHOOK_DELIVERY === 'http'
+          ? this.deliverToGateway(`${gateway}/api/v1/webhooks/payments/${provider}`, headers, raw)
+          : this.receiveWebhook(provider, headers, raw),
+      );
+    }
+  }
+
+  /**
+   * Simulateur : webhook envoyé au Payment Gateway comme le ferait un PSP réel. Un échec de
+   * livraison n'est pas bloquant : le polling (US-7.4) résout le paiement.
+   */
+  private async deliverToGateway(
+    url: string,
+    headers: Record<string, string>,
+    raw: Buffer,
+  ): Promise<void> {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: new Uint8Array(raw),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) this.logger.warn(`Webhook simulé refusé par le Payment Gateway (${res.status})`);
+    } catch (e) {
+      this.logger.warn(
+        `Payment Gateway injoignable, résolution par polling : ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
@@ -572,7 +602,36 @@ export class PaymentsService {
         reason === 'TIMESTAMP' ? 'Horodatage hors tolérance (anti-rejeu)' : 'Signature invalide',
       );
     }
-    // Anti-rejeu / idempotence : un identifiant d'événement n'est traité qu'une fois
+    return this.processEvent(providerName, event);
+  }
+
+  /**
+   * Notification normalisée reçue du Payment Gateway (appel interne signé) : la signature du PSP
+   * a été vérifiée par le gateway ; les contrôles métier (paiement, montant, devise, statut,
+   * idempotence) restent ici.
+   */
+  async receiveNotification(
+    n: PaymentNotification,
+  ): Promise<{ received: true; result: WebhookOutcome }> {
+    if (!this.registry.get(n.provider)?.enabled)
+      throw new DomainError('NOT_FOUND', 'Prestataire inconnu ou désactivé');
+    return this.processEvent(n.provider, {
+      providerEventId: n.providerEventId,
+      providerReference: n.providerReference,
+      merchantReference: n.merchantReference,
+      status: n.status,
+      amountMinor: BigInt(n.amountMinor),
+      currency: n.currency,
+      failureReason: n.failureReason,
+      timestamp: new Date(n.occurredAt),
+    });
+  }
+
+  /** Anti-rejeu / idempotence : un identifiant d'événement n'est traité qu'une fois. */
+  private async processEvent(
+    providerName: string,
+    event: WebhookEvent,
+  ): Promise<{ received: true; result: WebhookOutcome }> {
     let row;
     try {
       row = await this.prisma.pspWebhookEvent.create({

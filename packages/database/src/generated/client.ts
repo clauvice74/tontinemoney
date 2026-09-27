@@ -244,6 +244,13 @@ export type PspSimOperation = Prisma.PspSimOperationModel;
  */
 export type PspWebhookEvent = Prisma.PspWebhookEventModel;
 /**
+ * Model PaymentGatewayReceipt
+ * Payment Gateway : journal des webhooks acceptés (signature valide). Idempotence et
+ * non-rejeu par (fournisseur, identifiant d'événement) ; empreinte du corps pour détecter
+ * un même identifiant réutilisé avec un contenu différent.
+ */
+export type PaymentGatewayReceipt = Prisma.PaymentGatewayReceiptModel;
+/**
  * Model NotificationTemplate
  *
  */

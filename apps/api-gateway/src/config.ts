@@ -46,6 +46,13 @@ export const gatewayConfigSchema = z.object({
       { prefix: '/api/v1/reports/', roles: ['SUPER_ADMIN'] },
     ]),
   ),
+  /**
+   * Préfixes jamais exposés aux clients : routes internes de service à service, et webhooks PSP
+   * (reçus uniquement par le Payment Gateway).
+   */
+  GATEWAY_BLOCKED_PREFIXES: json(z.array(z.string().startsWith('/api/v1/'))).default(
+    JSON.stringify(['/api/v1/internal/', '/api/v1/payments/webhooks/', '/api/v1/webhooks/']),
+  ),
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
   /**
    * Proxys de confiance devant le gateway (0 : le gateway est en frontal et ignore

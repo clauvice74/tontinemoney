@@ -1,6 +1,6 @@
 # Référence des routes (contrat web ⇄ API)
 
-Complément lisible de `docs/openapi.json` (généré par `pnpm --filter @tontine/api openapi`). Toutes les routes sont préfixées par `/api/v1` sauf mention contraire. Les clients passent par l'**API Gateway** (`http://localhost:8080/api/v1`, docs/security.md §5), qui route vers les services ; `apps/api` (:4000) n'est plus un point d'entrée client. `🔒` = jeton requis ; `💸` = en-tête `Idempotency-Key` obligatoire. Montants : `{ amount: "50000", amountMinor: "50000", currency: "XAF" }` (type `MoneyView`).
+Complément lisible de `docs/openapi.json` (généré par `pnpm --filter @tontine/api openapi`). Toutes les routes sont préfixées par `/api/v1` sauf mention contraire. Les clients passent par l'**API Gateway** (`http://localhost:8080/api/v1`, docs/security.md §5), qui route vers les services ; `apps/api` (:4000) n'est plus un point d'entrée client. Les webhooks PSP sont reçus par le **Payment Gateway** : `POST http://localhost:8090/api/v1/webhooks/payments/{provider}` (A-47) ; l'ancienne route `/payments/webhooks/{provider}` et les routes `/internal/**` ne sont pas exposées par l'API Gateway. `🔒` = jeton requis ; `💸` = en-tête `Idempotency-Key` obligatoire. Montants : `{ amount: "50000", amountMinor: "50000", currency: "XAF" }` (type `MoneyView`).
 
 ## Authentification (épique 1)
 

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { InternalPaymentsController } from './internal.controller';
 import { TransactionsModule } from '@tontine/transactions';
 import { PaymentsConsumers } from './payments.consumers';
 import {
@@ -13,7 +14,12 @@ import { PspReconciliationService } from './psp-reconciliation.service';
 /** Domaine Paiements (épique 7) — prestataires simulés uniquement. */
 @Module({
   imports: [TransactionsModule],
-  controllers: [PaymentsController, WebhooksController, PspSimulatorController],
+  controllers: [
+    PaymentsController,
+    WebhooksController,
+    PspSimulatorController,
+    InternalPaymentsController,
+  ],
   providers: [ProviderRegistry, PaymentsService, PaymentsConsumers, PspReconciliationService],
   exports: [PaymentsService, ProviderRegistry, PspReconciliationService],
 })

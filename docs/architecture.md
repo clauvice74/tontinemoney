@@ -30,6 +30,8 @@ flowchart LR
   end
   WEB -- REST /api/v1 --> GW[apps/api-gateway :8080<br/>JWT · rate limit · correlation · erreurs]
   GW --> API
+  PSPX[PSP simulé] -- webhooks signés --> PGW[apps/payment-gateway :8090]
+  PGW -- appel interne HMAC --> API
   API --> PG[(PostgreSQL)]
   API --> RD[(Redis)]
   PLAT -- EVENT_TRANSPORT=kafka --> RP[(Redpanda)]
@@ -45,6 +47,8 @@ flowchart LR
 apps/
   api-gateway/         Point d'entrée unique /api/v1 : routage, JWT (JWKS), règles de bord,
                        rate limiting, correlation ID, disjoncteur, métriques (extraction, étape 1)
+  payment-gateway/     Webhooks PSP : signature, rejeu, idempotence, normalisation, appel
+                       interne signé vers le Payment Service (extraction, étape 2)
   api/                 Hôte NestJS : bootstrap, Swagger, santé, métriques, planificateur
   web/                 Next.js App Router, Tailwind, composants shadcn/ui
 packages/

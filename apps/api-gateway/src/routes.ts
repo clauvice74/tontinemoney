@@ -17,6 +17,7 @@ export class RouteTable {
     routes: RouteDefinition[],
     private readonly defaultUpstream: string,
     private readonly exposeDocs: boolean,
+    private readonly blocked: readonly string[] = [],
   ) {
     this.routes = [...routes].sort((a, b) => b.prefix.length - a.prefix.length);
   }
@@ -27,6 +28,7 @@ export class RouteTable {
     if (!path.startsWith('/api/v1/')) return null;
     // Chemins normalisés uniquement : pas de traversée ni d'encodage de séparateur
     if (/(^|\/)\.\.?(\/|$)|%2e|%2f|%5c|\\/i.test(path)) return null;
+    if (this.blocked.some((b) => path.startsWith(b))) return null;
     const hit = this.routes.find((r) => path.startsWith(r.prefix));
     const segment = path.split('/')[3] ?? '';
     return {

@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { MoneyError, toMinor } from '@tontine/contracts';
 import {
   type CollectRequest,
   type CollectResult,
@@ -38,6 +39,17 @@ abstract class DisabledRealProvider extends PaymentProvider {
   }
   async statement(_day: string): Promise<StatementLine[]> {
     throw new ProviderDisabledError(this.name);
+  }
+}
+
+/** Montant en unités majeures (nombre JSON) → unités mineures exactes selon la devise. */
+function minorFromMajor(amount: number, currency: string): bigint {
+  if (!Number.isFinite(amount) || amount <= 0) throw new InvalidWebhookError('PAYLOAD');
+  try {
+    return toMinor(String(amount), currency.toUpperCase());
+  } catch (e) {
+    if (e instanceof MoneyError) throw new InvalidWebhookError('PAYLOAD');
+    throw e;
   }
 }
 
@@ -85,8 +97,9 @@ export class FlutterwaveProvider extends DisabledRealProvider {
       providerReference: d.flw_ref,
       merchantReference: d.tx_ref,
       status: d.status === 'successful' ? 'SUCCESS' : 'FAILED',
-      // Flutterwave exprime les montants en unités majeures : conversion à faire selon la devise
-      amountMinor: BigInt(Math.round(d.amount * 100)),
+      // Flutterwave exprime les montants en unités majeures : conversion exacte selon l'exposant
+      // de la devise (XAF : 0, NGN : 2…), jamais d'arithmétique flottante (A-47)
+      amountMinor: minorFromMajor(d.amount, d.currency),
       currency: d.currency.toUpperCase(),
       timestamp: d.created_at ? new Date(d.created_at) : new Date(0),
     };

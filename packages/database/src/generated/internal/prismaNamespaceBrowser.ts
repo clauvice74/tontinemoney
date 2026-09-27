@@ -88,6 +88,7 @@ export const ModelName = {
   PaymentStatusHistory: 'PaymentStatusHistory',
   PspSimOperation: 'PspSimOperation',
   PspWebhookEvent: 'PspWebhookEvent',
+  PaymentGatewayReceipt: 'PaymentGatewayReceipt',
   NotificationTemplate: 'NotificationTemplate',
   Notification: 'Notification',
   OutboundMessage: 'OutboundMessage',
@@ -864,6 +865,27 @@ export const PspWebhookEventScalarFieldEnum = {
 
 export type PspWebhookEventScalarFieldEnum =
   (typeof PspWebhookEventScalarFieldEnum)[keyof typeof PspWebhookEventScalarFieldEnum];
+
+export const PaymentGatewayReceiptScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  providerEventId: 'providerEventId',
+  bodySha256: 'bodySha256',
+  merchantReference: 'merchantReference',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  currency: 'currency',
+  state: 'state',
+  claimedAt: 'claimedAt',
+  outcome: 'outcome',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  receivedAt: 'receivedAt',
+  forwardedAt: 'forwardedAt',
+} as const;
+
+export type PaymentGatewayReceiptScalarFieldEnum =
+  (typeof PaymentGatewayReceiptScalarFieldEnum)[keyof typeof PaymentGatewayReceiptScalarFieldEnum];
 
 export const NotificationTemplateScalarFieldEnum = {
   id: 'id',

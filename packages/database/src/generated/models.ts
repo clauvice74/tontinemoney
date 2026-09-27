@@ -47,6 +47,7 @@ export type * from './models/Payment';
 export type * from './models/PaymentStatusHistory';
 export type * from './models/PspSimOperation';
 export type * from './models/PspWebhookEvent';
+export type * from './models/PaymentGatewayReceipt';
 export type * from './models/NotificationTemplate';
 export type * from './models/Notification';
 export type * from './models/OutboundMessage';

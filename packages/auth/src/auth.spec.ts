@@ -13,6 +13,8 @@ import {
   normalizeRecoveryCode,
   resolveBcryptCost,
   sha256Hex,
+  signInternalRequest,
+  verifyInternalRequest,
   verifySecret,
   verifyTotp,
 } from './index';
@@ -112,5 +114,45 @@ describe('RBAC', () => {
     expect(can('KYC_AGENT', 'kyc.review')).toBe(true);
     expect(can('MEMBER', 'platform.jobs.run')).toBe(false);
     expect(can('SUPER_ADMIN', 'platform.jobs.run')).toBe(true);
+  });
+});
+
+describe('signature des appels internes', () => {
+  const secret = 'internal-secret-0123456789abcdef';
+  const body = '{"a":1}';
+  const now = new Date('2026-09-27T10:00:00Z');
+  const opts = { allowedCallers: ['payment-gateway'], now };
+
+  it('signature valide acceptée ; corps, appelant ou secret modifiés refusés', () => {
+    const h = signInternalRequest(secret, 'payment-gateway', body, now);
+    expect(verifyInternalRequest(secret, h, body, opts)).toEqual({
+      ok: true,
+      caller: 'payment-gateway',
+    });
+    expect(verifyInternalRequest(secret, h, '{"a":2}', opts)).toMatchObject({ ok: false });
+    expect(verifyInternalRequest('other-secret-0123456789abcdef', h, body, opts)).toMatchObject({
+      ok: false,
+      reason: 'SIGNATURE',
+    });
+    const spoofed = { ...h, 'x-internal-caller': 'api-gateway' };
+    expect(
+      verifyInternalRequest(secret, spoofed, body, {
+        ...opts,
+        allowedCallers: ['payment-gateway', 'api-gateway'],
+      }),
+    ).toMatchObject({ ok: false, reason: 'SIGNATURE' });
+  });
+
+  it('appelant non autorisé, en-têtes absents, horodatage hors tolérance', () => {
+    const h = signInternalRequest(secret, 'intruder', body, now);
+    expect(verifyInternalRequest(secret, h, body, opts)).toMatchObject({ reason: 'CALLER' });
+    expect(verifyInternalRequest(secret, {}, body, opts)).toMatchObject({ reason: 'MISSING' });
+    const old = signInternalRequest(
+      secret,
+      'payment-gateway',
+      body,
+      new Date(now.getTime() - 120_000),
+    );
+    expect(verifyInternalRequest(secret, old, body, opts)).toMatchObject({ reason: 'TIMESTAMP' });
   });
 });

@@ -115,6 +115,7 @@ export const ALL_TABLES = [
   'cmp_violations',
   'cmp_case_alerts',
   'cmp_cases',
+  'pgw_webhook_receipts',
   'adm_tontine_accounts',
   'adm_messages',
 ] as const;

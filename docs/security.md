@@ -58,7 +58,12 @@ Point d'entrée unique des clients (`apps/api-gateway`, :8080). Il ne remplace a
 - Adresse client : `X-Forwarded-For` n'est pris en compte que pour `GATEWAY_TRUST_PROXY_HOPS` proxys de confiance (0 si le gateway est en frontal) ; l'adresse résolue est transmise seule aux services (limites par IP inchangées).
 - Chemins : uniquement `/api/v1/*` ; segments `.`/`..`, séparateurs encodés et caractères non réservés encodés refusés (contournement de préfixe).
 - Rate limiting par IP (global et plus strict sur `/auth/*`), corps limité (`GATEWAY_MAX_BODY_BYTES`), délai et disjoncteur par service amont, CORS restreint à l'origine du web (la politique CORS des services est retirée), Helmet.
+- Routes jamais exposées : `/api/v1/internal/**` (appels de service à service) et les webhooks PSP (`GATEWAY_BLOCKED_PREFIXES`).
 - Production : les services ne doivent être joignables que par le gateway (réseau privé) ; limiteur partagé (Redis) si plusieurs instances.
+
+### Payment Gateway et appels internes
+
+Webhooks PSP reçus uniquement par `apps/payment-gateway` (:8090) : signature, horodatage, prestataire activé, taille, non-rejeu et idempotence (journal propre), refus d'un identifiant réutilisé avec un autre contenu, transmission unique (bail atomique). Appel au Payment Service signé par HMAC (`packages/auth/src/internal-signature.ts` : appelant autorisé, horodatage ± 60 s, comparaison à temps constant) ; tout refus est journalisé (`internal.request.rejected`). Détails : A-47.
 
 ## 6. Protections HTTP
 

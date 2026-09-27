@@ -47,6 +47,14 @@ export const envSchema = z
     PSP_DEFAULT_PROVIDER: z.enum(['simulated']).default('simulated'),
     PSP_WEBHOOK_SECRET: z.string().min(16),
     PSP_WEBHOOK_TOLERANCE_SECONDS: z.coerce.number().int().min(30).default(300),
+    /**
+     * Livraison des webhooks du PSP simulé : `inprocess` (tests, sans gateway) ou `http` vers le
+     * Payment Gateway (chemin réel : signature, rejeu, normalisation, appel interne signé).
+     */
+    PSP_WEBHOOK_DELIVERY: z.enum(['inprocess', 'http']).default('inprocess'),
+    PAYMENT_GATEWAY_URL: z.string().url().default('http://localhost:8090'),
+    /** Secret HMAC des appels internes de service à service (jamais exposés par l'API Gateway). */
+    INTERNAL_SERVICE_SECRET: z.string().min(32),
     /** Squelettes réels (désactivés) : utilisés uniquement pour vérifier des webhooks de test. */
     FLUTTERWAVE_WEBHOOK_HASH: z.string().default(''),
     PAYSTACK_SECRET_KEY: z.string().default(''),
@@ -70,6 +78,13 @@ export const envSchema = z
           code: 'custom',
           path: ['COOKIE_SECURE'],
           message: 'Cookies sécurisés obligatoires en production',
+        });
+      }
+      if (env.INTERNAL_SERVICE_SECRET.startsWith('dev-only')) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['INTERNAL_SERVICE_SECRET'],
+          message: 'Secret interne de dev interdit en production',
         });
       }
       if (env.PSP_WEBHOOK_SECRET.startsWith('dev-only')) {
@@ -121,6 +136,7 @@ export function testConfig(overrides: Partial<Record<keyof AppConfig, string>> =
     BCRYPT_COST: '4',
     DATA_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'),
     PSP_WEBHOOK_SECRET: 'test-webhook-secret-0123456789',
+    INTERNAL_SERVICE_SECRET: 'test-internal-secret-0123456789abcdef',
     SCHEDULER_ENABLED: 'false',
     METRICS_ENABLED: 'false',
     DOCUMENT_STORAGE_DIR: './storage/test-kyc',

@@ -430,6 +430,7 @@ export const ModelName = {
   PaymentStatusHistory: 'PaymentStatusHistory',
   PspSimOperation: 'PspSimOperation',
   PspWebhookEvent: 'PspWebhookEvent',
+  PaymentGatewayReceipt: 'PaymentGatewayReceipt',
   NotificationTemplate: 'NotificationTemplate',
   Notification: 'Notification',
   OutboundMessage: 'OutboundMessage',
@@ -501,6 +502,7 @@ export type TypeMap<
       | 'paymentStatusHistory'
       | 'pspSimOperation'
       | 'pspWebhookEvent'
+      | 'paymentGatewayReceipt'
       | 'notificationTemplate'
       | 'notification'
       | 'outboundMessage'
@@ -3504,6 +3506,82 @@ export type TypeMap<
         };
       };
     };
+    PaymentGatewayReceipt: {
+      payload: Prisma.$PaymentGatewayReceiptPayload<ExtArgs>;
+      fields: Prisma.PaymentGatewayReceiptFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentGatewayReceiptFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PaymentGatewayReceiptFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        findFirst: {
+          args: Prisma.PaymentGatewayReceiptFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PaymentGatewayReceiptFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        findMany: {
+          args: Prisma.PaymentGatewayReceiptFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>[];
+        };
+        create: {
+          args: Prisma.PaymentGatewayReceiptCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        createMany: {
+          args: Prisma.PaymentGatewayReceiptCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PaymentGatewayReceiptCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>[];
+        };
+        delete: {
+          args: Prisma.PaymentGatewayReceiptDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        update: {
+          args: Prisma.PaymentGatewayReceiptUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PaymentGatewayReceiptDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PaymentGatewayReceiptUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PaymentGatewayReceiptUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>[];
+        };
+        upsert: {
+          args: Prisma.PaymentGatewayReceiptUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentGatewayReceiptPayload>;
+        };
+        aggregate: {
+          args: Prisma.PaymentGatewayReceiptAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentGatewayReceipt>;
+        };
+        groupBy: {
+          args: Prisma.PaymentGatewayReceiptGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PaymentGatewayReceiptGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PaymentGatewayReceiptCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PaymentGatewayReceiptCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     NotificationTemplate: {
       payload: Prisma.$NotificationTemplatePayload<ExtArgs>;
       fields: Prisma.NotificationTemplateFieldRefs;
@@ -5120,6 +5198,27 @@ export const PspWebhookEventScalarFieldEnum = {
 export type PspWebhookEventScalarFieldEnum =
   (typeof PspWebhookEventScalarFieldEnum)[keyof typeof PspWebhookEventScalarFieldEnum];
 
+export const PaymentGatewayReceiptScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  providerEventId: 'providerEventId',
+  bodySha256: 'bodySha256',
+  merchantReference: 'merchantReference',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  currency: 'currency',
+  state: 'state',
+  claimedAt: 'claimedAt',
+  outcome: 'outcome',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  receivedAt: 'receivedAt',
+  forwardedAt: 'forwardedAt',
+} as const;
+
+export type PaymentGatewayReceiptScalarFieldEnum =
+  (typeof PaymentGatewayReceiptScalarFieldEnum)[keyof typeof PaymentGatewayReceiptScalarFieldEnum];
+
 export const NotificationTemplateScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -6563,6 +6662,7 @@ export type GlobalOmitConfig = {
   paymentStatusHistory?: Prisma.PaymentStatusHistoryOmit;
   pspSimOperation?: Prisma.PspSimOperationOmit;
   pspWebhookEvent?: Prisma.PspWebhookEventOmit;
+  paymentGatewayReceipt?: Prisma.PaymentGatewayReceiptOmit;
   notificationTemplate?: Prisma.NotificationTemplateOmit;
   notification?: Prisma.NotificationOmit;
   outboundMessage?: Prisma.OutboundMessageOmit;

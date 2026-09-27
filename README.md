@@ -14,7 +14,7 @@ pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel collector, Prometheus, Grafana
 pnpm db:migrate             # migrations SQL versionnées (packages/database/prisma/migrations)
 pnpm db:seed                # comptes et tontine de démonstration
-pnpm dev                    # API :4000, API Gateway :8080, web :3000
+pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000
 ```
 
 | Service                      | URL                                                                           |

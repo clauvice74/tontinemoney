@@ -47,7 +47,12 @@ export async function createGateway(
   const logger = options.logger ?? gatewayLogger(config.LOG_LEVEL);
   const deps: GatewayRuntime = {
     config,
-    routes: new RouteTable(config.GATEWAY_ROUTES, config.API_UPSTREAM_URL, config.exposeDocs),
+    routes: new RouteTable(
+      config.GATEWAY_ROUTES,
+      config.API_UPSTREAM_URL,
+      config.exposeDocs,
+      config.GATEWAY_BLOCKED_PREFIXES,
+    ),
     verifier: options.keys
       ? new TokenVerifier(options.keys, config.JWT_ISSUER)
       : TokenVerifier.remote(config.jwksUrl, config.JWT_ISSUER),

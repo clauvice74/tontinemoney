@@ -10,7 +10,7 @@ pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel, Prometheus, Grafana
 pnpm db:migrate
 pnpm db:seed
-pnpm dev                    # API :4000, API Gateway :8080, web :3000
+pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000
 ```
 
 `EVENT_TRANSPORT=kafka` dans `.env` fait passer les événements par Redpanda au lieu du dispatcher en mémoire.
@@ -51,11 +51,12 @@ Pièges :
 
 ## 4. Adresses
 
-| Service                                         | URL                                                  |
-| ----------------------------------------------- | ---------------------------------------------------- |
-| Web                                             | http://localhost:3000                                |
-| API Gateway (point d'entrée)                    | http://localhost:8080/api/v1 (Swagger : `/api/docs`) |
-| API (service par défaut, derrière le gateway)   | http://localhost:4000                                |
-| Santé                                           | `/health`, `/health/ready`, `/metrics`               |
-| Messages simulés                                | http://localhost:3000/dev/messages                   |
-| Mailpit · Grafana · Prometheus · MinIO (Docker) | :8025 · :3001 · :9090 · :9001                        |
+| Service                                         | URL                                                      |
+| ----------------------------------------------- | -------------------------------------------------------- |
+| Web                                             | http://localhost:3000                                    |
+| API Gateway (point d'entrée)                    | http://localhost:8080/api/v1 (Swagger : `/api/docs`)     |
+| API (service par défaut, derrière le gateway)   | http://localhost:4000                                    |
+| Payment Gateway (webhooks PSP)                  | http://localhost:8090/api/v1/webhooks/payments/:provider |
+| Santé                                           | `/health`, `/health/ready`, `/metrics`                   |
+| Messages simulés                                | http://localhost:3000/dev/messages                       |
+| Mailpit · Grafana · Prometheus · MinIO (Docker) | :8025 · :3001 · :9090 · :9001                            |
