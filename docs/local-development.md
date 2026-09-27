@@ -10,6 +10,7 @@ pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel, Prometheus, Grafana
 pnpm db:migrate
 pnpm db:roles              # rôles PostgreSQL par service (moindre privilège)
+pnpm db:snapshots:republish # republie l'état des domaines (reconstruction des projections, A-54)
 pnpm kafka:topics          # topics Kafka versionnés + topic des rejets (Redpanda démarré)
 pnpm db:seed
 pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000

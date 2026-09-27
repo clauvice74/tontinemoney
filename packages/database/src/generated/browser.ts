@@ -306,3 +306,86 @@ export type ConfigurationHistory = Prisma.ConfigurationHistoryModel;
  *
  */
 export type AdminMessage = Prisma.AdminMessageModel;
+/**
+ * Model RptTontine
+ *
+ */
+export type RptTontine = Prisma.RptTontineModel;
+/**
+ * Model RptCycle
+ *
+ */
+export type RptCycle = Prisma.RptCycleModel;
+/**
+ * Model RptContribution
+ *
+ */
+export type RptContribution = Prisma.RptContributionModel;
+/**
+ * Model RptTontineMember
+ *
+ */
+export type RptTontineMember = Prisma.RptTontineMemberModel;
+/**
+ * Model RptWallet
+ *
+ */
+export type RptWallet = Prisma.RptWalletModel;
+/**
+ * Model RptWalletMovement
+ *
+ */
+export type RptWalletMovement = Prisma.RptWalletMovementModel;
+/**
+ * Model RptTransaction
+ *
+ */
+export type RptTransaction = Prisma.RptTransactionModel;
+/**
+ * Model RptPayment
+ *
+ */
+export type RptPayment = Prisma.RptPaymentModel;
+/**
+ * Model RptMember
+ *
+ */
+export type RptMember = Prisma.RptMemberModel;
+/**
+ * Model RptKycRequest
+ *
+ */
+export type RptKycRequest = Prisma.RptKycRequestModel;
+/**
+ * Model RptAmlMatch
+ *
+ */
+export type RptAmlMatch = Prisma.RptAmlMatchModel;
+/**
+ * Model RptViolation
+ *
+ */
+export type RptViolation = Prisma.RptViolationModel;
+/**
+ * Model RptCase
+ *
+ */
+export type RptCase = Prisma.RptCaseModel;
+/**
+ * Model RptReconciliation
+ *
+ */
+export type RptReconciliation = Prisma.RptReconciliationModel;
+/**
+ * Model MemberTontineMembership
+ * Projection des adhésions aux tontines (étape 6, A-54), alimentée par
+ * `tontine.membership.snapshot` : annuaire des membres d'une tontine (US-2.3) sans lecture
+ * du schéma `tontines`.
+ */
+export type MemberTontineMembership = Prisma.MemberTontineMembershipModel;
+/**
+ * Model TransactionPaymentView
+ * Projection des paiements PSP (étape 6, A-54), alimentée par `payment.snapshot` :
+ * réconciliation interne sans lecture du schéma `payments`.
+ */
+export type TransactionPaymentView = Prisma.TransactionPaymentViewModel;

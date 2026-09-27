@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AdministrationModule, AdministrationPortsModule } from '@tontine/administration';
 import { AuthModule } from '@tontine/auth-service';
 import { CommunicationModule } from '@tontine/communication';
+import { ReportingModule } from '@tontine/reporting';
 import { ComplianceModule } from '@tontine/compliance';
 import { KycModule } from '@tontine/kyc';
 import { MembersModule, MembersPortsModule } from '@tontine/members';
@@ -21,8 +22,8 @@ import {
   RolesGuard,
 } from '@tontine/platform';
 import { TontinesModule, TontinesPortsModule } from '@tontine/tontines';
-import { TransactionsModule } from '@tontine/transactions';
-import { WalletsModule } from '@tontine/wallets';
+import { TransactionsModule, TransactionsPortsModule } from '@tontine/transactions';
+import { WalletsModule, WalletsPortsModule } from '@tontine/wallets';
 import { HealthController } from './ops/health.controller';
 import { OpsController } from './ops/ops.controller';
 
@@ -38,6 +39,8 @@ export class AppModule implements NestModule {
         MembersPortsModule,
         TontinesPortsModule,
         AdministrationPortsModule,
+        TransactionsPortsModule,
+        WalletsPortsModule,
         // Domaines
         CommunicationModule,
         NotificationsModule,
@@ -50,6 +53,7 @@ export class AppModule implements NestModule {
         TontinesModule,
         PaymentsModule,
         AdministrationModule,
+        ReportingModule,
       ],
       controllers: [HealthController, OpsController],
       providers: [

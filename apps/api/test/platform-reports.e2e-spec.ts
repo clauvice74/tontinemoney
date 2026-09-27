@@ -52,6 +52,8 @@ describe('GET /reports/financial', () => {
     const b = await ctx.createUser();
     await ctx.fund(a.id, 50_000n);
     await ctx.fund(b.id, 20_000n);
+    // Rapports calculés sur les projections (étape 6, A-54) : instantanés relayés
+    await ctx.drain();
 
     const res = await ctx.http
       .get('/api/v1/reports/financial?from=2026-09-01&to=2026-09-30')
@@ -158,6 +160,7 @@ describe('Formats et export', () => {
   it('CSV : BOM, séparateur « ; », colonnes communes ; PDF valide', async () => {
     const token = await adminToken();
     await ctx.fund((await ctx.createUser()).id, 1_000n);
+    await ctx.drain();
     const csv = await ctx.http.get('/api/v1/reports/financial?format=csv').set(bearer(token));
     expect(csv.status).toBe(200);
     expect(csv.headers['content-type']).toContain('text/csv');

@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { type ComplianceRuleInput, type OperationType } from '@tontine/contracts';
-import { Prisma, isUniqueViolation } from '@tontine/database';
+import { isUniqueViolation } from '@tontine/database';
 import {
   type Actor,
   Clock,
@@ -9,6 +9,10 @@ import {
   DomainError,
   KvStore,
   MEMBER_QUERY,
+  TRANSACTION_TOTALS,
+  type TransactionTotalsPort,
+  WALLET_QUERY,
+  type WalletQueryPort,
   type MemberQueryPort,
   OutboxService,
   PrismaService,
@@ -57,6 +61,8 @@ export class ComplianceService {
     private readonly clock: Clock,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
     @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
+    @Inject(TRANSACTION_TOTALS) private readonly totals: TransactionTotalsPort,
+    @Inject(WALLET_QUERY) private readonly wallets: WalletQueryPort,
   ) {}
 
   private cacheKey(country: string): string {
@@ -93,13 +99,7 @@ export class ComplianceService {
       rule.ruleType === 'DAILY_LIMIT'
         ? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
         : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const res = await this.prisma.$queryRaw<Array<{ total: bigint | null }>>`
-      SELECT coalesce(sum("amountMinor"), 0)::bigint AS total FROM "trx_transactions"
-      WHERE "initiatorId" = ${memberId}::uuid AND "currency" = ${currency}
-        AND "status" IN ('VALIDATED', 'COMPLETED')
-        AND "type"::text IN (${Prisma.join(types)})
-        AND "createdAt" >= ${since}`;
-    return res[0]?.total ?? 0n;
+    return this.totals.initiatedTotal(memberId, currency, types, since);
   }
 
   /** US-9.2 — validation synchrone d'une opération (< 100 ms, règles en cache). */
@@ -118,11 +118,7 @@ export class ComplianceService {
     }
     let creditedWalletBalanceMinor: bigint | null = null;
     if (input.creditMemberId) {
-      const w = await this.prisma.wallet.findUnique({
-        where: { memberId: input.creditMemberId },
-        select: { balanceMinor: true },
-      });
-      creditedWalletBalanceMinor = w?.balanceMinor ?? 0n;
+      creditedWalletBalanceMinor = (await this.wallets.memberBalance(input.creditMemberId)) ?? 0n;
     }
     return evaluate({
       operationType: input.operationType,

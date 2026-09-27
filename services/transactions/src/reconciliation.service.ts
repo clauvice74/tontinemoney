@@ -37,6 +37,19 @@ export class InternalReconciliationService {
     return BigInt(this.config.RECONCILIATION_ALERT_THRESHOLD_MINOR);
   }
 
+  /** Rapports de réconciliation (interne et PSP), du plus récent au plus ancien. */
+  async listReports(kind: 'INTERNAL' | 'PSP' | undefined, limit: number) {
+    return this.prisma.reconciliationReport.findMany({
+      where: kind ? { kind } : {},
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
+  async getReport(id: string) {
+    return this.prisma.reconciliationReport.findUnique({ where: { id } });
+  }
+
   async compute(): Promise<{ checked: number; discrepancies: Discrepancy[] }> {
     const discrepancies: Discrepancy[] = [];
     // 1. Partie double : Σ débits = Σ crédits pour chaque transaction COMPLETED/REVERSED
@@ -103,7 +116,7 @@ export class InternalReconciliationService {
       }>
     >`
       SELECT p."id", p."amountMinor" AS amount, p."transactionId" AS "txId", t."status"::text AS "txStatus", t."amountMinor" AS "txAmount"
-      FROM "pay_payments" p LEFT JOIN "trx_transactions" t ON t."id" = p."transactionId"
+      FROM "trx_payment_views" p LEFT JOIN "trx_transactions" t ON t."id" = p."transactionId"
       WHERE p."status" IN ('COMPLETED', 'REFUNDED')`;
     for (const p of payments) {
       if (!p.txId || !p.txStatus || !['COMPLETED', 'REVERSED'].includes(p.txStatus)) {

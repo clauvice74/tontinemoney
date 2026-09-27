@@ -65,16 +65,17 @@ describe('schémas par service', () => {
     expect(by).toMatchObject({
       platform: 6,
       auth: 8,
-      members: 2,
+      members: 3,
       kyc: 8,
       compliance: 5,
       tontines: 8,
       wallets: 4,
-      transactions: 5,
+      transactions: 6,
       payments: 4,
       notifications: 2,
       communication: 1,
-      administration: 3,
+      administration: 2,
+      reporting: 15,
       payment_gateway: 1,
     });
     // seule la table de suivi des migrations reste dans public
@@ -130,16 +131,26 @@ describe('rôles PostgreSQL au moindre privilège', () => {
   });
 
   it('lectures inter-schémas déclarées : lecture seule, jamais d’écriture', async () => {
-    expect(await can('tm_members', 'SELECT 1 FROM tontines.ton_members LIMIT 1')).toBe(true);
+    expect(await can('tm_tontines', 'SELECT 1 FROM wallets.wal_wallets LIMIT 1')).toBe(true);
     expect(
-      await can('tm_members', `UPDATE tontines.ton_members SET "role" = 'MEMBER' WHERE false`),
+      await can('tm_tontines', `UPDATE wallets.wal_wallets SET "balanceMinor" = 0 WHERE false`),
     ).toBe(false);
-    expect(await can('tm_compliance', 'SELECT 1 FROM wallets.wal_wallets LIMIT 1')).toBe(true);
-    expect(
-      await can('tm_compliance', `UPDATE wallets.wal_wallets SET "balanceMinor" = 0 WHERE false`),
-    ).toBe(false);
+  });
+
+  it('étape 6 (A-54) : reporting, conformité et membres ne lisent plus les autres schémas', async () => {
+    expect(await can('tm_reporting', 'SELECT 1 FROM reporting.rpt_wallets LIMIT 1')).toBe(true);
+    for (const sql of [
+      'SELECT 1 FROM wallets.wal_movements LIMIT 1',
+      'SELECT 1 FROM tontines.ton_contributions LIMIT 1',
+      'SELECT 1 FROM members.mbr_members LIMIT 1',
+    ])
+      expect(await can('tm_reporting', sql)).toBe(false);
     expect(await can('tm_administration', 'SELECT 1 FROM wallets.wal_movements LIMIT 1')).toBe(
-      true,
+      false,
+    );
+    expect(await can('tm_members', 'SELECT 1 FROM tontines.ton_members LIMIT 1')).toBe(false);
+    expect(await can('tm_compliance', 'SELECT 1 FROM transactions.trx_transactions LIMIT 1')).toBe(
+      false,
     );
   });
 

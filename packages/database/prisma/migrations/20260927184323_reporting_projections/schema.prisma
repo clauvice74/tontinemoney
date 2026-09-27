@@ -1,0 +1,2109 @@
+// TontineMoney — schéma de données (monolithe modulaire).
+// Conventions : tables snake_case préfixées par domaine, colonnes camelCase,
+// montants BIGINT en unités mineures (suffixe Minor), horodatages timestamptz.
+// Contraintes non exprimables ici (CHECK, triggers append-only, trigram) : migrations SQL.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated"
+  moduleFormat = "cjs"
+}
+
+// L'URL de connexion est fournie par prisma.config.ts (Prisma 7).
+// Extensions pg_trgm et citext : créées par la migration initiale.
+// Un schéma PostgreSQL par service (extraction, étape 4) ; `public` ne garde que les extensions.
+datasource db {
+  provider = "postgresql"
+  schemas  = ["platform", "auth", "members", "kyc", "compliance", "tontines", "wallets", "transactions", "payments", "notifications", "communication", "administration", "reporting", "payment_gateway"]
+}
+
+// ============================================================================
+// Énumérations (synchronisées avec packages/contracts/src/enums.ts)
+// ============================================================================
+
+enum PlatformRole {
+  SUPER_ADMIN
+  TONTINE_ADMIN
+  MEMBER
+  KYC_AGENT
+  COMPLIANCE_AGENT
+
+  @@schema("auth")
+}
+
+enum UserStatus {
+  PENDING_APPROVAL
+  PENDING_ACTIVATION
+  ACTIVE
+  SUSPENDED
+  REJECTED
+  EXPIRED
+  INACTIVE
+
+  @@schema("auth")
+}
+
+enum CommunicationChannel {
+  SMS
+  EMAIL
+
+  @@schema("auth")
+}
+
+enum MfaType {
+  TOTP
+  SMS
+
+  @@schema("auth")
+}
+
+enum AuthTokenType {
+  ACTIVATION_LINK
+  ACTIVATION_OTP
+  PASSWORD_RESET
+  MFA_CHALLENGE
+  MFA_SMS_LOGIN
+  MFA_SETUP_SMS
+
+  @@schema("auth")
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+
+  @@schema("auth")
+}
+
+enum MemberStatus {
+  PENDING
+  KYC_REQUIRED
+  KYC_IN_REVIEW
+  KYC_REJECTED
+  ACTIVE
+  SUSPENDED
+  PENDING_REVIEW
+
+  @@schema("members")
+}
+
+enum KycLevel {
+  NONE
+  TIER_1
+  TIER_2
+  TIER_3
+
+  @@schema("members")
+}
+
+/// Niveau visé par une demande KYC (schéma kyc) ; mêmes valeurs que KycLevel (schéma members).
+enum KycTargetLevel {
+  NONE
+  TIER_1
+  TIER_2
+  TIER_3
+
+  @@schema("kyc")
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  RESTRICTED
+  UNDER_REVIEW
+  NON_COMPLIANT
+  SUSPENDED
+
+  @@schema("members")
+}
+
+enum Gender {
+  M
+  F
+  OTHER
+  UNDISCLOSED
+
+  @@schema("members")
+}
+
+enum MemberAuditAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  KYC_LEVEL_CHANGED
+  SUSPENDED
+  REACTIVATED
+  ACCESS_DENIED
+  INVALID_TRANSITION
+
+  @@schema("members")
+}
+
+enum ActorRole {
+  SYSTEM
+  MEMBER
+  ADMIN
+  SUPER_ADMIN
+  KYC_AGENT
+
+  @@schema("members")
+}
+
+enum KycRequestStatus {
+  SUBMITTED
+  PROCESSING
+  VERIFIED
+  REVIEW_REQUIRED
+  REJECTED
+  EXPIRED
+  SUPPLEMENT_REQUESTED
+
+  @@schema("kyc")
+}
+
+enum KycDocumentType {
+  CNI
+  PASSPORT
+  DRIVING_LICENSE
+  NIN_SLIP
+  VOTER_CARD
+  RESIDENCE_PERMIT
+  PROOF_OF_ADDRESS
+  INCOME_DECLARATION
+
+  @@schema("kyc")
+}
+
+enum KycFileKind {
+  ID_FRONT
+  ID_BACK
+  SELFIE
+  PROOF_OF_ADDRESS
+  INCOME_DECLARATION
+
+  @@schema("kyc")
+}
+
+enum KycCheckStep {
+  QUALITY
+  OCR
+  DOCUMENT_VALIDATION
+  FACE_MATCH
+  DUPLICATE
+  AML
+
+  @@schema("kyc")
+}
+
+enum KycCheckOutcome {
+  PASS
+  REVIEW
+  FAIL
+  ERROR
+
+  @@schema("kyc")
+}
+
+enum KycRejectCategory {
+  DOCUMENT_ILLISIBLE
+  DOCUMENT_EXPIRE
+  DOCUMENT_FALSIFIE
+  FACE_MATCH_ECHOUE
+  DOUBLON_CONFIRME
+  AML_MATCH_CONFIRME
+  INFORMATION_INCOHERENTE
+  TYPE_DOCUMENT_NON_ACCEPTE
+  AUTRE
+
+  @@schema("kyc")
+}
+
+enum AlertStatus {
+  OPEN
+  CONFIRMED
+  DISMISSED
+
+  @@schema("kyc")
+}
+
+enum ComplianceCaseType {
+  AML_SCREENING
+  DUPLICATE_IDENTITY
+  RULE_VIOLATION
+  FRAUD
+
+  @@schema("compliance")
+}
+
+enum ComplianceCaseStatus {
+  OPEN
+  CLOSED
+
+  @@schema("compliance")
+}
+
+enum CaseSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@schema("compliance")
+}
+
+enum CaseOutcome {
+  CONFIRMED
+  DISMISSED
+
+  @@schema("compliance")
+}
+
+enum ComplianceAlertType {
+  AML_MATCH
+  DUPLICATE_ALERT
+  VIOLATION
+  FRAUD_FLAG
+
+  @@schema("compliance")
+}
+
+enum TontineType {
+  SIMPLE_ROTATIVE
+
+  @@schema("tontines")
+}
+
+enum TontineStatus {
+  DRAFT
+  READY
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+
+  @@schema("tontines")
+}
+
+enum TontineFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  BIMONTHLY
+
+  @@schema("tontines")
+}
+
+enum DrawMode {
+  RANDOM
+  FIXED_ORDER
+  PRIORITY_NEED
+
+  @@schema("tontines")
+}
+
+enum IncompletePolicy {
+  POSTPONE
+  PARTIAL_PAYOUT
+
+  @@schema("tontines")
+}
+
+enum TontineMemberRole {
+  ADMIN
+  MEMBER
+
+  @@schema("tontines")
+}
+
+enum TontineMemberStatus {
+  PENDING_ACTIVATION
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  REMOVED
+  REJECTED
+
+  @@schema("tontines")
+}
+
+enum InvitationChannel {
+  EMAIL
+  PHONE
+  LINK
+
+  @@schema("tontines")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
+
+  @@schema("tontines")
+}
+
+enum CycleStatus {
+  PENDING
+  IN_PROGRESS
+  PAYOUT_PENDING
+  /// Étape 5 : saga de paiement du pot en cours (Transaction Service)
+  PAYOUT_PROCESSING
+  COMPLETED
+
+  @@schema("tontines")
+}
+
+enum ContributionStatus {
+  PENDING
+  PAID
+  LATE
+  PAID_LATE
+  DEFAULTED
+
+  @@schema("tontines")
+}
+
+enum PriorityRequestStatus {
+  PENDING
+  SELECTED
+  DECLINED
+
+  @@schema("tontines")
+}
+
+enum WalletOwnerType {
+  MEMBER
+  TONTINE_POOL
+  TONTINE_RESERVE
+  SYSTEM
+
+  @@schema("wallets")
+}
+
+enum WalletStatus {
+  ACTIVE
+  SUSPENDED
+  LOCKED
+  CLOSED
+
+  @@schema("wallets")
+}
+
+enum MovementType {
+  CREDIT
+  DEBIT
+  HOLD
+  RELEASE
+
+  @@schema("wallets")
+}
+
+enum MovementContext {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  TONTINE_CONTRIBUTION
+  TONTINE_PAYOUT
+  PENALTY
+  ENTRY_FEE
+  COLLATION
+  REFUND
+  REVERSAL
+
+  @@schema("wallets")
+}
+
+enum HoldStatus {
+  ACTIVE
+  CAPTURED
+  RELEASED
+  EXPIRED
+
+  @@schema("wallets")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  CONTRIBUTION
+  PAYOUT
+  PENALTY
+  ENTRY_FEE
+  COLLATION
+  REFUND
+  REVERSAL
+
+  @@schema("transactions")
+}
+
+enum TransactionStatus {
+  PENDING
+  VALIDATED
+  COMPLETED
+  FAILED
+  REJECTED
+  REVERSED
+  REFUNDED
+
+  @@schema("transactions")
+}
+
+/// Étape 5 (A-53) : état global d'une saga orchestrée par Transaction Service.
+enum SagaStatus {
+  STARTED
+  COMPLETED
+  FAILED
+  COMPENSATED
+
+  @@schema("transactions")
+}
+
+enum TransactionContextType {
+  TONTINE
+  PAYMENT
+  WALLET
+  ADMIN
+
+  @@schema("transactions")
+}
+
+enum PaymentType {
+  DEPOSIT
+  WITHDRAWAL
+  REFUND
+
+  @@schema("payments")
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+  CARD
+
+  @@schema("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+
+  @@schema("payments")
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@schema("notifications")
+}
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+  PUSH
+  IN_APP
+
+  @@schema("notifications")
+}
+
+enum NotificationCategory {
+  SECURITY
+  ACCOUNT
+  TONTINE
+  PAYMENT
+  WALLET
+  KYC
+  ADMIN
+  MESSAGE
+
+  @@schema("notifications")
+}
+
+enum NotificationStatus {
+  SCHEDULED
+  PENDING
+  SENT
+  FAILED
+  DEAD
+  CANCELLED
+  SKIPPED
+
+  @@schema("notifications")
+}
+
+enum OperationType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  TONTINE_CONTRIBUTION
+  TONTINE_PAYOUT
+  TONTINE_CREATION
+  TONTINE_JOIN
+
+  @@schema("compliance")
+}
+
+enum ComplianceRuleType {
+  DAILY_LIMIT
+  MONTHLY_LIMIT
+  WALLET_LIMIT
+  KYC_MIN_LEVEL
+  TONTINE_ALLOWED
+  OPERATION_FORBIDDEN
+
+  @@schema("compliance")
+}
+
+enum ViolationAction {
+  BLOCKED
+  SUSPENDED
+  ALERTED
+
+  @@schema("compliance")
+}
+
+enum TontineAccountType {
+  MAIN
+  SOLIDARITY
+  SAVINGS
+  LOAN
+
+  @@schema("tontines")
+}
+
+enum MessageTemplate {
+  REMINDER
+  ANNOUNCEMENT
+  INFORMATION
+  CUSTOM
+
+  @@schema("tontines")
+}
+
+enum AuditResult {
+  SUCCESS
+  DENIED
+  FAILURE
+
+  @@schema("platform")
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  DEAD
+
+  @@schema("platform")
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+
+  @@schema("platform")
+}
+
+enum ReconciliationKind {
+  INTERNAL
+  PSP
+
+  @@schema("transactions")
+}
+
+// ============================================================================
+// Plateforme
+// ============================================================================
+
+model OutboxEvent {
+  id            String       @id @db.Uuid
+  eventType     String
+  eventVersion  Int
+  aggregateType String
+  aggregateId   String
+  tenantId      String?
+  producer      String
+  correlationId String
+  causationId   String?
+  payload       Json
+  occurredAt    DateTime     @db.Timestamptz(3)
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  nextAttemptAt DateTime     @default(now()) @db.Timestamptz(3)
+  lastError     String?
+  publishedAt   DateTime?    @db.Timestamptz(3)
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  seq           BigInt       @default(autoincrement())
+
+  @@index([status, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+  @@index([eventType])
+  @@map("outbox_events")
+  @@schema("platform")
+}
+
+/// Messages rejetés par les consommateurs (étape 3, A-52) : enveloppe invalide, version non
+/// supportée ou consommateur en échec après réessais. Rejouables par le super-admin.
+model EventDeadLetter {
+  id           String    @id @default(uuid()) @db.Uuid
+  /// kafka | inprocess
+  source       String
+  topic        String?
+  partition    Int?
+  offset       String?
+  eventId      String?
+  eventType    String?
+  eventVersion Int?
+  /// VALIDATION (message illisible ou non conforme) | PROCESSING (consommateur en échec)
+  stage        String
+  /// Consommateurs en échec (PROCESSING)
+  consumers    String[]
+  reason       String
+  /// Message d'origine (texte, tronqué à 256 Ko)
+  rawMessage   String
+  headers      Json?
+  attempts     Int
+  /// OPEN | REPLAYED | DISCARDED
+  status       String    @default("OPEN")
+  resolvedBy   String?   @db.Uuid
+  resolvedAt   DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@unique([topic, partition, offset])
+  @@index([status, createdAt])
+  @@map("event_dead_letters")
+  @@schema("platform")
+}
+
+model ProcessedEvent {
+  consumer    String
+  eventId     String   @db.Uuid
+  processedAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([consumer, eventId])
+  @@map("processed_events")
+  @@schema("platform")
+}
+
+model IdempotencyKey {
+  id             String            @id @default(uuid()) @db.Uuid
+  scope          String
+  key            String
+  userId         String            @db.Uuid
+  requestHash    String
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  expiresAt      DateTime          @db.Timestamptz(3)
+
+  @@unique([scope, userId, key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+  @@schema("platform")
+}
+
+/// Journal d'audit transverse — append-only (trigger).
+model AuditLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  actorId       String?     @db.Uuid
+  actorRole     String?
+  action        String
+  resourceType  String
+  resourceId    String?
+  result        AuditResult
+  ip            String?
+  userAgent     String?
+  country       String?
+  correlationId String?
+  metadata      Json?
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@index([actorId, createdAt])
+  @@index([resourceType, resourceId])
+  @@index([result, createdAt])
+  @@map("audit_logs")
+  @@schema("platform")
+}
+
+model JobRun {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  trigger    String
+  startedAt  DateTime  @default(now()) @db.Timestamptz(3)
+  finishedAt DateTime? @db.Timestamptz(3)
+  status     String
+  summary    Json?
+
+  @@index([name, startedAt])
+  @@map("job_runs")
+  @@schema("platform")
+}
+
+// ============================================================================
+// Auth
+// ============================================================================
+
+model User {
+  id                   String                @id @default(uuid()) @db.Uuid
+  email                String?               @unique @db.Citext
+  phone                String?               @unique
+  passwordHash         String?
+  role                 PlatformRole          @default(MEMBER)
+  status               UserStatus
+  firstName            String
+  lastName             String
+  countryCode          String?               @db.Char(2)
+  language             String?
+  preferredChannel     CommunicationChannel?
+  mfaEnabled           Boolean               @default(false)
+  mfaType              MfaType?
+  mfaSecretEnc         String?
+  mfaPendingSecretEnc  String?
+  failedLoginCount     Int                   @default(0)
+  lockedUntil          DateTime?             @db.Timestamptz(3)
+  lockReason           String?
+  lastLoginAt          DateTime?             @db.Timestamptz(3)
+  createdById          String?               @db.Uuid
+  /// A-04 : tontine réservée par le super-admin lors de la création d'un admin délégué.
+  delegatedTontineName String?
+  delegatedTontineUsed Boolean               @default(false)
+  createdAt            DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @db.Timestamptz(3)
+
+  passwordHistory PasswordHistory[]
+  tokens          AuthToken[]
+  sessions        RefreshSession[]
+  recoveryCodes   RecoveryCode[]
+  knownDevices    KnownDevice[]
+  accessRequests  AccessRequest[]
+
+  @@index([status])
+  @@map("auth_users")
+  @@schema("auth")
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  passwordHash String
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("auth_password_history")
+  @@schema("auth")
+}
+
+model AuthToken {
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @db.Uuid
+  type        AuthTokenType
+  tokenHash   String
+  expiresAt   DateTime      @db.Timestamptz(3)
+  consumedAt  DateTime?     @db.Timestamptz(3)
+  revokedAt   DateTime?     @db.Timestamptz(3)
+  attempts    Int           @default(0)
+  lockedUntil DateTime?     @db.Timestamptz(3)
+  metadata    Json?
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId, type, createdAt])
+  @@map("auth_tokens")
+  @@schema("auth")
+}
+
+model RefreshSession {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  familyId          String    @db.Uuid
+  tokenHash         String    @unique
+  deviceFingerprint String
+  userAgent         String
+  ip                String
+  mfaUsed           Boolean   @default(false)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  lastUsedAt        DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt         DateTime  @db.Timestamptz(3)
+  rotatedAt         DateTime? @db.Timestamptz(3)
+  revokedAt         DateTime? @db.Timestamptz(3)
+  revokedReason     String?
+  replacedById      String?   @db.Uuid
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([familyId])
+  @@map("auth_refresh_sessions")
+  @@schema("auth")
+}
+
+model LoginAttempt {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String?  @db.Uuid
+  identifierHash String
+  ip             String
+  userAgent      String
+  success        Boolean
+  reason         String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+  @@map("auth_login_attempts")
+  @@schema("auth")
+}
+
+model RecoveryCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  codeHash  String
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_recovery_codes")
+  @@schema("auth")
+}
+
+model KnownDevice {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  fingerprint String
+  firstSeenAt DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt  DateTime @default(now()) @db.Timestamptz(3)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fingerprint])
+  @@map("auth_known_devices")
+  @@schema("auth")
+}
+
+model AccessRequest {
+  id                   String              @id @default(uuid()) @db.Uuid
+  userId               String              @db.Uuid
+  invitationCodeHash   String?
+  requestedTontineName String?
+  targetTontineId      String?             @db.Uuid
+  ipHash               String?
+  status               AccessRequestStatus @default(PENDING)
+  decisionReason       String?
+  decidedById          String?             @db.Uuid
+  decidedAt            DateTime?           @db.Timestamptz(3)
+  expiresAt            DateTime            @db.Timestamptz(3)
+  createdAt            DateTime            @default(now()) @db.Timestamptz(3)
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([targetTontineId, status])
+  @@map("auth_access_requests")
+  @@schema("auth")
+}
+
+// ============================================================================
+// Membres
+// ============================================================================
+
+model Member {
+  id                String           @id @db.Uuid
+  firstName         String
+  lastName          String
+  email             String?          @db.Citext
+  phone             String?
+  countryCode       String?          @db.Char(2)
+  countrySource     String?
+  region            String?
+  city              String?
+  address           String?
+  dateOfBirth       DateTime?        @db.Date
+  gender            Gender?
+  language          String
+  timezone          String
+  status            MemberStatus     @default(PENDING)
+  kycLevel          KycLevel         @default(NONE)
+  complianceStatus  ComplianceStatus @default(COMPLIANT)
+  profilePhotoRef   String?
+  notificationPrefs Json
+  metadata          Json?
+  lastActivityAt    DateTime?        @db.Timestamptz(3)
+  createdAt         DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime         @updatedAt @db.Timestamptz(3)
+  version           Int              @default(1)
+
+  auditLogs MemberAuditLog[]
+
+  @@index([status])
+  @@index([kycLevel])
+  @@map("mbr_members")
+  @@schema("members")
+}
+
+/// Journal des modifications de profil — append-only (trigger).
+model MemberAuditLog {
+  id            String            @id @default(uuid()) @db.Uuid
+  memberId      String            @db.Uuid
+  action        MemberAuditAction
+  changedBy     String?           @db.Uuid
+  changedByRole ActorRole
+  trigger       String?
+  oldValues     Json?
+  newValues     Json?
+  ipAddress     String?
+  deviceInfo    String?
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  member        Member            @relation(fields: [memberId], references: [id])
+
+  @@index([memberId, createdAt])
+  @@map("mbr_audit_logs")
+  @@schema("members")
+}
+
+// ============================================================================
+// KYC
+// ============================================================================
+
+model KycRequest {
+  id                 String             @id @default(uuid()) @db.Uuid
+  memberId           String             @db.Uuid
+  targetLevel        KycTargetLevel
+  status             KycRequestStatus   @default(SUBMITTED)
+  documentType       KycDocumentType
+  documentCountry    String?            @db.Char(2)
+  documentNumberHash String?
+  documentExpiresAt  DateTime?          @db.Date
+  extracted          Json?
+  livenessToken      String?
+  incomeSource       String?
+  rejectCategory     KycRejectCategory?
+  rejectReason       String?
+  decidedBy          String?
+  decidedAt          DateTime?          @db.Timestamptz(3)
+  submittedAt        DateTime           @default(now()) @db.Timestamptz(3)
+  processedAt        DateTime?          @db.Timestamptz(3)
+  slaDueAt           DateTime?          @db.Timestamptz(3)
+  expiryWarnings     Json?
+  retentionUntil     DateTime           @db.Timestamptz(3)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(3)
+
+  documents    KycDocument[]
+  checks       KycCheck[]
+  agentActions KycAgentAction[]
+
+  @@index([memberId, submittedAt])
+  @@index([status, submittedAt])
+  @@index([documentExpiresAt])
+  @@map("kyc_requests")
+  @@schema("kyc")
+}
+
+model KycDocument {
+  id         String      @id @default(uuid()) @db.Uuid
+  requestId  String      @db.Uuid
+  memberId   String      @db.Uuid
+  kind       KycFileKind
+  storageKey String      @unique
+  mimeType   String
+  sizeBytes  Int
+  sha256     String
+  width      Int?
+  height     Int?
+  createdAt  DateTime    @default(now()) @db.Timestamptz(3)
+  request    KycRequest  @relation(fields: [requestId], references: [id])
+
+  @@index([memberId])
+  @@map("kyc_documents")
+  @@schema("kyc")
+}
+
+model KycCheck {
+  id         String          @id @default(uuid()) @db.Uuid
+  requestId  String          @db.Uuid
+  step       KycCheckStep
+  outcome    KycCheckOutcome
+  score      Float?
+  details    Json?
+  durationMs Int?
+  attempts   Int             @default(1)
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  request    KycRequest      @relation(fields: [requestId], references: [id])
+
+  @@index([requestId])
+  @@map("kyc_checks")
+  @@schema("kyc")
+}
+
+model KycAgentAction {
+  id        String             @id @default(uuid()) @db.Uuid
+  requestId String             @db.Uuid
+  agentId   String             @db.Uuid
+  action    String
+  category  KycRejectCategory?
+  comment   String
+  createdAt DateTime           @default(now()) @db.Timestamptz(3)
+  request   KycRequest         @relation(fields: [requestId], references: [id])
+
+  @@index([requestId])
+  @@map("kyc_agent_actions")
+  @@schema("kyc")
+}
+
+model KycBiometricTemplate {
+  memberId  String   @id @db.Uuid
+  requestId String   @db.Uuid
+  template  String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@map("kyc_biometric_templates")
+  @@schema("kyc")
+}
+
+model KycDuplicateAlert {
+  id                  String      @id @default(uuid()) @db.Uuid
+  memberId            String      @db.Uuid
+  duplicateOfMemberId String      @db.Uuid
+  requestId           String      @db.Uuid
+  similarityScore     Float
+  status              AlertStatus @default(OPEN)
+  resolvedBy          String?     @db.Uuid
+  resolutionComment   String?
+  resolvedAt          DateTime?   @db.Timestamptz(3)
+  createdAt           DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@index([status, createdAt])
+  @@map("kyc_duplicate_alerts")
+  @@schema("kyc")
+}
+
+model KycAmlMatch {
+  id                String      @id @default(uuid()) @db.Uuid
+  memberId          String      @db.Uuid
+  requestId         String?     @db.Uuid
+  listName          String
+  entryId           String
+  entryName         String
+  entryCountry      String?
+  entryReason       String?
+  entryAddedAt      DateTime?   @db.Date
+  score             Float
+  source            String
+  status            AlertStatus @default(OPEN)
+  resolvedBy        String?     @db.Uuid
+  resolutionComment String?
+  resolvedAt        DateTime?   @db.Timestamptz(3)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@index([memberId, listName, entryId])
+  @@index([status, createdAt])
+  @@map("kyc_aml_matches")
+  @@schema("kyc")
+}
+
+model KycAmlWhitelist {
+  id          String   @id @default(uuid()) @db.Uuid
+  memberId    String   @db.Uuid
+  listName    String
+  entryId     String
+  confirmedBy String   @db.Uuid
+  comment     String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([memberId, listName, entryId])
+  @@map("kyc_aml_whitelist")
+  @@schema("kyc")
+}
+
+// ============================================================================
+// Tontines
+// ============================================================================
+
+model Tontine {
+  id                    String           @id @default(uuid()) @db.Uuid
+  name                  String
+  type                  TontineType      @default(SIMPLE_ROTATIVE)
+  status                TontineStatus    @default(DRAFT)
+  contributionMinor     BigInt
+  currency              String           @db.Char(3)
+  frequency             TontineFrequency
+  frequencyDetail       Json
+  maxMembers            Int
+  startDate             DateTime         @db.Date
+  timezone              String
+  drawMode              DrawMode
+  graceDays             Int
+  lateFeeBps            Int
+  suspendAfter          Int
+  defaultAfterDays      Int              @default(7)
+  entryFeeMinor         BigInt           @default(0)
+  collationMinor        BigInt           @default(0)
+  incompletePolicy      IncompletePolicy @default(POSTPONE)
+  createdById           String           @db.Uuid
+  createdByDelegation   Boolean          @default(false)
+  invitationLinkHash    String?
+  invitationLinkExpires DateTime?        @db.Timestamptz(3)
+  drawOrder             Json?
+  drawProof             String?
+  drawSeedHash          String?
+  drawnAt               DateTime?        @db.Timestamptz(3)
+  totalCycles           Int?
+  currentCycleNumber    Int?
+  poolWalletId          String?          @db.Uuid
+  reserveWalletId       String?          @db.Uuid
+  pausedReason          String?
+  startedAt             DateTime?        @db.Timestamptz(3)
+  completedAt           DateTime?        @db.Timestamptz(3)
+  cancelledAt           DateTime?        @db.Timestamptz(3)
+  archivedUntil         DateTime?        @db.Timestamptz(3)
+  finalReportRef        String?
+  lastStartCheckAt      DateTime?        @db.Timestamptz(3)
+  createdAt             DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime         @updatedAt @db.Timestamptz(3)
+  version               Int              @default(1)
+
+  members          TontineMember[]
+  invitations      TontineInvitation[]
+  cycles           TontineCycle[]
+  priorityRequests PriorityRequest[]
+
+  @@unique([createdById, name])
+  @@index([status, startDate])
+  @@map("ton_tontines")
+  @@schema("tontines")
+}
+
+model TontineMember {
+  id                  String              @id @default(uuid()) @db.Uuid
+  tontineId           String              @db.Uuid
+  memberId            String              @db.Uuid
+  role                TontineMemberRole   @default(MEMBER)
+  status              TontineMemberStatus @default(ACTIVE)
+  position            Int?
+  joinedAt            DateTime            @default(now()) @db.Timestamptz(3)
+  entryFeePaid        Boolean             @default(false)
+  entryFeeTxId        String?             @db.Uuid
+  consecutiveDefaults Int                 @default(0)
+  receivedPayout      Boolean             @default(false)
+  registeredById      String?             @db.Uuid
+  decisionReason      String?
+  decidedById         String?             @db.Uuid
+  decidedAt           DateTime?           @db.Timestamptz(3)
+  updatedAt           DateTime            @updatedAt @db.Timestamptz(3)
+  tontine             Tontine             @relation(fields: [tontineId], references: [id])
+
+  @@unique([tontineId, memberId])
+  @@index([memberId])
+  @@index([tontineId, status])
+  @@map("ton_members")
+  @@schema("tontines")
+}
+
+model TontineInvitation {
+  id             String            @id @default(uuid()) @db.Uuid
+  tontineId      String            @db.Uuid
+  channel        InvitationChannel
+  targetEmail    String?           @db.Citext
+  targetPhone    String?
+  invitedUserId  String?           @db.Uuid
+  /// SHA-256 du code secret porté par le lien (le code en clair n'est jamais stocké)
+  codeHash       String?           @unique
+  status         InvitationStatus  @default(PENDING)
+  invitedById    String            @db.Uuid
+  expiresAt      DateTime          @db.Timestamptz(3)
+  respondedAt    DateTime?         @db.Timestamptz(3)
+  respondedById  String?           @db.Uuid
+  declineReasons Json?
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  tontine        Tontine           @relation(fields: [tontineId], references: [id])
+
+  @@index([tontineId, status])
+  @@index([invitedUserId, status])
+  @@map("ton_invitations")
+  @@schema("tontines")
+}
+
+model TontineCycle {
+  id               String         @id @default(uuid()) @db.Uuid
+  tontineId        String         @db.Uuid
+  number           Int
+  status           CycleStatus    @default(PENDING)
+  beneficiaryId    String?        @db.Uuid
+  startDate        DateTime       @db.Date
+  dueDate          DateTime       @db.Date
+  expectedMinor    BigInt         @default(0)
+  collectedMinor   BigInt         @default(0)
+  payoutMinor      BigInt?
+  payoutTxId       String?        @db.Uuid
+  partialPayout    Boolean        @default(false)
+  beneficiaryProof String?
+  postponedCount   Int            @default(0)
+  startedAt        DateTime?      @db.Timestamptz(3)
+  completedAt      DateTime?      @db.Timestamptz(3)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+  tontine          Tontine        @relation(fields: [tontineId], references: [id])
+  contributions    Contribution[]
+
+  @@unique([tontineId, number])
+  @@index([status, dueDate])
+  @@map("ton_cycles")
+  @@schema("tontines")
+}
+
+model Contribution {
+  id                 String             @id @default(uuid()) @db.Uuid
+  cycleId            String             @db.Uuid
+  tontineId          String             @db.Uuid
+  memberId           String             @db.Uuid
+  amountMinor        BigInt
+  penaltyMinor       BigInt             @default(0)
+  penaltyPaid        Boolean            @default(false)
+  penaltyTxId        String?            @db.Uuid
+  status             ContributionStatus @default(PENDING)
+  dueDate            DateTime           @db.Date
+  graceUntil         DateTime           @db.Date
+  defaultAt          DateTime           @db.Date
+  paidAt             DateTime?          @db.Timestamptz(3)
+  transactionId      String?            @db.Uuid
+  /// Étape 5 (A-53) : demande de paiement en cours (saga CONTRIBUTION), une à la fois.
+  paymentRequestId   String?            @db.Uuid
+  paymentRequestedAt DateTime?          @db.Timestamptz(3)
+  /// Motif du dernier échec de paiement (saga), effacé à la demande suivante.
+  paymentError       String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(3)
+  cycle              TontineCycle       @relation(fields: [cycleId], references: [id])
+
+  @@unique([cycleId, memberId])
+  @@index([tontineId, memberId])
+  @@index([status, graceUntil])
+  @@map("ton_contributions")
+  @@schema("tontines")
+}
+
+model PriorityRequest {
+  id          String                @id @default(uuid()) @db.Uuid
+  tontineId   String                @db.Uuid
+  memberId    String                @db.Uuid
+  reason      String
+  status      PriorityRequestStatus @default(PENDING)
+  cycleNumber Int?
+  createdAt   DateTime              @default(now()) @db.Timestamptz(3)
+  tontine     Tontine               @relation(fields: [tontineId], references: [id])
+
+  @@index([tontineId, status])
+  @@map("ton_priority_requests")
+  @@schema("tontines")
+}
+
+// ============================================================================
+// Wallets & grand livre
+// ============================================================================
+
+model Wallet {
+  id            String          @id @default(uuid()) @db.Uuid
+  ownerType     WalletOwnerType
+  memberId      String?         @unique @db.Uuid
+  tontineId     String?         @db.Uuid
+  systemCode    String?
+  currency      String          @db.Char(3)
+  balanceMinor  BigInt          @default(0)
+  blockedMinor  BigInt          @default(0)
+  allowNegative Boolean         @default(false)
+  status        WalletStatus    @default(ACTIVE)
+  version       Int             @default(1)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(3)
+
+  movements     WalletMovement[]
+  holds         WalletHold[]
+  statusHistory WalletStatusHistory[]
+
+  @@unique([systemCode, currency])
+  @@unique([tontineId, ownerType])
+  @@map("wal_wallets")
+  @@schema("wallets")
+}
+
+/// Écritures du grand livre — append-only (trigger).
+model WalletMovement {
+  id             String          @id @default(uuid()) @db.Uuid
+  walletId       String          @db.Uuid
+  transactionId  String?         @db.Uuid
+  holdId         String?         @db.Uuid
+  type           MovementType
+  amountMinor    BigInt
+  balanceAfter   BigInt
+  availableAfter BigInt
+  context        MovementContext
+  contextRef     String?
+  description    String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  seq            BigInt          @default(autoincrement())
+  wallet         Wallet          @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt(sort: Desc)])
+  @@index([transactionId])
+  @@map("wal_movements")
+  @@schema("wallets")
+}
+
+model WalletHold {
+  id             String          @id @default(uuid()) @db.Uuid
+  walletId       String          @db.Uuid
+  amountMinor    BigInt
+  context        MovementContext
+  referenceId    String?
+  status         HoldStatus      @default(ACTIVE)
+  idempotencyKey String          @unique
+  expiresAt      DateTime        @db.Timestamptz(3)
+  resolvedAt     DateTime?       @db.Timestamptz(3)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  wallet         Wallet          @relation(fields: [walletId], references: [id])
+
+  @@index([status, expiresAt])
+  @@index([walletId, status])
+  @@map("wal_holds")
+  @@schema("wallets")
+}
+
+model WalletStatusHistory {
+  id          String       @id @default(uuid()) @db.Uuid
+  walletId    String       @db.Uuid
+  oldStatus   WalletStatus
+  newStatus   WalletStatus
+  reason      String
+  triggeredBy String
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+  wallet      Wallet       @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@map("wal_status_history")
+  @@schema("wallets")
+}
+
+// ============================================================================
+// Transactions
+// ============================================================================
+
+model Transaction {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  idempotencyKey      String                 @unique
+  type                TransactionType
+  status              TransactionStatus      @default(PENDING)
+  amountMinor         BigInt
+  currency            String                 @db.Char(3)
+  initiatorId         String?                @db.Uuid
+  beneficiaryId       String?                @db.Uuid
+  sourceWalletId      String?                @db.Uuid
+  destinationWalletId String?                @db.Uuid
+  holdId              String?                @db.Uuid
+  contextType         TransactionContextType
+  contextId           String?
+  description         String?
+  metadata            Json
+  rejectionRule       String?
+  rejectionReason     String?
+  failureCode         String?
+  failureReason       String?
+  reversalOfId        String?                @unique @db.Uuid
+  createdAt           DateTime               @default(now()) @db.Timestamptz(3)
+  validatedAt         DateTime?              @db.Timestamptz(3)
+  completedAt         DateTime?              @db.Timestamptz(3)
+  updatedAt           DateTime               @updatedAt @db.Timestamptz(3)
+
+  @@index([initiatorId, createdAt])
+  @@index([beneficiaryId, createdAt])
+  @@index([contextType, contextId])
+  @@index([status, createdAt])
+  @@map("trx_transactions")
+  @@schema("transactions")
+}
+
+/// Journal d'audit des transactions — append-only, conservation 7 ans (US-6.5).
+model TransactionAuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  transactionId String   @db.Uuid
+  action        String
+  result        String
+  actorId       String?  @db.Uuid
+  ip            String?
+  device        String?
+  userAgent     String?
+  country       String?
+  details       Json?
+  retainUntil   DateTime @db.Timestamptz(3)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([transactionId, createdAt])
+  @@map("trx_audit_logs")
+  @@schema("transactions")
+}
+
+/// Saga orchestrée par Transaction Service (étape 5, A-53) : une par demande métier
+/// (`sagaKey` unique = idempotence), état persistant, transitions journalisées.
+model TransactionSaga {
+  id            String                @id @default(uuid()) @db.Uuid
+  type          String
+  sagaKey       String                @unique
+  status        SagaStatus            @default(STARTED)
+  step          String
+  /// Référence métier du demandeur (paiement, cycle, contribution) pour la réponse.
+  reference     String
+  request       Json
+  transactionId String?               @db.Uuid
+  failureCode   String?
+  failureReason String?
+  attempts      Int                   @default(1)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime              @updatedAt @db.Timestamptz(3)
+  completedAt   DateTime?             @db.Timestamptz(3)
+  steps         TransactionSagaStep[]
+
+  @@index([status, updatedAt])
+  @@index([type, reference])
+  @@map("trx_sagas")
+  @@schema("transactions")
+}
+
+/// Journal append-only des transitions d'une saga.
+model TransactionSagaStep {
+  id        String          @id @default(uuid()) @db.Uuid
+  sagaId    String          @db.Uuid
+  saga      TransactionSaga @relation(fields: [sagaId], references: [id], onDelete: Restrict)
+  fromStep  String?
+  toStep    String
+  status    SagaStatus
+  detail    Json?
+  createdAt DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([sagaId, createdAt])
+  @@map("trx_saga_steps")
+  @@schema("transactions")
+}
+
+model ReconciliationReport {
+  id               String             @id @default(uuid()) @db.Uuid
+  kind             ReconciliationKind
+  businessDate     DateTime           @db.Date
+  status           String
+  checkedCount     Int
+  discrepancyCount Int
+  thresholdMinor   BigInt             @default(0)
+  alert            Boolean            @default(false)
+  details          Json
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
+
+  @@index([kind, businessDate])
+  @@map("trx_reconciliation_reports")
+  @@schema("transactions")
+}
+
+// ============================================================================
+// Paiements (PSP)
+// ============================================================================
+
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  type              PaymentType
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  amountMinor       BigInt
+  feeMinor          BigInt        @default(0)
+  currency          String        @db.Char(3)
+  provider          String
+  providerReference String?       @unique
+  memberId          String        @db.Uuid
+  walletId          String        @db.Uuid
+  destinationMasked String?
+  destinationEnc    String?
+  transactionId     String?       @db.Uuid
+  holdId            String?       @db.Uuid
+  idempotencyKey    String        @unique
+  redirectUrl       String?
+  refundOfId        String?       @db.Uuid
+  errorCode         String?
+  errorMessage      String?
+  retryCount        Int           @default(0)
+  fallbackUsed      Boolean       @default(false)
+  nextPollAt        DateTime?     @db.Timestamptz(3)
+  expiresAt         DateTime      @db.Timestamptz(3)
+  completedAt       DateTime?     @db.Timestamptz(3)
+  createdAt         DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
+
+  statusHistory PaymentStatusHistory[]
+
+  @@index([memberId, createdAt])
+  @@index([status, nextPollAt])
+  @@map("pay_payments")
+  @@schema("payments")
+}
+
+model PaymentStatusHistory {
+  id         String         @id @default(uuid()) @db.Uuid
+  paymentId  String         @db.Uuid
+  fromStatus PaymentStatus?
+  toStatus   PaymentStatus
+  reason     String?
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  payment    Payment        @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId, createdAt])
+  @@map("pay_status_history")
+  @@schema("payments")
+}
+
+/// État interne du PSP SIMULÉ (jamais utilisé avec un fournisseur réel) : sert au simulateur
+/// (confirmation USSD, page 3-D Secure fictive, relevés pour la réconciliation US-7.6).
+model PspSimOperation {
+  id                String    @id @default(uuid()) @db.Uuid
+  provider          String
+  reference         String    @unique
+  kind              String
+  status            String    @default("PENDING")
+  amountMinor       BigInt
+  currency          String    @db.Char(3)
+  merchantReference String
+  scenario          String?
+  destinationMasked String?
+  settledAt         DateTime? @db.Timestamptz(3)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@index([provider, createdAt])
+  @@map("pay_sim_operations")
+  @@schema("payments")
+}
+
+model PspWebhookEvent {
+  id              String    @id @default(uuid()) @db.Uuid
+  provider        String
+  providerEventId String
+  signatureValid  Boolean
+  payload         Json
+  result          String
+  receivedAt      DateTime  @default(now()) @db.Timestamptz(3)
+  processedAt     DateTime? @db.Timestamptz(3)
+
+  @@unique([provider, providerEventId])
+  @@map("pay_webhook_events")
+  @@schema("payments")
+}
+
+/// Payment Gateway : journal des webhooks acceptés (signature valide). Idempotence et
+/// non-rejeu par (fournisseur, identifiant d'événement) ; empreinte du corps pour détecter
+/// un même identifiant réutilisé avec un contenu différent.
+model PaymentGatewayReceipt {
+  id                String    @id @default(uuid()) @db.Uuid
+  provider          String
+  providerEventId   String
+  bodySha256        String    @db.Char(64)
+  merchantReference String    @db.Uuid
+  status            String
+  amountMinor       BigInt
+  currency          String    @db.Char(3)
+  /// RECEIVED (transmission en cours, bail `claimedAt`) → FORWARDED | FORWARD_FAILED
+  state             String    @default("RECEIVED")
+  /// Début du bail de transmission : une seule requête transmet à la fois ; bail expiré = reprise
+  claimedAt         DateTime  @default(now()) @db.Timestamptz(3)
+  /// Résultat renvoyé par le Payment Service (PROCESSED, DUPLICATE, AMOUNT_MISMATCH…)
+  outcome           String?
+  attempts          Int       @default(0)
+  lastError         String?
+  receivedAt        DateTime  @default(now()) @db.Timestamptz(3)
+  forwardedAt       DateTime? @db.Timestamptz(3)
+
+  @@unique([provider, providerEventId])
+  @@index([state, receivedAt])
+  @@map("pgw_webhook_receipts")
+  @@schema("payment_gateway")
+}
+
+// ============================================================================
+// Notifications
+// ============================================================================
+
+model NotificationTemplate {
+  id        String              @id @default(uuid()) @db.Uuid
+  key       String
+  channel   NotificationChannel
+  language  String
+  subject   String?
+  body      String
+  version   Int                 @default(1)
+  active    Boolean             @default(true)
+  updatedAt DateTime            @updatedAt @db.Timestamptz(3)
+
+  @@unique([key, channel, language])
+  @@map("ntf_templates")
+  @@schema("notifications")
+}
+
+model Notification {
+  id           String               @id @default(uuid()) @db.Uuid
+  recipientId  String               @db.Uuid
+  category     NotificationCategory
+  templateKey  String
+  eventId      String?              @db.Uuid
+  eventType    String?
+  priority     NotificationPriority
+  channel      NotificationChannel
+  status       NotificationStatus   @default(PENDING)
+  title        String
+  body         String
+  data         Json?
+  dedupeKey    String?              @unique
+  scheduledFor DateTime             @default(now()) @db.Timestamptz(3)
+  attempts     Int                  @default(0)
+  lastError    String?
+  sentAt       DateTime?            @db.Timestamptz(3)
+  readAt       DateTime?            @db.Timestamptz(3)
+  createdAt    DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime             @updatedAt @db.Timestamptz(3)
+
+  @@index([recipientId, createdAt(sort: Desc)])
+  @@index([status, scheduledFor])
+  @@map("ntf_notifications")
+  @@schema("notifications")
+}
+
+/// Journal de livraison des fournisseurs (SMS simulé, SMTP) — propriété de communication-service.
+model OutboundMessage {
+  id             String          @id @default(uuid()) @db.Uuid
+  notificationId String?         @db.Uuid
+  /// Destinataire (membre) : limite anti-spam par personne, quel que soit le numéro
+  recipientId    String?         @db.Uuid
+  priority       String?
+  channel        DeliveryChannel
+  recipient      String
+  subject        String?
+  body           String
+  provider       String
+  status         String
+  providerRef    String?
+  error          String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([recipient, createdAt(sort: Desc)])
+  @@index([recipientId, channel, createdAt])
+  @@map("ntf_outbound_messages")
+  @@schema("communication")
+}
+
+/// Canaux transportés par communication-service.
+enum DeliveryChannel {
+  SMS
+  EMAIL
+  PUSH
+
+  @@schema("communication")
+}
+
+// ============================================================================
+// Conformité
+// ============================================================================
+
+model ComplianceRule {
+  id             String             @id @default(uuid()) @db.Uuid
+  code           String             @unique
+  countryCode    String             @db.Char(2)
+  ruleType       ComplianceRuleType
+  operationTypes OperationType[]
+  params         Json
+  active         Boolean            @default(true)
+  description    String?
+  version        Int                @default(1)
+  updatedById    String?            @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime           @updatedAt @db.Timestamptz(3)
+
+  history ComplianceRuleHistory[]
+
+  @@index([countryCode, active])
+  @@map("cmp_rules")
+  @@schema("compliance")
+}
+
+model ComplianceRuleHistory {
+  id          String         @id @default(uuid()) @db.Uuid
+  ruleId      String         @db.Uuid
+  version     Int
+  snapshot    Json
+  change      String
+  reason      String?
+  changedById String?        @db.Uuid
+  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  rule        ComplianceRule @relation(fields: [ruleId], references: [id])
+
+  @@index([ruleId, version])
+  @@map("cmp_rule_history")
+  @@schema("compliance")
+}
+
+model ComplianceViolation {
+  id            String          @id @default(uuid()) @db.Uuid
+  memberId      String          @db.Uuid
+  operationType OperationType
+  ruleCode      String
+  action        ViolationAction
+  details       Json
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([memberId, createdAt])
+  @@map("cmp_violations")
+  @@schema("compliance")
+}
+
+/// Dossier de conformité : regroupe les alertes d'un membre par type (un seul dossier OPEN par couple).
+model ComplianceCase {
+  id             String                @id @default(uuid()) @db.Uuid
+  memberId       String                @db.Uuid
+  type           ComplianceCaseType
+  status         ComplianceCaseStatus  @default(OPEN)
+  severity       CaseSeverity
+  openedAt       DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime              @updatedAt @db.Timestamptz(3)
+  closedAt       DateTime?             @db.Timestamptz(3)
+  closedBy       String?               @db.Uuid
+  outcome        CaseOutcome?
+  closingComment String?
+  version        Int                   @default(1)
+  /// Agent assigné (COMPLIANCE_AGENT ou SUPER_ADMIN) ; seul lui ou le super-admin peut clore
+  assigneeId     String?               @db.Uuid
+  assignedAt     DateTime?             @db.Timestamptz(3)
+  alerts         ComplianceCaseAlert[]
+
+  @@index([assigneeId, status])
+  @@index([status, openedAt])
+  @@index([memberId, status])
+  @@map("cmp_cases")
+  @@schema("compliance")
+}
+
+/// Alerte rattachée à un dossier. `open` : l'alerte source attend encore une décision (AML, doublon).
+model ComplianceCaseAlert {
+  id         String              @id @default(uuid()) @db.Uuid
+  caseId     String              @db.Uuid
+  alertType  ComplianceAlertType
+  /// Identifiant de l'alerte source (correspondance AML, alerte doublon, violation) ; clé d'idempotence.
+  sourceId   String
+  summary    Json
+  open       Boolean             @default(false)
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  resolvedAt DateTime?           @db.Timestamptz(3)
+  case       ComplianceCase      @relation(fields: [caseId], references: [id])
+
+  @@unique([alertType, sourceId])
+  @@index([caseId])
+  @@map("cmp_case_alerts")
+  @@schema("compliance")
+}
+
+// ============================================================================
+// Administration
+// ============================================================================
+
+model TontineAccount {
+  id          String             @id @default(uuid()) @db.Uuid
+  tontineId   String             @db.Uuid
+  name        String
+  type        TontineAccountType
+  rules       Json
+  functional  Boolean            @default(false)
+  walletId    String?            @db.Uuid
+  createdById String             @db.Uuid
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+
+  @@unique([tontineId, type])
+  @@map("adm_tontine_accounts")
+  @@schema("tontines")
+}
+
+/// Rapports générés et archivés (rapport final de clôture US-4.9, exports US-10.4, réconciliations).
+model GeneratedReport {
+  id          String   @id @default(uuid()) @db.Uuid
+  tontineId   String?  @db.Uuid
+  kind        String
+  format      String
+  title       String
+  sha256      String
+  sizeBytes   Int
+  content     Bytes
+  createdById String?  @db.Uuid
+  retainUntil DateTime @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([tontineId, kind, createdAt(sort: Desc)])
+  @@map("rpt_generated_reports")
+  @@schema("reporting")
+}
+
+/// Paramètres modifiables à chaud (A-50) : valeur courante, verrou optimiste par version.
+model Configuration {
+  key       String   @id
+  value     Json
+  version   Int      @default(1)
+  updatedBy String?  @db.Uuid
+  updatedAt DateTime @db.Timestamptz(3)
+
+  @@map("adm_configurations")
+  @@schema("administration")
+}
+
+/// Historique des modifications de paramètres — ajout seul (trigger).
+model ConfigurationHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String
+  /// Version atteinte par cette modification (ordre définitif de l\'historique)
+  version   Int
+  oldValue  Json?
+  newValue  Json
+  reason    String
+  changedBy String   @db.Uuid
+  createdAt DateTime @db.Timestamptz(3)
+
+  @@unique([key, version])
+  @@map("adm_configuration_history")
+  @@schema("administration")
+}
+
+model AdminMessage {
+  id             String          @id @default(uuid()) @db.Uuid
+  tontineId      String          @db.Uuid
+  senderId       String          @db.Uuid
+  template       MessageTemplate
+  subject        String
+  body           String
+  filter         Json
+  recipientCount Int
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([tontineId, createdAt(sort: Desc)])
+  @@map("adm_messages")
+  @@schema("tontines")
+}
+
+// ============================================================================
+// Reporting (étape 6, A-54) — projections alimentées uniquement par les instantanés publiés
+// par les domaines (`*.snapshot`, `*.recorded`). Types de statut en texte : aucun type partagé
+// avec les schémas propriétaires. `sourceVersion` : ordre des instantanés d'une même entité.
+// ============================================================================
+
+model RptTontine {
+  id                String    @id @db.Uuid
+  name              String
+  status            String
+  currency          String    @db.Char(3)
+  frequency         String
+  contributionMinor BigInt
+  totalCycles       Int?
+  reserveWalletId   String?   @db.Uuid
+  drawProof         String?
+  createdAt         DateTime  @db.Timestamptz(3)
+  startedAt         DateTime? @db.Timestamptz(3)
+  completedAt       DateTime? @db.Timestamptz(3)
+  archivedUntil     DateTime? @db.Timestamptz(3)
+  sourceVersion     BigInt
+
+  @@index([status])
+  @@map("rpt_tontines")
+  @@schema("reporting")
+}
+
+model RptCycle {
+  id             String    @id @db.Uuid
+  tontineId      String    @db.Uuid
+  number         Int
+  status         String
+  beneficiaryId  String?   @db.Uuid
+  dueDate        DateTime  @db.Date
+  expectedMinor  BigInt
+  collectedMinor BigInt
+  payoutMinor    BigInt?
+  partialPayout  Boolean
+  completedAt    DateTime? @db.Timestamptz(3)
+  sourceVersion  BigInt
+
+  @@index([tontineId, number])
+  @@index([status, completedAt])
+  @@map("rpt_cycles")
+  @@schema("reporting")
+}
+
+model RptContribution {
+  id            String    @id @db.Uuid
+  tontineId     String    @db.Uuid
+  cycleId       String    @db.Uuid
+  memberId      String    @db.Uuid
+  status        String
+  amountMinor   BigInt
+  penaltyMinor  BigInt
+  penaltyPaid   Boolean
+  dueDate       DateTime  @db.Date
+  paidAt        DateTime? @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([tontineId, cycleId])
+  @@index([dueDate])
+  @@map("rpt_contributions")
+  @@schema("reporting")
+}
+
+model RptTontineMember {
+  id            String   @id @db.Uuid
+  tontineId     String   @db.Uuid
+  memberId      String   @db.Uuid
+  role          String
+  status        String
+  position      Int?
+  joinedAt      DateTime @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([tontineId, status])
+  @@map("rpt_tontine_members")
+  @@schema("reporting")
+}
+
+model RptWallet {
+  id            String @id @db.Uuid
+  ownerType     String
+  status        String
+  currency      String @db.Char(3)
+  balanceMinor  BigInt
+  blockedMinor  BigInt
+  sourceVersion BigInt
+
+  @@map("rpt_wallets")
+  @@schema("reporting")
+}
+
+model RptWalletMovement {
+  id          String   @id @db.Uuid
+  walletId    String   @db.Uuid
+  type        String
+  amountMinor BigInt
+  createdAt   DateTime @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@map("rpt_wallet_movements")
+  @@schema("reporting")
+}
+
+model RptTransaction {
+  id            String    @id @db.Uuid
+  type          String
+  status        String
+  currency      String    @db.Char(3)
+  amountMinor   BigInt
+  createdAt     DateTime  @db.Timestamptz(3)
+  completedAt   DateTime? @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([status, completedAt])
+  @@index([createdAt])
+  @@map("rpt_transactions")
+  @@schema("reporting")
+}
+
+model RptPayment {
+  id            String    @id @db.Uuid
+  type          String
+  status        String
+  currency      String    @db.Char(3)
+  amountMinor   BigInt
+  feeMinor      BigInt
+  transactionId String?   @db.Uuid
+  createdAt     DateTime  @db.Timestamptz(3)
+  completedAt   DateTime? @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([createdAt])
+  @@index([status])
+  @@map("rpt_payments")
+  @@schema("reporting")
+}
+
+model RptMember {
+  id            String @id @db.Uuid
+  status        String
+  kycLevel      String
+  sourceVersion BigInt
+
+  @@map("rpt_members")
+  @@schema("reporting")
+}
+
+model RptKycRequest {
+  id            String   @id @db.Uuid
+  status        String
+  submittedAt   DateTime @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([status])
+  @@map("rpt_kyc_requests")
+  @@schema("reporting")
+}
+
+model RptAmlMatch {
+  id            String   @id @db.Uuid
+  listName      String
+  status        String
+  createdAt     DateTime @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@map("rpt_aml_matches")
+  @@schema("reporting")
+}
+
+model RptViolation {
+  id            String   @id @db.Uuid
+  ruleCode      String
+  action        String
+  operationType String
+  createdAt     DateTime @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@map("rpt_violations")
+  @@schema("reporting")
+}
+
+model RptCase {
+  id            String    @id @db.Uuid
+  type          String
+  status        String
+  severity      String
+  outcome       String?
+  assigneeId    String?   @db.Uuid
+  openedAt      DateTime  @db.Timestamptz(3)
+  closedAt      DateTime? @db.Timestamptz(3)
+  sourceVersion BigInt
+
+  @@index([status])
+  @@map("rpt_cases")
+  @@schema("reporting")
+}
+
+model RptReconciliation {
+  id               String   @id @db.Uuid
+  kind             String
+  businessDate     DateTime @db.Date
+  status           String
+  discrepancyCount Int
+  alert            Boolean
+  createdAt        DateTime @db.Timestamptz(3)
+  sourceVersion    BigInt
+
+  @@index([createdAt])
+  @@map("rpt_reconciliations")
+  @@schema("reporting")
+}

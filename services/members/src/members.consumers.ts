@@ -1,13 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { type KycLevel } from '@tontine/contracts';
 import { type EventEnvelope } from '@tontine/events';
-import { OnEvent } from '@tontine/platform';
+import { OnEvent, PrismaService, type ProjectionDelegate, applySnapshot } from '@tontine/platform';
 import { MembersService } from './members.service';
 
 /** Consommateurs du domaine Membres (US-2.1, US-2.6, US-9.1). */
 @Injectable()
 export class MembersConsumers {
-  constructor(private readonly members: MembersService) {}
+  constructor(
+    private readonly members: MembersService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  /** Projection des adhésions (annuaire d'une tontine, US-2.3) — étape 6, A-54. */
+  @OnEvent('tontine.membership.snapshot', { consumer: 'members.membership-projection' })
+  async onMembership(e: EventEnvelope<'tontine.membership.snapshot'>): Promise<void> {
+    await applySnapshot(
+      this.prisma.memberTontineMembership as unknown as ProjectionDelegate,
+      { dates: ['joinedAt'], pick: ['tontineId', 'memberId', 'role', 'status', 'joinedAt'] },
+      e.payload,
+    );
+  }
 
   @OnEvent('user.registered', { consumer: 'members.profile-creator' })
   async onUserRegistered(e: EventEnvelope<'user.registered'>): Promise<void> {

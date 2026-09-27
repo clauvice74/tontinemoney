@@ -579,6 +579,8 @@ describe('US-2.3 — liste des membres pour l’admin', () => {
       });
       await ctx.addParticipant(t.id, u.id);
     }
+    // Annuaire lu dans la projection des adhésions (étape 6, A-54)
+    await ctx.drain();
     return { admin, t, token: await ctx.token(admin) };
   }
 
@@ -667,9 +669,9 @@ describe('US-2.3 — liste des membres pour l’admin', () => {
         status: 'ACTIVE' as const,
       })),
     });
-    await ctx.prisma.$executeRawUnsafe(
-      'ANALYZE "mbr_members"; ANALYZE "ton_members";'.split(';')[0]!,
-    );
+    await ctx.drain();
+    await ctx.prisma.$executeRawUnsafe('ANALYZE "mbr_members"');
+    await ctx.prisma.$executeRawUnsafe('ANALYZE "mbr_tontine_memberships"');
     const token = await ctx.token(admin);
     await ctx.http.get(`/api/v1/tontines/${t.id}/members?search=membre05`).set(bearer(token));
     const started = performance.now();
@@ -680,7 +682,7 @@ describe('US-2.3 — liste des membres pour l’admin', () => {
     expect(res.status).toBe(200);
     expect(res.body.meta.total).toBe(1001);
     expect(elapsed).toBeLessThan(500);
-  });
+  }, 60_000);
 });
 
 describe('US-2.6 — transitions de statut automatiques', () => {

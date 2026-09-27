@@ -29,6 +29,7 @@ const SERVICES = [
   'notifications',
   'communication',
   'administration',
+  'reporting',
 ];
 const SHARED = new Set(['platform']);
 

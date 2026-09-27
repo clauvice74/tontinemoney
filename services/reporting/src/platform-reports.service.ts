@@ -62,8 +62,8 @@ const row = (
 
 /**
  * Rapports consolidés de la plateforme (super-admin) : agrégats uniquement, aucune donnée
- * personnelle. Requêtes SQL en lecture seule inter-domaines, autorisées dans le module de
- * rapports d'`administration` uniquement (docs/architecture.md §4, A-28).
+ * personnelle. Requêtes SQL sur les seules projections du reporting (étape 6, A-54), alimentées
+ * par les instantanés publiés par chaque domaine.
  */
 @Injectable()
 export class PlatformReportsService {
@@ -191,21 +191,21 @@ export class PlatformReportsService {
   private async financial(p: Period, currency: string | null): Promise<IndicatorRow[]> {
     const completed = await this.prisma.$queryRaw<Agg[]>`
       SELECT t."type"::text AS k, t."currency", count(*)::bigint AS n, sum(t."amountMinor")::bigint AS total
-      FROM "trx_transactions" t
+      FROM "rpt_transactions" t
       WHERE t."status" = 'COMPLETED' AND t."completedAt" >= ${p.start} AND t."completedAt" < ${p.end}
         ${this.cur(Prisma.sql`t."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
     const failed = await this.prisma.$queryRaw<Agg[]>`
       SELECT t."status"::text || ' ' || t."type"::text AS k, t."currency", count(*)::bigint AS n,
              sum(t."amountMinor")::bigint AS total
-      FROM "trx_transactions" t
+      FROM "rpt_transactions" t
       WHERE t."status" IN ('FAILED', 'REJECTED') AND t."createdAt" >= ${p.start} AND t."createdAt" < ${p.end}
         ${this.cur(Prisma.sql`t."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
     const payments = await this.prisma.$queryRaw<Array<Agg & { fees: bigint | null }>>`
       SELECT py."type"::text || ' ' || py."status"::text AS k, py."currency", count(*)::bigint AS n,
              sum(py."amountMinor")::bigint AS total, sum(py."feeMinor")::bigint AS fees
-      FROM "pay_payments" py
+      FROM "rpt_payments" py
       WHERE py."createdAt" >= ${p.start} AND py."createdAt" < ${p.end}
         ${this.cur(Prisma.sql`py."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
@@ -234,7 +234,7 @@ export class PlatformReportsService {
   private async contributions(p: Period, currency: string | null): Promise<IndicatorRow[]> {
     const byStatus = await this.prisma.$queryRaw<Agg[]>`
       SELECT c."status"::text AS k, t."currency", count(*)::bigint AS n, sum(c."amountMinor")::bigint AS total
-      FROM "ton_contributions" c JOIN "ton_tontines" t ON t."id" = c."tontineId"
+      FROM "rpt_contributions" c JOIN "rpt_tontines" t ON t."id" = c."tontineId"
       WHERE c."dueDate" >= ${p.start} AND c."dueDate" < ${p.end}
         ${this.cur(Prisma.sql`t."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
@@ -244,7 +244,7 @@ export class PlatformReportsService {
       SELECT t."currency", count(*)::bigint AS charged,
              sum(c."penaltyMinor")::bigint AS "chargedTotal",
              coalesce(sum(c."penaltyMinor") FILTER (WHERE c."penaltyPaid"), 0)::bigint AS "paidTotal"
-      FROM "ton_contributions" c JOIN "ton_tontines" t ON t."id" = c."tontineId"
+      FROM "rpt_contributions" c JOIN "rpt_tontines" t ON t."id" = c."tontineId"
       WHERE c."penaltyMinor" > 0 AND c."dueDate" >= ${p.start} AND c."dueDate" < ${p.end}
         ${this.cur(Prisma.sql`t."currency"`, currency)}
       GROUP BY 1 ORDER BY 1`;
@@ -283,12 +283,12 @@ export class PlatformReportsService {
     const snapshot = await this.prisma.$queryRaw<Array<Agg & { blocked: bigint | null }>>`
       SELECT w."ownerType"::text || ' ' || w."status"::text AS k, w."currency", count(*)::bigint AS n,
              sum(w."balanceMinor")::bigint AS total, sum(w."blockedMinor")::bigint AS blocked
-      FROM "wal_wallets" w
+      FROM "rpt_wallets" w
       WHERE TRUE ${this.cur(Prisma.sql`w."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
     const movements = await this.prisma.$queryRaw<Agg[]>`
       SELECT m."type"::text AS k, w."currency", count(*)::bigint AS n, sum(m."amountMinor")::bigint AS total
-      FROM "wal_movements" m JOIN "wal_wallets" w ON w."id" = m."walletId"
+      FROM "rpt_wallet_movements" m JOIN "rpt_wallets" w ON w."id" = m."walletId"
       WHERE m."createdAt" >= ${p.start} AND m."createdAt" < ${p.end}
         ${this.cur(Prisma.sql`w."currency"`, currency)}
       GROUP BY 1, 2 ORDER BY 2, 1`;
@@ -307,20 +307,20 @@ export class PlatformReportsService {
     const count = (sql: Prisma.Sql) => this.prisma.$queryRaw<Array<{ k: string; n: bigint }>>(sql);
     const [members, kyc, kycRequests, aml, violations, opened, closed] = await Promise.all([
       count(
-        Prisma.sql`SELECT "status"::text AS k, count(*)::bigint AS n FROM "mbr_members" GROUP BY 1 ORDER BY 1`,
+        Prisma.sql`SELECT "status"::text AS k, count(*)::bigint AS n FROM "rpt_members" GROUP BY 1 ORDER BY 1`,
       ),
       count(
-        Prisma.sql`SELECT "kycLevel"::text AS k, count(*)::bigint AS n FROM "mbr_members" GROUP BY 1 ORDER BY 1`,
+        Prisma.sql`SELECT "kycLevel"::text AS k, count(*)::bigint AS n FROM "rpt_members" GROUP BY 1 ORDER BY 1`,
       ),
-      count(Prisma.sql`SELECT "status"::text AS k, count(*)::bigint AS n FROM "kyc_requests"
+      count(Prisma.sql`SELECT "status"::text AS k, count(*)::bigint AS n FROM "rpt_kyc_requests"
         WHERE "submittedAt" >= ${p.start} AND "submittedAt" < ${p.end} GROUP BY 1 ORDER BY 1`),
-      count(Prisma.sql`SELECT "listName" || ' ' || "status"::text AS k, count(*)::bigint AS n FROM "kyc_aml_matches"
+      count(Prisma.sql`SELECT "listName" || ' ' || "status"::text AS k, count(*)::bigint AS n FROM "rpt_aml_matches"
         WHERE "createdAt" >= ${p.start} AND "createdAt" < ${p.end} GROUP BY 1 ORDER BY 1`),
-      count(Prisma.sql`SELECT "ruleCode" || ' ' || "action"::text AS k, count(*)::bigint AS n FROM "cmp_violations"
+      count(Prisma.sql`SELECT "ruleCode" || ' ' || "action"::text AS k, count(*)::bigint AS n FROM "rpt_violations"
         WHERE "createdAt" >= ${p.start} AND "createdAt" < ${p.end} GROUP BY 1 ORDER BY 1`),
-      count(Prisma.sql`SELECT "type"::text AS k, count(*)::bigint AS n FROM "cmp_cases"
+      count(Prisma.sql`SELECT "type"::text AS k, count(*)::bigint AS n FROM "rpt_cases"
         WHERE "openedAt" >= ${p.start} AND "openedAt" < ${p.end} GROUP BY 1 ORDER BY 1`),
-      count(Prisma.sql`SELECT "type"::text || ' ' || "outcome"::text AS k, count(*)::bigint AS n FROM "cmp_cases"
+      count(Prisma.sql`SELECT "type"::text || ' ' || "outcome"::text AS k, count(*)::bigint AS n FROM "rpt_cases"
         WHERE "closedAt" >= ${p.start} AND "closedAt" < ${p.end} GROUP BY 1 ORDER BY 1`),
     ]);
     const section = (name: string, rows: Array<{ k: string; n: bigint }>) =>
@@ -341,20 +341,20 @@ export class PlatformReportsService {
     const [byStatus, created, participants, cycles] = await Promise.all([
       this.prisma.$queryRaw<Agg[]>`
         SELECT t."status"::text AS k, t."currency", count(*)::bigint AS n, NULL::bigint AS total
-        FROM "ton_tontines" t WHERE TRUE ${c} GROUP BY 1, 2 ORDER BY 2, 1`,
+        FROM "rpt_tontines" t WHERE TRUE ${c} GROUP BY 1, 2 ORDER BY 2, 1`,
       this.prisma.$queryRaw<Agg[]>`
         SELECT 'Créées' AS k, t."currency", count(*)::bigint AS n, NULL::bigint AS total
-        FROM "ton_tontines" t WHERE t."createdAt" >= ${p.start} AND t."createdAt" < ${p.end} ${c}
+        FROM "rpt_tontines" t WHERE t."createdAt" >= ${p.start} AND t."createdAt" < ${p.end} ${c}
         GROUP BY 1, 2 ORDER BY 2`,
       this.prisma.$queryRaw<Agg[]>`
         SELECT 'Participants actifs' AS k, t."currency", count(*)::bigint AS n, NULL::bigint AS total
-        FROM "ton_members" tm JOIN "ton_tontines" t ON t."id" = tm."tontineId"
+        FROM "rpt_tontine_members" tm JOIN "rpt_tontines" t ON t."id" = tm."tontineId"
         WHERE tm."status" = 'ACTIVE' AND t."status" IN ('ACTIVE', 'PAUSED') ${c}
         GROUP BY 1, 2 ORDER BY 2`,
       this.prisma.$queryRaw<Array<Agg & { payout: bigint | null }>>`
         SELECT 'Tours terminés' AS k, t."currency", count(*)::bigint AS n,
                sum(cy."collectedMinor")::bigint AS total, sum(cy."payoutMinor")::bigint AS payout
-        FROM "ton_cycles" cy JOIN "ton_tontines" t ON t."id" = cy."tontineId"
+        FROM "rpt_cycles" cy JOIN "rpt_tontines" t ON t."id" = cy."tontineId"
         WHERE cy."status" = 'COMPLETED' AND cy."completedAt" >= ${p.start} AND cy."completedAt" < ${p.end} ${c}
         GROUP BY 1, 2 ORDER BY 2`,
     ]);

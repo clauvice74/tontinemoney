@@ -89,6 +89,31 @@ export interface AccountDirectoryPort {
 export const ACCOUNT_DIRECTORY = Symbol('ACCOUNT_DIRECTORY');
 
 /**
+ * Cumuls des opérations d'un membre (implémenté par Transaction Service, étape 6, A-54) :
+ * plafonds journaliers et mensuels de la conformité. Lecture synchrone exacte — une projection
+ * asynchrone laisserait passer des opérations rapprochées au-delà du plafond.
+ */
+export interface TransactionTotalsPort {
+  /** Somme des transactions VALIDATED ou COMPLETED initiées par le membre depuis `since`. */
+  initiatedTotal(
+    memberId: string,
+    currency: string,
+    types: readonly string[],
+    since: Date,
+  ): Promise<bigint>;
+}
+
+export const TRANSACTION_TOTALS = Symbol('TRANSACTION_TOTALS');
+
+/** Lecture exacte d'un wallet membre (implémenté par Wallet Service, étape 6, A-54). */
+export interface WalletQueryPort {
+  /** Solde du wallet du membre, null s'il n'en a pas. */
+  memberBalance(memberId: string): Promise<bigint | null>;
+}
+
+export const WALLET_QUERY = Symbol('WALLET_QUERY');
+
+/**
  * Paramètres modifiables à chaud (propriété d'admin-service, A-50). Valeur en cache court,
  * invalidée par l'événement `admin.configuration.updated` ; défaut de la définition si absent.
  */

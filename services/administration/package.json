@@ -26,10 +26,9 @@
     "@tontine/notifications": "workspace:*",
     "@tontine/payments": "workspace:*",
     "@tontine/platform": "workspace:*",
-    "@tontine/tontines": "workspace:*",
+    "@tontine/reporting": "workspace:*",
     "@tontine/transactions": "workspace:*",
     "@tontine/wallets": "workspace:*",
-    "pdfkit": "0.17.2",
     "zod": "3.25.76"
   },
   "devDependencies": {
@@ -38,7 +37,6 @@
     "@tontine/typescript-config": "workspace:*",
     "@types/express": "5.0.3",
     "@types/node": "22.18.0",
-    "@types/pdfkit": "0.17.6",
     "@vitest/coverage-v8": "3.2.4",
     "eslint": "9.39.5",
     "typescript": "5.9.3",

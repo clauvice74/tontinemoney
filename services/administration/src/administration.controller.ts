@@ -8,19 +8,11 @@ import {
   Patch,
   Post,
   Res,
-  StreamableFile,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  type PlatformReport,
-  type PlatformReportExport,
-  type PlatformReportQuery,
-  type ReportQuery,
   type UpdateConfigurationInput,
   flagFraudSchema,
-  platformReportExportSchema,
-  platformReportQuerySchema,
-  reportQuerySchema,
   updateConfigurationSchema,
 } from '@tontine/contracts';
 import {
@@ -39,8 +31,6 @@ import {
   MEMBER_QUERY,
   type MemberQueryPort,
   OutboxService,
-  PrismaService,
-  RequirePermission,
   Roles,
   UnitOfWork,
   ZodBody,
@@ -49,10 +39,7 @@ import {
 import { type Response } from 'express';
 import { z } from 'zod';
 import { ConfigurationService } from './configuration.service';
-import { AdminDashboardService } from './dashboard.service';
-import { PlatformReportsService } from './platform-reports.service';
-import { toPdf } from './render';
-import { ReportsService } from './reports.service';
+import { sendReport as send, toPdf } from '@tontine/reporting';
 
 const runSchema = z.object({
   kind: z.enum(['INTERNAL', 'PSP']),
@@ -67,140 +54,20 @@ const listSchema = z.object({
 });
 const formatSchema = z.object({ format: z.enum(['json', 'csv', 'pdf']).default('json') });
 
-function send(
-  res: Response,
-  out: { filename: string; contentType: string; body: Buffer | object },
-) {
-  if (!Buffer.isBuffer(out.body)) return out.body;
-  res.setHeader('Content-Type', out.contentType);
-  res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
-  res.setHeader('Cache-Control', 'no-store');
-  return new StreamableFile(out.body);
-}
-
-@ApiTags('Rapports')
-@ApiBearerAuth()
-@Controller({ version: '1' })
-export class ReportsController {
-  constructor(private readonly reports: ReportsService) {}
-
-  @Get('tontines/:id/reports')
-  @ApiOperation({
-    summary:
-      'Rapports financiers de la tontine (US-10.4) — JSON, CSV ou PDF ; rapport final archivé (US-4.9)',
-  })
-  @ApiZodQuery(reportQuerySchema)
-  async report(
-    @CurrentUser() actor: Actor,
-    @Param('id', ParseUUIDPipe) id: string,
-    @ZodQuery(reportQuerySchema) q: ReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return send(res, await this.reports.generate(actor, id, q));
-  }
-}
-
-/** Rapports consolidés de la plateforme : agrégats sans donnée personnelle (super-admin). */
-@ApiTags('Rapports')
-@ApiBearerAuth()
-@RequirePermission('platform.reports.view')
-@Controller({ version: '1', path: 'reports' })
-export class PlatformReportsController {
-  constructor(private readonly reports: PlatformReportsService) {}
-
-  private async one(
-    report: PlatformReport,
-    { format, ...params }: PlatformReportQuery,
-    res: Response,
-  ) {
-    return send(res, await this.reports.generate(report, params, format));
-  }
-
-  @Get('financial')
-  @ApiOperation({ summary: 'Flux financiers : transactions, flux nets, échecs, paiements PSP' })
-  @ApiZodQuery(platformReportQuerySchema)
-  async financial(
-    @ZodQuery(platformReportQuerySchema) q: PlatformReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one('financial', q, res);
-  }
-
-  @Get('contributions')
-  @ApiOperation({ summary: 'Contributions : statuts, ponctualité, pénalités' })
-  @ApiZodQuery(platformReportQuerySchema)
-  async contributions(
-    @ZodQuery(platformReportQuerySchema) q: PlatformReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one('contributions', q, res);
-  }
-
-  @Get('wallets')
-  @ApiOperation({ summary: 'Portefeuilles : soldes et montants bloqués, mouvements de la période' })
-  @ApiZodQuery(platformReportQuerySchema)
-  async wallets(
-    @ZodQuery(platformReportQuerySchema) q: PlatformReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one('wallets', q, res);
-  }
-
-  @Get('compliance')
-  @ApiOperation({ summary: 'Conformité : membres, KYC, AML, violations, dossiers' })
-  @ApiZodQuery(platformReportQuerySchema)
-  async compliance(
-    @ZodQuery(platformReportQuerySchema) q: PlatformReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one('compliance', q, res);
-  }
-
-  @Get('tontines')
-  @ApiOperation({ summary: 'Tontines : statuts, créations, participants, tours terminés' })
-  @ApiZodQuery(platformReportQuerySchema)
-  async tontines(
-    @ZodQuery(platformReportQuerySchema) q: PlatformReportQuery,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one('tontines', q, res);
-  }
-
-  @Get('export')
-  @ApiOperation({ summary: 'Télécharger un rapport en CSV (défaut) ou PDF' })
-  @ApiZodQuery(platformReportExportSchema)
-  async export(
-    @ZodQuery(platformReportExportSchema) { report, ...q }: PlatformReportExport,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.one(report, q, res);
-  }
-}
-
 @ApiTags('Administration')
 @ApiBearerAuth()
 @Roles('SUPER_ADMIN')
 @Controller({ version: '1', path: 'admin' })
 export class AdministrationController {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly uow: UnitOfWork,
     private readonly outbox: OutboxService,
     private readonly audit: AuditService,
     private readonly internal: InternalReconciliationService,
     private readonly psp: PspReconciliationService,
-    private readonly dashboardService: AdminDashboardService,
     private readonly configuration: ConfigurationService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
-
-  @Get('dashboard')
-  @ApiOperation({
-    summary: 'Tableau de bord : comptes, files KYC et conformité, paiements, exploitation',
-  })
-  async dashboard() {
-    return this.dashboardService.overview();
-  }
 
   @Get('configurations')
   @ApiOperation({
@@ -234,11 +101,7 @@ export class AdministrationController {
   @ApiOperation({ summary: 'Rapports de réconciliation (interne US-6.6, PSP US-7.6)' })
   @ApiZodQuery(listSchema)
   async list(@ZodQuery(listSchema) q: z.infer<typeof listSchema>) {
-    const rows = await this.prisma.reconciliationReport.findMany({
-      where: q.kind ? { kind: q.kind } : {},
-      orderBy: { createdAt: 'desc' },
-      take: q.limit,
-    });
+    const rows = await this.internal.listReports(q.kind, q.limit);
     return {
       data: rows.map((r) => ({
         id: r.id,
@@ -272,7 +135,7 @@ export class AdministrationController {
     @ZodQuery(formatSchema) q: z.infer<typeof formatSchema>,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const r = await this.prisma.reconciliationReport.findUnique({ where: { id } });
+    const r = await this.internal.getReport(id);
     if (!r) throw new DomainError('NOT_FOUND', 'Rapport introuvable');
     const rows = r.details as unknown as Discrepancy[];
     const name = `reconciliation-${r.kind.toLowerCase()}-${r.businessDate.toISOString().slice(0, 10)}`;

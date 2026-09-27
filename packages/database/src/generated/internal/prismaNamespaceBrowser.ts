@@ -105,6 +105,22 @@ export const ModelName = {
   Configuration: 'Configuration',
   ConfigurationHistory: 'ConfigurationHistory',
   AdminMessage: 'AdminMessage',
+  RptTontine: 'RptTontine',
+  RptCycle: 'RptCycle',
+  RptContribution: 'RptContribution',
+  RptTontineMember: 'RptTontineMember',
+  RptWallet: 'RptWallet',
+  RptWalletMovement: 'RptWalletMovement',
+  RptTransaction: 'RptTransaction',
+  RptPayment: 'RptPayment',
+  RptMember: 'RptMember',
+  RptKycRequest: 'RptKycRequest',
+  RptAmlMatch: 'RptAmlMatch',
+  RptViolation: 'RptViolation',
+  RptCase: 'RptCase',
+  RptReconciliation: 'RptReconciliation',
+  MemberTontineMembership: 'MemberTontineMembership',
+  TransactionPaymentView: 'TransactionPaymentView',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -1163,6 +1179,224 @@ export const AdminMessageScalarFieldEnum = {
 
 export type AdminMessageScalarFieldEnum =
   (typeof AdminMessageScalarFieldEnum)[keyof typeof AdminMessageScalarFieldEnum];
+
+export const RptTontineScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  currency: 'currency',
+  frequency: 'frequency',
+  contributionMinor: 'contributionMinor',
+  totalCycles: 'totalCycles',
+  reserveWalletId: 'reserveWalletId',
+  drawProof: 'drawProof',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  archivedUntil: 'archivedUntil',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptTontineScalarFieldEnum =
+  (typeof RptTontineScalarFieldEnum)[keyof typeof RptTontineScalarFieldEnum];
+
+export const RptCycleScalarFieldEnum = {
+  id: 'id',
+  tontineId: 'tontineId',
+  number: 'number',
+  status: 'status',
+  beneficiaryId: 'beneficiaryId',
+  dueDate: 'dueDate',
+  expectedMinor: 'expectedMinor',
+  collectedMinor: 'collectedMinor',
+  payoutMinor: 'payoutMinor',
+  partialPayout: 'partialPayout',
+  completedAt: 'completedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptCycleScalarFieldEnum =
+  (typeof RptCycleScalarFieldEnum)[keyof typeof RptCycleScalarFieldEnum];
+
+export const RptContributionScalarFieldEnum = {
+  id: 'id',
+  tontineId: 'tontineId',
+  cycleId: 'cycleId',
+  memberId: 'memberId',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  penaltyMinor: 'penaltyMinor',
+  penaltyPaid: 'penaltyPaid',
+  dueDate: 'dueDate',
+  paidAt: 'paidAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptContributionScalarFieldEnum =
+  (typeof RptContributionScalarFieldEnum)[keyof typeof RptContributionScalarFieldEnum];
+
+export const RptTontineMemberScalarFieldEnum = {
+  id: 'id',
+  tontineId: 'tontineId',
+  memberId: 'memberId',
+  role: 'role',
+  status: 'status',
+  position: 'position',
+  joinedAt: 'joinedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptTontineMemberScalarFieldEnum =
+  (typeof RptTontineMemberScalarFieldEnum)[keyof typeof RptTontineMemberScalarFieldEnum];
+
+export const RptWalletScalarFieldEnum = {
+  id: 'id',
+  ownerType: 'ownerType',
+  status: 'status',
+  currency: 'currency',
+  balanceMinor: 'balanceMinor',
+  blockedMinor: 'blockedMinor',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptWalletScalarFieldEnum =
+  (typeof RptWalletScalarFieldEnum)[keyof typeof RptWalletScalarFieldEnum];
+
+export const RptWalletMovementScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  type: 'type',
+  amountMinor: 'amountMinor',
+  createdAt: 'createdAt',
+} as const;
+
+export type RptWalletMovementScalarFieldEnum =
+  (typeof RptWalletMovementScalarFieldEnum)[keyof typeof RptWalletMovementScalarFieldEnum];
+
+export const RptTransactionScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  status: 'status',
+  currency: 'currency',
+  amountMinor: 'amountMinor',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptTransactionScalarFieldEnum =
+  (typeof RptTransactionScalarFieldEnum)[keyof typeof RptTransactionScalarFieldEnum];
+
+export const RptPaymentScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  status: 'status',
+  currency: 'currency',
+  amountMinor: 'amountMinor',
+  feeMinor: 'feeMinor',
+  transactionId: 'transactionId',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptPaymentScalarFieldEnum =
+  (typeof RptPaymentScalarFieldEnum)[keyof typeof RptPaymentScalarFieldEnum];
+
+export const RptMemberScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  kycLevel: 'kycLevel',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptMemberScalarFieldEnum =
+  (typeof RptMemberScalarFieldEnum)[keyof typeof RptMemberScalarFieldEnum];
+
+export const RptKycRequestScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  submittedAt: 'submittedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptKycRequestScalarFieldEnum =
+  (typeof RptKycRequestScalarFieldEnum)[keyof typeof RptKycRequestScalarFieldEnum];
+
+export const RptAmlMatchScalarFieldEnum = {
+  id: 'id',
+  listName: 'listName',
+  status: 'status',
+  createdAt: 'createdAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptAmlMatchScalarFieldEnum =
+  (typeof RptAmlMatchScalarFieldEnum)[keyof typeof RptAmlMatchScalarFieldEnum];
+
+export const RptViolationScalarFieldEnum = {
+  id: 'id',
+  ruleCode: 'ruleCode',
+  action: 'action',
+  operationType: 'operationType',
+  createdAt: 'createdAt',
+} as const;
+
+export type RptViolationScalarFieldEnum =
+  (typeof RptViolationScalarFieldEnum)[keyof typeof RptViolationScalarFieldEnum];
+
+export const RptCaseScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  status: 'status',
+  severity: 'severity',
+  outcome: 'outcome',
+  assigneeId: 'assigneeId',
+  openedAt: 'openedAt',
+  closedAt: 'closedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptCaseScalarFieldEnum =
+  (typeof RptCaseScalarFieldEnum)[keyof typeof RptCaseScalarFieldEnum];
+
+export const RptReconciliationScalarFieldEnum = {
+  id: 'id',
+  kind: 'kind',
+  businessDate: 'businessDate',
+  status: 'status',
+  discrepancyCount: 'discrepancyCount',
+  alert: 'alert',
+  createdAt: 'createdAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type RptReconciliationScalarFieldEnum =
+  (typeof RptReconciliationScalarFieldEnum)[keyof typeof RptReconciliationScalarFieldEnum];
+
+export const MemberTontineMembershipScalarFieldEnum = {
+  id: 'id',
+  tontineId: 'tontineId',
+  memberId: 'memberId',
+  role: 'role',
+  status: 'status',
+  joinedAt: 'joinedAt',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type MemberTontineMembershipScalarFieldEnum =
+  (typeof MemberTontineMembershipScalarFieldEnum)[keyof typeof MemberTontineMembershipScalarFieldEnum];
+
+export const TransactionPaymentViewScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  transactionId: 'transactionId',
+  sourceVersion: 'sourceVersion',
+} as const;
+
+export type TransactionPaymentViewScalarFieldEnum =
+  (typeof TransactionPaymentViewScalarFieldEnum)[keyof typeof TransactionPaymentViewScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',

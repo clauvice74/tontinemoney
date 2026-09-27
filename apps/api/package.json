@@ -42,6 +42,7 @@
     "@tontine/notifications": "workspace:*",
     "@tontine/payments": "workspace:*",
     "@tontine/platform": "workspace:*",
+    "@tontine/reporting": "workspace:*",
     "@tontine/tontines": "workspace:*",
     "@tontine/transactions": "workspace:*",
     "@tontine/wallets": "workspace:*",

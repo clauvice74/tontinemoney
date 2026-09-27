@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { type ReportQuery, formatMoney } from '@tontine/contracts';
-import { type Contribution, type Tontine, type TontineCycle } from '@tontine/database';
+import { type RptContribution, type RptCycle, type RptTontine } from '@tontine/database';
 import {
   type Actor,
   AuditService,
@@ -38,12 +38,16 @@ export interface ReportOutput {
   body: Buffer | object;
 }
 
-type CycleWithContribs = TontineCycle & { contributions: Contribution[] };
+type Tontine = RptTontine;
+type Contribution = RptContribution;
+type CycleWithContribs = RptCycle & { contributions: Contribution[] };
 
 /**
  * US-10.4 — rapports financiers par tontine (isolation : admin de la tontine ou super-admin) :
  * bilan par tour, mensuel, annuel, historique des contributions et des pénalités, rapport final
- * de clôture (US-4.9). Formats JSON, CSV et PDF. Lecture seule (A-28).
+ * de clôture (US-4.9). Formats JSON, CSV et PDF. Calculés sur les projections du reporting
+ * (étape 6, A-54) : aucune lecture des tables du domaine Tontine ; l'autorisation reste un
+ * contrôle synchrone exact auprès du domaine (`getAdministered`).
  */
 @Injectable()
 export class ReportsService {
@@ -60,12 +64,23 @@ export class ReportsService {
   }
 
   private async load(tontineId: string) {
-    const t = await this.prisma.tontine.findUniqueOrThrow({ where: { id: tontineId } });
-    const cycles: CycleWithContribs[] = await this.prisma.tontineCycle.findMany({
-      where: { tontineId },
-      orderBy: { number: 'asc' },
-      include: { contributions: { orderBy: { dueDate: 'asc' } } },
-    });
+    const t = await this.prisma.rptTontine.findUnique({ where: { id: tontineId } });
+    if (!t)
+      throw new DomainError(
+        'CONFLICT',
+        'Rapport en cours de préparation : réessayez dans un instant',
+      );
+    const [rows, contributions] = await Promise.all([
+      this.prisma.rptCycle.findMany({ where: { tontineId }, orderBy: { number: 'asc' } }),
+      this.prisma.rptContribution.findMany({
+        where: { tontineId },
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
+      }),
+    ]);
+    const cycles: CycleWithContribs[] = rows.map((c) => ({
+      ...c,
+      contributions: contributions.filter((x) => x.cycleId === c.id),
+    }));
     const ids = [
       ...new Set(
         cycles.flatMap((c) => [
@@ -288,7 +303,7 @@ export class ReportsService {
       }
       case 'FINAL': {
         const reserve = t.reserveWalletId
-          ? await this.prisma.wallet.findUnique({ where: { id: t.reserveWalletId } })
+          ? await this.prisma.rptWallet.findUnique({ where: { id: t.reserveWalletId } })
           : null;
         const table = this.cycleTable(t, cycles, name);
         const summary: Array<[string, string]> = [
@@ -394,12 +409,20 @@ export class ReportsService {
     };
   }
 
-  /** US-4.9 §4 — rapport final PDF généré et archivé automatiquement à la clôture. */
+  /**
+   * US-4.9 §4 — rapport final PDF généré et archivé automatiquement à la clôture. Les
+   * projections peuvent être en retard sur l'événement de clôture (topics distincts) : tant que
+   * tous les tours n'y sont pas terminés, l'archivage échoue et sera relancé (redélivrance).
+   */
   async archiveFinalReport(tontineId: string): Promise<{ id: string; sha256: string }> {
     const existing = await this.prisma.generatedReport.findFirst({
       where: { tontineId, kind: 'FINAL', format: 'pdf' },
     });
     if (existing) return { id: existing.id, sha256: existing.sha256 };
+    const t = await this.prisma.rptTontine.findUnique({ where: { id: tontineId } });
+    const done = await this.prisma.rptCycle.count({ where: { tontineId, status: 'COMPLETED' } });
+    if (!t || done < (t.totalCycles ?? 0))
+      throw new Error(`Projections de la tontine ${tontineId} incomplètes : archivage différé`);
     const { doc } = await this.build(tontineId, { kind: 'FINAL', format: 'pdf' });
     const pdf = await toPdf(doc);
     const sha256 = createHash('sha256').update(pdf).digest('hex');

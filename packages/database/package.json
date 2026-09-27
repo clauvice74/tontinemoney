@@ -20,7 +20,8 @@
     "db:reset": "dotenv -e ../../.env -- node scripts/migrate.mjs reset",
     "db:migrate:check": "dotenv -e ../../.env -- node scripts/migrate.mjs diff",
     "db:roles": "dotenv -e ../../.env -- node scripts/service-roles.mjs",
-    "db:roles:test": "dotenv -e ../../.env -- node scripts/service-roles.mjs --test"
+    "db:roles:test": "dotenv -e ../../.env -- node scripts/service-roles.mjs --test",
+    "db:snapshots:republish": "dotenv -e ../../.env -- node scripts/cdc-snapshots.mjs --republish"
   },
   "dependencies": {
     "@node-rs/bcrypt": "1.10.7",

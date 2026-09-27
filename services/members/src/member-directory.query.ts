@@ -28,7 +28,8 @@ interface Row {
 
 /**
  * Vue de lecture « membres d'une tontine » (US-2.3).
- * Jointure en lecture seule sur `ton_members` (vue de lecture autorisée, docs/architecture.md §4).
+ * Adhésions lues dans la projection `mbr_tontine_memberships` (instantanés publiés par le domaine
+ * Tontine, étape 6, A-54) : aucune lecture du schéma `tontines`.
  * Aucune donnée sensible (adresse, documents KYC) n'est sélectionnée.
  */
 @Injectable()
@@ -50,8 +51,8 @@ export class MemberDirectoryQuery {
     const rows = await this.prisma.$queryRaw<Row[]>`
       SELECT ${sortExpr} AS "sortKey", m."id", m."firstName", m."lastName", m."email"::text AS "email", m."phone",
              m."status"::text AS "status", m."kycLevel"::text AS "kycLevel", m."createdAt", m."lastActivityAt",
-             tm."status"::text AS "membershipStatus", tm."role"::text AS "membershipRole", tm."joinedAt"
-      FROM "ton_members" tm JOIN "mbr_members" m ON m."id" = tm."memberId"
+             tm."status" AS "membershipStatus", tm."role" AS "membershipRole", tm."joinedAt"
+      FROM "mbr_tontine_memberships" tm JOIN "mbr_members" m ON m."id" = tm."memberId"
       WHERE ${where} ${cursorFilter}
       ${order}
       LIMIT ${q.limit + 1}`;
@@ -62,7 +63,7 @@ export class MemberDirectoryQuery {
 
     const counts = await this.prisma.$queryRaw<Array<{ status: string; n: bigint }>>`
       SELECT m."status"::text AS status, count(*)::bigint AS n
-      FROM "ton_members" tm JOIN "mbr_members" m ON m."id" = tm."memberId"
+      FROM "mbr_tontine_memberships" tm JOIN "mbr_members" m ON m."id" = tm."memberId"
       WHERE tm."tontineId" = ${tontineId}::uuid AND tm."status" <> 'REMOVED'
       GROUP BY m."status"`;
     const byStatus = Object.fromEntries(counts.map((c) => [c.status, Number(c.n)]));

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { type EventEnvelope } from '@tontine/events';
-import { OnEvent } from '@tontine/platform';
+import { OnEvent, PrismaService, type ProjectionDelegate, applySnapshot } from '@tontine/platform';
 import { ContributionSaga } from './sagas/contribution.saga';
 import { PaymentSettlementSaga } from './sagas/payment-settlement.saga';
 import { TontinePayoutSaga } from './sagas/tontine-payout.saga';
@@ -12,7 +12,18 @@ export class TransactionsConsumers {
     private readonly settlement: PaymentSettlementSaga,
     private readonly payouts: TontinePayoutSaga,
     private readonly contributions: ContributionSaga,
+    private readonly prisma: PrismaService,
   ) {}
+
+  /** Projection des paiements PSP pour la réconciliation interne (étape 6, A-54). */
+  @OnEvent('payment.snapshot', { consumer: 'transactions.payment-projection' })
+  async onPaymentSnapshot(e: EventEnvelope<'payment.snapshot'>): Promise<void> {
+    await applySnapshot(
+      this.prisma.transactionPaymentView as unknown as ProjectionDelegate,
+      { bigint: ['amountMinor'], pick: ['status', 'amountMinor', 'transactionId'] },
+      e.payload,
+    );
+  }
 
   @OnEvent('tontine.contribution.payment.requested', { consumer: 'transactions.contribution' })
   async onContributionRequested(

@@ -11,6 +11,28 @@ const minor = z.string().regex(/^-?\d+$/);
 const currency = z.string().length(3);
 const nullableId = id.nullable();
 
+const isoTs = z.string().datetime();
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+/**
+ * Instantané d'état publié par déclencheur (étape 6, A-54) : état complet des colonnes publiées,
+ * `deleted` pour une suppression, `sourceVersion` pour ordonner les instantanés d'une entité.
+ */
+function snapshot<S extends z.ZodRawShape>(shape: S) {
+  return z.object({
+    id,
+    ...shape,
+    deleted: z.boolean(),
+    capturedAt: isoTs,
+    sourceVersion: minor,
+  });
+}
+
+/** Fait en ajout seul publié par déclencheur (mouvement, violation) : jamais modifié. */
+function recorded<S extends z.ZodRawShape>(shape: S) {
+  return z.object({ id, ...shape, capturedAt: isoTs, sourceVersion: minor });
+}
+
 function def<P extends z.ZodTypeAny>(producer: string, payload: P, version = 1) {
   return { producer, version, payload };
 }
@@ -660,6 +682,141 @@ export const EVENT_CATALOG = {
   'report.generated': def(
     'administration',
     z.object({ reportId: z.string(), tontineId: nullableId, kind: z.string() }),
+  ),
+
+  // --- instantanés d'état (étape 6, A-54) : packages/database/scripts/cdc-snapshots.mjs ---
+  'tontine.snapshot': def(
+    'tontines',
+    snapshot({
+      name: z.string(),
+      status: z.string(),
+      currency,
+      frequency: z.string(),
+      contributionMinor: minor,
+      totalCycles: z.number().int().nullable(),
+      reserveWalletId: nullableId,
+      drawProof: z.string().nullable(),
+      createdAt: isoTs,
+      startedAt: isoTs.nullable(),
+      completedAt: isoTs.nullable(),
+      archivedUntil: isoTs.nullable(),
+    }),
+  ),
+  'tontine.cycle.snapshot': def(
+    'tontines',
+    snapshot({
+      tontineId: id,
+      number: z.number().int(),
+      status: z.string(),
+      beneficiaryId: nullableId,
+      dueDate: isoDate,
+      expectedMinor: minor,
+      collectedMinor: minor,
+      payoutMinor: minor.nullable(),
+      partialPayout: z.boolean(),
+      completedAt: isoTs.nullable(),
+    }),
+  ),
+  'tontine.contribution.snapshot': def(
+    'tontines',
+    snapshot({
+      tontineId: id,
+      cycleId: id,
+      memberId: id,
+      status: z.string(),
+      amountMinor: minor,
+      penaltyMinor: minor,
+      penaltyPaid: z.boolean(),
+      dueDate: isoDate,
+      paidAt: isoTs.nullable(),
+    }),
+  ),
+  'tontine.membership.snapshot': def(
+    'tontines',
+    snapshot({
+      tontineId: id,
+      memberId: id,
+      role: z.string(),
+      status: z.string(),
+      position: z.number().int().nullable(),
+      joinedAt: isoTs,
+    }),
+  ),
+  'wallet.snapshot': def(
+    'wallets',
+    snapshot({
+      ownerType: z.string(),
+      status: z.string(),
+      currency,
+      balanceMinor: minor,
+      blockedMinor: minor,
+    }),
+  ),
+  'wallet.movement.recorded': def(
+    'wallets',
+    recorded({ walletId: id, type: z.string(), amountMinor: minor, createdAt: isoTs }),
+  ),
+  'transaction.snapshot': def(
+    'transactions',
+    snapshot({
+      type: z.string(),
+      status: z.string(),
+      currency,
+      amountMinor: minor,
+      createdAt: isoTs,
+      completedAt: isoTs.nullable(),
+    }),
+  ),
+  'reconciliation.report.snapshot': def(
+    'transactions',
+    snapshot({
+      kind: z.string(),
+      businessDate: isoDate,
+      status: z.string(),
+      discrepancyCount: z.number().int(),
+      alert: z.boolean(),
+      createdAt: isoTs,
+    }),
+  ),
+  'payment.snapshot': def(
+    'payments',
+    snapshot({
+      type: z.string(),
+      status: z.string(),
+      currency,
+      amountMinor: minor,
+      feeMinor: minor,
+      transactionId: nullableId,
+      createdAt: isoTs,
+      completedAt: isoTs.nullable(),
+    }),
+  ),
+  'member.snapshot': def('members', snapshot({ status: z.string(), kycLevel: z.string() })),
+  'kyc.request.snapshot': def('kyc', snapshot({ status: z.string(), submittedAt: isoTs })),
+  'kyc.aml.match.snapshot': def(
+    'kyc',
+    snapshot({ listName: z.string(), status: z.string(), createdAt: isoTs }),
+  ),
+  'compliance.violation.recorded': def(
+    'compliance',
+    recorded({
+      ruleCode: z.string(),
+      action: z.string(),
+      operationType: z.string(),
+      createdAt: isoTs,
+    }),
+  ),
+  'compliance.case.snapshot': def(
+    'compliance',
+    snapshot({
+      type: z.string(),
+      status: z.string(),
+      severity: z.string(),
+      outcome: z.string().nullable(),
+      assigneeId: nullableId,
+      openedAt: isoTs,
+      closedAt: isoTs.nullable(),
+    }),
   ),
 } as const;
 
