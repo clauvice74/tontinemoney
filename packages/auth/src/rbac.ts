@@ -16,6 +16,7 @@ export const PERMISSIONS = [
   'platform.wallets.manage',
   'platform.payments.refund',
   'platform.reconciliation.view',
+  'platform.reports.view',
   'platform.tontines.pause',
   'compliance.rules.manage',
   'compliance.cases.manage',

@@ -56,3 +56,54 @@ export type ReportQuery = z.infer<typeof reportQuerySchema>;
 export const flagFraudSchema = z.object({ memberId: uuidSchema, reason: reasonSchema });
 export const liftSuspensionSchema = z.object({ reason: reasonSchema });
 export const unlockUserSchema = z.object({ reason: reasonSchema });
+
+/** Rapports consolidés de la plateforme (super-admin). */
+export const PLATFORM_REPORTS = [
+  'financial',
+  'contributions',
+  'wallets',
+  'compliance',
+  'tontines',
+] as const;
+export type PlatformReport = (typeof PLATFORM_REPORTS)[number];
+
+const platformReportFields = {
+  from: isoDateSchema.optional(),
+  to: isoDateSchema.optional(),
+  currency: z
+    .string()
+    .regex(/^[A-Za-z]{3}$/, 'Code devise ISO 4217 attendu')
+    .transform((v) => v.toUpperCase())
+    .optional(),
+};
+
+/** Période par défaut : du 1er du mois courant à aujourd'hui ; 366 jours au plus. */
+const periodCheck = <T extends { from?: string | undefined; to?: string | undefined }>(
+  q: T,
+  ctx: z.RefinementCtx,
+) => {
+  if (q.from && q.to) {
+    const span = (Date.parse(q.to) - Date.parse(q.from)) / 86_400_000;
+    if (span < 0)
+      ctx.addIssue({ code: 'custom', path: ['to'], message: '« to » précède « from »' });
+    if (span > 366)
+      ctx.addIssue({ code: 'custom', path: ['to'], message: 'Période limitée à 366 jours' });
+  }
+};
+
+export const platformReportQuerySchema = z
+  .object({ ...platformReportFields, format: z.enum(['json', 'csv', 'pdf']).default('json') })
+  .strict()
+  .superRefine(periodCheck);
+export type PlatformReportQuery = z.infer<typeof platformReportQuerySchema>;
+
+/** `GET /reports/export` : téléchargement CSV (défaut) ou PDF d'un rapport. */
+export const platformReportExportSchema = z
+  .object({
+    ...platformReportFields,
+    report: z.enum(PLATFORM_REPORTS),
+    format: z.enum(['csv', 'pdf']).default('csv'),
+  })
+  .strict()
+  .superRefine(periodCheck);
+export type PlatformReportExport = z.infer<typeof platformReportExportSchema>;

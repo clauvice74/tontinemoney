@@ -139,6 +139,13 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 | POST 🔒     | `/risk-score` · `/fraud/analyze`                                    | `{memberId}` → `{score, level, factors:[{code, points, detail}], computedAt}` (A-41, lecture seule, journalisé)                                                                        |
 | POST 🔒     | `/aml/check` · `/sanctions/check` · `/pep/check`                    | `kyc.review` : `{memberId}` → `{scope, clear, newMatches, whitelisted, hits:[{matchId, listName, entryName, score, status, isNew}]}` ; nouvelles correspondances → revue KYC + dossier |
 
+## Rapports plateforme (super-admin, `platform.reports.view`)
+
+| Méthode | Route                                                                                                         | Corps / réponse                                                                                                                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET 🔒  | `/reports/financial` · `/contributions` · `/wallets` · `/compliance` · `/tontines` `?from&to&currency&format` | période par défaut : 1er du mois → aujourd’hui (366 j max) ; `format=json` → `{report, title, period, filters, generatedAt, rows:[{section, indicator, currency, count, amountMinor, amount, ratePercent}]}` ; `csv` / `pdf` en pièce jointe. Agrégats uniquement, génération journalisée |
+| GET 🔒  | `/reports/export?report&from&to&currency&format`                                                              | `report` ∈ financial, contributions, wallets, compliance, tontines ; `format` csv (défaut) ou pdf                                                                                                                                                                                         |
+
 ## Exploitation
 
 | GET 🔒 | `/admin/jobs` · POST `/admin/jobs/{name}/run`            | tâches planifiées |

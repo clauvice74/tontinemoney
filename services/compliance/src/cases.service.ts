@@ -112,7 +112,12 @@ export class ComplianceCasesService {
         const created = !c;
         if (!c) {
           c = await tx.complianceCase.create({
-            data: { memberId: input.memberId, type: input.caseType, severity: input.severity },
+            data: {
+              memberId: input.memberId,
+              type: input.caseType,
+              severity: input.severity,
+              openedAt: this.clock.now(),
+            },
           });
         }
         await tx.complianceCaseAlert.create({
@@ -122,6 +127,7 @@ export class ComplianceCasesService {
             sourceId: input.sourceId,
             summary: input.summary as object,
             open: input.open,
+            createdAt: this.clock.now(),
           },
         });
 
