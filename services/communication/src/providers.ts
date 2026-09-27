@@ -18,9 +18,22 @@ export interface ProviderResult {
   providerRef: string;
 }
 
+/** Contexte consigné au journal de livraison (limite anti-spam par destinataire). */
+export interface DeliveryContext {
+  notificationId?: string | null;
+  recipientId?: string | null;
+  priority?: string | null;
+}
+
+const logContext = (c: DeliveryContext = {}) => ({
+  notificationId: c.notificationId ?? null,
+  recipientId: c.recipientId ?? null,
+  priority: c.priority ?? null,
+});
+
 export abstract class SmsProvider {
   abstract readonly name: string;
-  abstract send(to: string, body: string, notificationId?: string): Promise<ProviderResult>;
+  abstract send(to: string, body: string, context?: DeliveryContext): Promise<ProviderResult>;
 }
 
 export abstract class EmailProvider {
@@ -30,13 +43,13 @@ export abstract class EmailProvider {
     subject: string,
     text: string,
     html: string,
-    notificationId?: string,
+    context?: DeliveryContext,
   ): Promise<ProviderResult>;
 }
 
 /**
  * Fournisseur SMS simulé (A-25) : aucun envoi réel. Les messages sont consignés dans
- * `ntf_outbound_messages` (console de dev). Échec déterministe pour les numéros finissant
+ * `communication.ntf_outbound_messages` (console de dev). Échec déterministe pour les numéros finissant
  * par « 0000 » ou lorsque le simulateur est mis hors service (tests de résilience).
  */
 @Injectable()
@@ -53,11 +66,11 @@ export class SimulatedSmsProvider extends SmsProvider {
     this.available = available;
   }
 
-  async send(to: string, body: string, notificationId?: string): Promise<ProviderResult> {
+  async send(to: string, body: string, context?: DeliveryContext): Promise<ProviderResult> {
     const failing = !this.available || to.endsWith('0000');
     const msg = await this.prisma.outboundMessage.create({
       data: {
-        notificationId: notificationId ?? null,
+        ...logContext(context),
         channel: 'SMS',
         recipient: to,
         body,
@@ -95,7 +108,7 @@ export class SmtpEmailProvider extends EmailProvider {
     subject: string,
     text: string,
     html: string,
-    notificationId?: string,
+    context?: DeliveryContext,
   ): Promise<ProviderResult> {
     try {
       const info = await this.transporter.sendMail({
@@ -107,7 +120,7 @@ export class SmtpEmailProvider extends EmailProvider {
       });
       const msg = await this.prisma.outboundMessage.create({
         data: {
-          notificationId: notificationId ?? null,
+          ...logContext(context),
           channel: 'EMAIL',
           recipient: to,
           subject,
@@ -121,7 +134,7 @@ export class SmtpEmailProvider extends EmailProvider {
     } catch (e) {
       await this.prisma.outboundMessage.create({
         data: {
-          notificationId: notificationId ?? null,
+          ...logContext(context),
           channel: 'EMAIL',
           recipient: to,
           subject,
@@ -155,11 +168,11 @@ export class MemoryEmailProvider extends EmailProvider {
     subject: string,
     text: string,
     _html: string,
-    notificationId?: string,
+    context?: DeliveryContext,
   ): Promise<ProviderResult> {
     const msg = await this.prisma.outboundMessage.create({
       data: {
-        notificationId: notificationId ?? null,
+        ...logContext(context),
         channel: 'EMAIL',
         recipient: to,
         subject,

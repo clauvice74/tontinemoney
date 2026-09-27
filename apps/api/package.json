@@ -31,6 +31,7 @@
     "@tontine/administration": "workspace:*",
     "@tontine/auth": "workspace:*",
     "@tontine/auth-service": "workspace:*",
+    "@tontine/communication": "workspace:*",
     "@tontine/compliance": "workspace:*",
     "@tontine/config": "workspace:*",
     "@tontine/contracts": "workspace:*",

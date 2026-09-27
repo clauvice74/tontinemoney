@@ -595,3 +595,11 @@ export const ReconciliationKind = {
 } as const;
 
 export type ReconciliationKind = (typeof ReconciliationKind)[keyof typeof ReconciliationKind];
+
+export const DeliveryChannel = {
+  SMS: 'SMS',
+  EMAIL: 'EMAIL',
+  PUSH: 'PUSH',
+} as const;
+
+export type DeliveryChannel = (typeof DeliveryChannel)[keyof typeof DeliveryChannel];

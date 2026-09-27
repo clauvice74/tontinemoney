@@ -8,7 +8,7 @@ import {
   type PlatformRole,
 } from '@tontine/contracts';
 import { truncateAll } from '@tontine/database';
-import { SimulatedSmsProvider } from '@tontine/notifications';
+import { SimulatedSmsProvider } from '@tontine/communication';
 import {
   FixedClock,
   JobRegistry,

@@ -7,6 +7,7 @@ import {
 import { APP_GUARD } from '@nestjs/core';
 import { AdministrationModule, AdministrationPortsModule } from '@tontine/administration';
 import { AuthModule } from '@tontine/auth-service';
+import { CommunicationModule } from '@tontine/communication';
 import { ComplianceModule } from '@tontine/compliance';
 import { KycModule } from '@tontine/kyc';
 import { MembersModule, MembersPortsModule } from '@tontine/members';
@@ -38,6 +39,7 @@ export class AppModule implements NestModule {
         TontinesPortsModule,
         AdministrationPortsModule,
         // Domaines
+        CommunicationModule,
         NotificationsModule,
         AuthModule,
         MembersModule,

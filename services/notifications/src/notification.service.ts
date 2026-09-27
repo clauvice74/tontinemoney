@@ -1,11 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { type NotificationChannel, type NotificationPriority } from '@tontine/contracts';
 import { type DbClient, type TxClient } from '@tontine/database';
-import { AuditService, Clock, OutboxService, PrismaService, UnitOfWork } from '@tontine/platform';
+import {
+  AuditService,
+  Clock,
+  COMMUNICATION,
+  type CommunicationPort,
+  OutboxService,
+  PrismaService,
+  UnitOfWork,
+} from '@tontine/platform';
 import { type RecipientDirectory, type RecipientProfile, RECIPIENT_DIRECTORY } from './ports';
 import { nextAllowedTime } from './quiet-hours';
-import { type TemplateVars, emailHtml, renderTemplate } from './render';
-import { EmailProvider, SmsProvider } from './providers';
+import { type TemplateVars, renderTemplate } from './render';
 import { TEMPLATES, type TemplateKey } from './templates';
 
 export interface NotifyInput {
@@ -56,9 +63,8 @@ export class NotificationService {
     private readonly uow: UnitOfWork,
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
-    private readonly sms: SmsProvider,
-    private readonly email: EmailProvider,
     private readonly audit: AuditService,
+    @Inject(COMMUNICATION) private readonly communication: CommunicationPort,
     @Inject(RECIPIENT_DIRECTORY) private readonly directory: RecipientDirectory,
   ) {}
 
@@ -216,16 +222,22 @@ export class NotificationService {
             },
           })
         : null;
-      try {
-        if (channel === 'SMS') await this.sms.send(to, full.body, record?.id);
-        else
-          await this.email.send(
-            to,
-            full.title,
-            full.body,
-            emailHtml(full.title, full.body),
-            record?.id,
-          );
+      const result =
+        channel === 'SMS' || channel === 'EMAIL'
+          ? await this.communication.deliver({
+              channel,
+              to,
+              subject: full.title,
+              body: full.body,
+              notificationId: record?.id ?? null,
+              recipientId: input.userId ?? null,
+            })
+          : ({
+              status: 'FAILED',
+              retryable: false,
+              reason: `Canal ${channel} non pris en charge`,
+            } as const);
+      if (result.status === 'SENT') {
         delivered.push(channel);
         if (record) {
           await this.prisma.notification.update({
@@ -233,9 +245,9 @@ export class NotificationService {
             data: { status: 'SENT', sentAt: this.clock.now() },
           });
         }
-      } catch (e) {
+      } else {
         failed.push(channel);
-        const reason = e instanceof Error ? e.message : String(e);
+        const reason = result.reason;
         this.logger.warn(`Envoi ${channel} échoué (${input.template}) : ${reason}`);
         if (record) {
           await this.prisma.notification.update({

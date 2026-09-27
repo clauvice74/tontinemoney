@@ -1,16 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   Clock,
-  CONFIGURATION,
-  type ConfigurationPort,
+  COMMUNICATION,
+  type CommunicationPort,
   OutboxService,
   PrismaService,
   ScheduledJob,
   UnitOfWork,
 } from '@tontine/platform';
 import { RECIPIENT_DIRECTORY, type RecipientDirectory } from './ports';
-import { EmailProvider, ProviderError, SmsProvider } from './providers';
-import { emailHtml } from './render';
 
 export const MAX_DELIVERY_ATTEMPTS = 3;
 const BACKOFF_SECONDS = [30, 120, 600];
@@ -39,10 +37,8 @@ export class DeliveryService {
     private readonly uow: UnitOfWork,
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
-    private readonly sms: SmsProvider,
-    private readonly email: EmailProvider,
     @Inject(RECIPIENT_DIRECTORY) private readonly directory: RecipientDirectory,
-    @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
+    @Inject(COMMUNICATION) private readonly communication: CommunicationPort,
   ) {}
 
   @ScheduledJob({
@@ -80,31 +76,24 @@ export class DeliveryService {
     return { email: m?.email ?? null, phone: m?.phone ?? null };
   }
 
+  /**
+   * Une tentative : IN_APP est disponible immédiatement ; les autres canaux passent par
+   * communication-service (comment envoyer). Ici : quoi et quand (réessai avec backoff, DLQ,
+   * repli de canal, report anti-spam).
+   */
   private async deliverOne(n: ClaimedNotification): Promise<boolean> {
-    const contact = await this.contactOf(n.recipientId);
-    try {
-      if (n.channel === 'SMS') {
-        if (!contact.phone) throw new ProviderError('Aucun numéro', false);
-        if (
-          n.priority !== 'URGENT' &&
-          (await this.smsSentToday(n.recipientId)) >=
-            (await this.settings.get('notifications.sms.dailyLimit'))
-        ) {
-          await this.prisma.notification.update({
-            where: { id: n.id },
-            data: {
-              status: 'SKIPPED',
-              lastError: 'Limite anti-spam de 10 SMS/jour atteinte (R-COM-03)',
-            },
+    const result =
+      n.channel === 'IN_APP'
+        ? ({ status: 'SENT', providerRef: null } as const)
+        : await this.communication.send({
+            notificationId: n.id,
+            recipientId: n.recipientId,
+            channel: n.channel,
+            priority: n.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+            subject: n.title,
+            body: n.body,
           });
-          return false;
-        }
-        await this.sms.send(contact.phone, n.body, n.id);
-      } else if (n.channel === 'EMAIL') {
-        if (!contact.email) throw new ProviderError('Aucun email', false);
-        await this.email.send(contact.email, n.title, n.body, emailHtml(n.title, n.body), n.id);
-      }
-      // PUSH : simulé (aucune application mobile en V1) ; IN_APP : déjà disponible.
+    if (result.status === 'SENT') {
       await this.uow.run(async (tx) => {
         await tx.notification.update({
           where: { id: n.id },
@@ -118,32 +107,37 @@ export class DeliveryService {
         });
       });
       return true;
-    } catch (e) {
-      const retryable = !(e instanceof ProviderError) || e.retryable;
-      const dead = !retryable || n.attempts >= MAX_DELIVERY_ATTEMPTS;
-      const reason = e instanceof Error ? e.message : String(e);
-      await this.uow.run(async (tx) => {
-        await tx.notification.update({
-          where: { id: n.id },
-          data: {
-            status: dead ? 'DEAD' : 'PENDING',
-            lastError: reason,
-            scheduledFor: new Date(
-              this.clock.now().getTime() + (BACKOFF_SECONDS[n.attempts - 1] ?? 600) * 1000,
-            ),
-          },
-        });
-        await this.outbox.add(tx, {
-          type: 'notification.failed',
-          aggregateType: 'notification',
-          aggregateId: n.id,
-          payload: { notificationId: n.id, channel: n.channel, attempts: n.attempts, dead },
-        });
-        if (dead) await this.fallback(tx, n, contact);
+    }
+    if (result.status === 'THROTTLED') {
+      await this.prisma.notification.update({
+        where: { id: n.id },
+        data: { status: 'SKIPPED', lastError: result.reason },
       });
-      if (dead) this.logger.warn(`Notification ${n.id} (${n.channel}) en DLQ : ${reason}`);
       return false;
     }
+    const dead = !result.retryable || n.attempts >= MAX_DELIVERY_ATTEMPTS;
+    const contact = dead ? await this.contactOf(n.recipientId) : null;
+    await this.uow.run(async (tx) => {
+      await tx.notification.update({
+        where: { id: n.id },
+        data: {
+          status: dead ? 'DEAD' : 'PENDING',
+          lastError: result.reason,
+          scheduledFor: new Date(
+            this.clock.now().getTime() + (BACKOFF_SECONDS[n.attempts - 1] ?? 600) * 1000,
+          ),
+        },
+      });
+      await this.outbox.add(tx, {
+        type: 'notification.failed',
+        aggregateType: 'notification',
+        aggregateId: n.id,
+        payload: { notificationId: n.id, channel: n.channel, attempts: n.attempts, dead },
+      });
+      if (dead && contact) await this.fallback(tx, n, contact);
+    });
+    if (dead) this.logger.warn(`Notification ${n.id} (${n.channel}) en DLQ : ${result.reason}`);
+    return false;
   }
 
   /** Repli sur le canal alternatif après échec définitif (SMS ⇄ EMAIL). */
@@ -176,18 +170,6 @@ export class DeliveryService {
         body: alt === 'SMS' ? original.body.slice(0, 160) : original.body,
         dedupeKey,
         scheduledFor: this.clock.now(),
-      },
-    });
-  }
-
-  private async smsSentToday(recipientId: string): Promise<number> {
-    return this.prisma.notification.count({
-      where: {
-        recipientId,
-        channel: 'SMS',
-        status: 'SENT',
-        priority: { not: 'URGENT' },
-        sentAt: { gte: new Date(this.clock.now().getTime() - 86_400_000) },
       },
     });
   }

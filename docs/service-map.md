@@ -62,21 +62,21 @@ flowchart TB
 
 ## 3. Responsabilités
 
-| Service               | Package actuel                                 | Responsabilités                                                                     | Tables (schéma cible)              |
-| --------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------- |
-| api-gateway           | — (étape 1)                                    | Routage, JWT, rate limiting, correlation ID, erreurs, versionnement                 | aucune                             |
-| payment-gateway       | — (étape 2)                                    | Réception et vérification des webhooks, normalisation                               | `pgw` (journal des webhooks reçus) |
-| auth-service          | `services/auth`                                | Inscription, connexion, OTP, MFA, sessions, refresh rotatif, verrouillage           | `auth`                             |
-| member-service        | `services/members`                             | Profil, préférences, statut, suspension, historique                                 | `member`                           |
-| kyc-service           | `services/kyc`                                 | Dossiers, documents chiffrés, OCR / face match simulés, doublons, revue, expiration | `kyc`                              |
-| compliance-service    | `services/compliance`                          | Règles, AML / PEP / sanctions, score de risque, dossiers, fraude                    | `compliance`                       |
-| tontine-service       | `services/tontines`                            | Tontines, invitations, cycles, contributions, pénalités, bénéficiaires, clôture     | `tontine`                          |
-| wallet-service        | `services/wallets`                             | Wallets, grand livre en partie double, holds, capture, reversal                     | `wallet`                           |
-| transaction-service   | `services/transactions`                        | Orchestration des sagas, machine à états, réconciliation interne                    | `transaction`                      |
-| payment-service       | `services/payments`                            | Dépôts, retraits, remboursements, fournisseurs, réconciliation PSP                  | `payment`                          |
-| notification-service  | `services/notifications`                       | Quoi envoyer, à qui, selon les préférences                                          | `notification`                     |
-| communication-service | extrait de `services/notifications` (étape 8)  | Comment envoyer : canaux, fournisseurs, réessais                                    | `communication`                    |
-| reporting-service     | extrait de `services/administration` (étape 6) | Projections et rapports                                                             | `reporting`                        |
-| admin-service         | `services/administration`                      | Tableau de bord, configurations, administrateurs, audit                             | `admin`                            |
+| Service               | Package actuel                                 | Responsabilités                                                                        | Tables (schéma cible)              |
+| --------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------- |
+| api-gateway           | — (étape 1)                                    | Routage, JWT, rate limiting, correlation ID, erreurs, versionnement                    | aucune                             |
+| payment-gateway       | — (étape 2)                                    | Réception et vérification des webhooks, normalisation                                  | `pgw` (journal des webhooks reçus) |
+| auth-service          | `services/auth`                                | Inscription, connexion, OTP, MFA, sessions, refresh rotatif, verrouillage              | `auth`                             |
+| member-service        | `services/members`                             | Profil, préférences, statut, suspension, historique                                    | `member`                           |
+| kyc-service           | `services/kyc`                                 | Dossiers, documents chiffrés, OCR / face match simulés, doublons, revue, expiration    | `kyc`                              |
+| compliance-service    | `services/compliance`                          | Règles, AML / PEP / sanctions, score de risque, dossiers, fraude                       | `compliance`                       |
+| tontine-service       | `services/tontines`                            | Tontines, invitations, cycles, contributions, pénalités, bénéficiaires, clôture        | `tontine`                          |
+| wallet-service        | `services/wallets`                             | Wallets, grand livre en partie double, holds, capture, reversal                        | `wallet`                           |
+| transaction-service   | `services/transactions`                        | Orchestration des sagas, machine à états, réconciliation interne                       | `transaction`                      |
+| payment-service       | `services/payments`                            | Dépôts, retraits, remboursements, fournisseurs, réconciliation PSP                     | `payment`                          |
+| notification-service  | `services/notifications`                       | Quoi envoyer, à qui, selon les préférences                                             | `notification`                     |
+| communication-service | `services/communication` (étape 8c)            | Comment envoyer : adresse, fournisseurs, limite anti-spam, journal de livraison (A-51) | `communication`                    |
+| reporting-service     | extrait de `services/administration` (étape 6) | Projections et rapports                                                                | `reporting`                        |
+| admin-service         | `services/administration`                      | Tableau de bord, configurations, administrateurs, audit                                | `admin`                            |
 
 Détail des tables : `docs/data-ownership.md`. Événements : `docs/event-catalog.md`. Sagas : `docs/sagas.md`.

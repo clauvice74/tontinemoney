@@ -123,8 +123,8 @@ export const CONFIGURATION_DEFINITIONS = {
   'notifications.sms.dailyLimit': {
     schema: z.number().int().min(1).max(100),
     default: 10,
-    description: 'SMS non urgents par membre et par jour (au-delà : report au lendemain)',
-    owner: 'notifications',
+    description: 'SMS non urgents par membre et par jour (au-delà : message non envoyé, SKIPPED)',
+    owner: 'communication',
   },
   'compliance.violations.suspendAfter': {
     schema: z.number().int().min(2).max(50),

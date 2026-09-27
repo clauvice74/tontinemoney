@@ -5418,6 +5418,8 @@ export type NotificationScalarFieldEnum =
 export const OutboundMessageScalarFieldEnum = {
   id: 'id',
   notificationId: 'notificationId',
+  recipientId: 'recipientId',
+  priority: 'priority',
   channel: 'channel',
   recipient: 'recipient',
   subject: 'subject',
@@ -6491,6 +6493,22 @@ export type EnumNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputTyp
 export type ListEnumNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'NotificationStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryChannel'
+ */
+export type EnumDeliveryChannelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryChannel'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryChannel[]'
+ */
+export type ListEnumDeliveryChannelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryChannel[]'
 >;
 
 /**

@@ -13,7 +13,7 @@ import type * as Prisma from '../internal/prismaNamespace';
 
 /**
  * Model OutboundMessage
- * Messages transmis aux fournisseurs (SMS simulé, SMTP) — rapports de livraison.
+ * Journal de livraison des fournisseurs (SMS simulé, SMTP) — propriété de communication-service.
  */
 export type OutboundMessageModel =
   runtime.Types.Result.DefaultSelection<Prisma.$OutboundMessagePayload>;
@@ -27,7 +27,9 @@ export type AggregateOutboundMessage = {
 export type OutboundMessageMinAggregateOutputType = {
   id: string | null;
   notificationId: string | null;
-  channel: $Enums.NotificationChannel | null;
+  recipientId: string | null;
+  priority: string | null;
+  channel: $Enums.DeliveryChannel | null;
   recipient: string | null;
   subject: string | null;
   body: string | null;
@@ -41,7 +43,9 @@ export type OutboundMessageMinAggregateOutputType = {
 export type OutboundMessageMaxAggregateOutputType = {
   id: string | null;
   notificationId: string | null;
-  channel: $Enums.NotificationChannel | null;
+  recipientId: string | null;
+  priority: string | null;
+  channel: $Enums.DeliveryChannel | null;
   recipient: string | null;
   subject: string | null;
   body: string | null;
@@ -55,6 +59,8 @@ export type OutboundMessageMaxAggregateOutputType = {
 export type OutboundMessageCountAggregateOutputType = {
   id: number;
   notificationId: number;
+  recipientId: number;
+  priority: number;
   channel: number;
   recipient: number;
   subject: number;
@@ -70,6 +76,8 @@ export type OutboundMessageCountAggregateOutputType = {
 export type OutboundMessageMinAggregateInputType = {
   id?: true;
   notificationId?: true;
+  recipientId?: true;
+  priority?: true;
   channel?: true;
   recipient?: true;
   subject?: true;
@@ -84,6 +92,8 @@ export type OutboundMessageMinAggregateInputType = {
 export type OutboundMessageMaxAggregateInputType = {
   id?: true;
   notificationId?: true;
+  recipientId?: true;
+  priority?: true;
   channel?: true;
   recipient?: true;
   subject?: true;
@@ -98,6 +108,8 @@ export type OutboundMessageMaxAggregateInputType = {
 export type OutboundMessageCountAggregateInputType = {
   id?: true;
   notificationId?: true;
+  recipientId?: true;
+  priority?: true;
   channel?: true;
   recipient?: true;
   subject?: true;
@@ -190,7 +202,9 @@ export type OutboundMessageGroupByArgs<
 export type OutboundMessageGroupByOutputType = {
   id: string;
   notificationId: string | null;
-  channel: $Enums.NotificationChannel;
+  recipientId: string | null;
+  priority: string | null;
+  channel: $Enums.DeliveryChannel;
   recipient: string;
   subject: string | null;
   body: string;
@@ -223,7 +237,9 @@ export type OutboundMessageWhereInput = {
   NOT?: Prisma.OutboundMessageWhereInput | Prisma.OutboundMessageWhereInput[];
   id?: Prisma.UuidFilter<'OutboundMessage'> | string;
   notificationId?: Prisma.UuidNullableFilter<'OutboundMessage'> | string | null;
-  channel?: Prisma.EnumNotificationChannelFilter<'OutboundMessage'> | $Enums.NotificationChannel;
+  recipientId?: Prisma.UuidNullableFilter<'OutboundMessage'> | string | null;
+  priority?: Prisma.StringNullableFilter<'OutboundMessage'> | string | null;
+  channel?: Prisma.EnumDeliveryChannelFilter<'OutboundMessage'> | $Enums.DeliveryChannel;
   recipient?: Prisma.StringFilter<'OutboundMessage'> | string;
   subject?: Prisma.StringNullableFilter<'OutboundMessage'> | string | null;
   body?: Prisma.StringFilter<'OutboundMessage'> | string;
@@ -237,6 +253,8 @@ export type OutboundMessageWhereInput = {
 export type OutboundMessageOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   notificationId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  recipientId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder;
   channel?: Prisma.SortOrder;
   recipient?: Prisma.SortOrder;
   subject?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -255,7 +273,9 @@ export type OutboundMessageWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.OutboundMessageWhereInput[];
     NOT?: Prisma.OutboundMessageWhereInput | Prisma.OutboundMessageWhereInput[];
     notificationId?: Prisma.UuidNullableFilter<'OutboundMessage'> | string | null;
-    channel?: Prisma.EnumNotificationChannelFilter<'OutboundMessage'> | $Enums.NotificationChannel;
+    recipientId?: Prisma.UuidNullableFilter<'OutboundMessage'> | string | null;
+    priority?: Prisma.StringNullableFilter<'OutboundMessage'> | string | null;
+    channel?: Prisma.EnumDeliveryChannelFilter<'OutboundMessage'> | $Enums.DeliveryChannel;
     recipient?: Prisma.StringFilter<'OutboundMessage'> | string;
     subject?: Prisma.StringNullableFilter<'OutboundMessage'> | string | null;
     body?: Prisma.StringFilter<'OutboundMessage'> | string;
@@ -271,6 +291,8 @@ export type OutboundMessageWhereUniqueInput = Prisma.AtLeast<
 export type OutboundMessageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   notificationId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  recipientId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder;
   channel?: Prisma.SortOrder;
   recipient?: Prisma.SortOrder;
   subject?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -295,9 +317,10 @@ export type OutboundMessageScalarWhereWithAggregatesInput = {
     | Prisma.OutboundMessageScalarWhereWithAggregatesInput[];
   id?: Prisma.UuidWithAggregatesFilter<'OutboundMessage'> | string;
   notificationId?: Prisma.UuidNullableWithAggregatesFilter<'OutboundMessage'> | string | null;
+  recipientId?: Prisma.UuidNullableWithAggregatesFilter<'OutboundMessage'> | string | null;
+  priority?: Prisma.StringNullableWithAggregatesFilter<'OutboundMessage'> | string | null;
   channel?:
-    | Prisma.EnumNotificationChannelWithAggregatesFilter<'OutboundMessage'>
-    | $Enums.NotificationChannel;
+    Prisma.EnumDeliveryChannelWithAggregatesFilter<'OutboundMessage'> | $Enums.DeliveryChannel;
   recipient?: Prisma.StringWithAggregatesFilter<'OutboundMessage'> | string;
   subject?: Prisma.StringNullableWithAggregatesFilter<'OutboundMessage'> | string | null;
   body?: Prisma.StringWithAggregatesFilter<'OutboundMessage'> | string;
@@ -311,7 +334,9 @@ export type OutboundMessageScalarWhereWithAggregatesInput = {
 export type OutboundMessageCreateInput = {
   id?: string;
   notificationId?: string | null;
-  channel: $Enums.NotificationChannel;
+  recipientId?: string | null;
+  priority?: string | null;
+  channel: $Enums.DeliveryChannel;
   recipient: string;
   subject?: string | null;
   body: string;
@@ -325,7 +350,9 @@ export type OutboundMessageCreateInput = {
 export type OutboundMessageUncheckedCreateInput = {
   id?: string;
   notificationId?: string | null;
-  channel: $Enums.NotificationChannel;
+  recipientId?: string | null;
+  priority?: string | null;
+  channel: $Enums.DeliveryChannel;
   recipient: string;
   subject?: string | null;
   body: string;
@@ -339,7 +366,9 @@ export type OutboundMessageUncheckedCreateInput = {
 export type OutboundMessageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   notificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  channel?: Prisma.EnumNotificationChannelFieldUpdateOperationsInput | $Enums.NotificationChannel;
+  recipientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  channel?: Prisma.EnumDeliveryChannelFieldUpdateOperationsInput | $Enums.DeliveryChannel;
   recipient?: Prisma.StringFieldUpdateOperationsInput | string;
   subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -353,7 +382,9 @@ export type OutboundMessageUpdateInput = {
 export type OutboundMessageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   notificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  channel?: Prisma.EnumNotificationChannelFieldUpdateOperationsInput | $Enums.NotificationChannel;
+  recipientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  channel?: Prisma.EnumDeliveryChannelFieldUpdateOperationsInput | $Enums.DeliveryChannel;
   recipient?: Prisma.StringFieldUpdateOperationsInput | string;
   subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -367,7 +398,9 @@ export type OutboundMessageUncheckedUpdateInput = {
 export type OutboundMessageCreateManyInput = {
   id?: string;
   notificationId?: string | null;
-  channel: $Enums.NotificationChannel;
+  recipientId?: string | null;
+  priority?: string | null;
+  channel: $Enums.DeliveryChannel;
   recipient: string;
   subject?: string | null;
   body: string;
@@ -381,7 +414,9 @@ export type OutboundMessageCreateManyInput = {
 export type OutboundMessageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   notificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  channel?: Prisma.EnumNotificationChannelFieldUpdateOperationsInput | $Enums.NotificationChannel;
+  recipientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  channel?: Prisma.EnumDeliveryChannelFieldUpdateOperationsInput | $Enums.DeliveryChannel;
   recipient?: Prisma.StringFieldUpdateOperationsInput | string;
   subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -395,7 +430,9 @@ export type OutboundMessageUpdateManyMutationInput = {
 export type OutboundMessageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   notificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  channel?: Prisma.EnumNotificationChannelFieldUpdateOperationsInput | $Enums.NotificationChannel;
+  recipientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  channel?: Prisma.EnumDeliveryChannelFieldUpdateOperationsInput | $Enums.DeliveryChannel;
   recipient?: Prisma.StringFieldUpdateOperationsInput | string;
   subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -409,6 +446,8 @@ export type OutboundMessageUncheckedUpdateManyInput = {
 export type OutboundMessageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   notificationId?: Prisma.SortOrder;
+  recipientId?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   channel?: Prisma.SortOrder;
   recipient?: Prisma.SortOrder;
   subject?: Prisma.SortOrder;
@@ -423,6 +462,8 @@ export type OutboundMessageCountOrderByAggregateInput = {
 export type OutboundMessageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   notificationId?: Prisma.SortOrder;
+  recipientId?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   channel?: Prisma.SortOrder;
   recipient?: Prisma.SortOrder;
   subject?: Prisma.SortOrder;
@@ -437,6 +478,8 @@ export type OutboundMessageMaxOrderByAggregateInput = {
 export type OutboundMessageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   notificationId?: Prisma.SortOrder;
+  recipientId?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   channel?: Prisma.SortOrder;
   recipient?: Prisma.SortOrder;
   subject?: Prisma.SortOrder;
@@ -448,12 +491,18 @@ export type OutboundMessageMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder;
 };
 
+export type EnumDeliveryChannelFieldUpdateOperationsInput = {
+  set?: $Enums.DeliveryChannel;
+};
+
 export type OutboundMessageSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
     notificationId?: boolean;
+    recipientId?: boolean;
+    priority?: boolean;
     channel?: boolean;
     recipient?: boolean;
     subject?: boolean;
@@ -473,6 +522,8 @@ export type OutboundMessageSelectCreateManyAndReturn<
   {
     id?: boolean;
     notificationId?: boolean;
+    recipientId?: boolean;
+    priority?: boolean;
     channel?: boolean;
     recipient?: boolean;
     subject?: boolean;
@@ -492,6 +543,8 @@ export type OutboundMessageSelectUpdateManyAndReturn<
   {
     id?: boolean;
     notificationId?: boolean;
+    recipientId?: boolean;
+    priority?: boolean;
     channel?: boolean;
     recipient?: boolean;
     subject?: boolean;
@@ -508,6 +561,8 @@ export type OutboundMessageSelectUpdateManyAndReturn<
 export type OutboundMessageSelectScalar = {
   id?: boolean;
   notificationId?: boolean;
+  recipientId?: boolean;
+  priority?: boolean;
   channel?: boolean;
   recipient?: boolean;
   subject?: boolean;
@@ -524,6 +579,8 @@ export type OutboundMessageOmit<
 > = runtime.Types.Extensions.GetOmit<
   | 'id'
   | 'notificationId'
+  | 'recipientId'
+  | 'priority'
   | 'channel'
   | 'recipient'
   | 'subject'
@@ -545,7 +602,12 @@ export type $OutboundMessagePayload<
     {
       id: string;
       notificationId: string | null;
-      channel: $Enums.NotificationChannel;
+      /**
+       * Destinataire (membre) : limite anti-spam par personne, quel que soit le numéro
+       */
+      recipientId: string | null;
+      priority: string | null;
+      channel: $Enums.DeliveryChannel;
       recipient: string;
       subject: string | null;
       body: string;
@@ -1128,7 +1190,9 @@ export interface Prisma__OutboundMessageClient<
 export interface OutboundMessageFieldRefs {
   readonly id: Prisma.FieldRef<'OutboundMessage', 'String'>;
   readonly notificationId: Prisma.FieldRef<'OutboundMessage', 'String'>;
-  readonly channel: Prisma.FieldRef<'OutboundMessage', 'NotificationChannel'>;
+  readonly recipientId: Prisma.FieldRef<'OutboundMessage', 'String'>;
+  readonly priority: Prisma.FieldRef<'OutboundMessage', 'String'>;
+  readonly channel: Prisma.FieldRef<'OutboundMessage', 'DeliveryChannel'>;
   readonly recipient: Prisma.FieldRef<'OutboundMessage', 'String'>;
   readonly subject: Prisma.FieldRef<'OutboundMessage', 'String'>;
   readonly body: Prisma.FieldRef<'OutboundMessage', 'String'>;

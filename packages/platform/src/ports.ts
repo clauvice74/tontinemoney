@@ -97,3 +97,46 @@ export interface ConfigurationPort {
 }
 
 export const CONFIGURATION = Symbol('CONFIGURATION');
+
+/**
+ * Communication (comment envoyer, A-51) : résolution de l'adresse, fournisseur du canal, limite
+ * anti-spam SMS, journal de livraison. Une tentative par appel ; la politique de réessai, la
+ * file d'attente et le repli de canal appartiennent au domaine Notifications. Appel synchrone
+ * en processus unique ; paire d'événements communication.requested / communication.result
+ * après l'introduction de Kafka (étape 3).
+ */
+export interface CommunicationRequest {
+  notificationId: string;
+  recipientId: string;
+  channel: 'SMS' | 'EMAIL' | 'PUSH';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  subject: string;
+  body: string;
+}
+
+export type CommunicationResult =
+  | { status: 'SENT'; providerRef: string | null }
+  /** Limite anti-spam atteinte : définitif pour ce message. */
+  | { status: 'THROTTLED'; reason: string }
+  /** `retryable: false` : aucune adresse pour ce canal, ou refus définitif du fournisseur. */
+  | { status: 'FAILED'; retryable: boolean; reason: string };
+
+/**
+ * Envoi à une adresse explicite (messages contenant un secret : activation, OTP, réinitialisation),
+ * sans limite anti-spam ; le destinataire n'a pas forcément encore de profil membre.
+ */
+export interface DirectDelivery {
+  channel: 'SMS' | 'EMAIL';
+  to: string;
+  subject: string;
+  body: string;
+  notificationId?: string | null;
+  recipientId?: string | null;
+}
+
+export interface CommunicationPort {
+  send(request: CommunicationRequest): Promise<CommunicationResult>;
+  deliver(request: DirectDelivery): Promise<CommunicationResult>;
+}
+
+export const COMMUNICATION = Symbol('COMMUNICATION');

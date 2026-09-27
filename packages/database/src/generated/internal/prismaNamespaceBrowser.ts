@@ -933,6 +933,8 @@ export type NotificationScalarFieldEnum =
 export const OutboundMessageScalarFieldEnum = {
   id: 'id',
   notificationId: 'notificationId',
+  recipientId: 'recipientId',
+  priority: 'priority',
   channel: 'channel',
   recipient: 'recipient',
   subject: 'subject',

@@ -64,7 +64,7 @@ packages/
   typescript-config/   tsconfig de base (strict)
 services/
   auth/ members/ kyc/ tontines/ wallets/ transactions/
-  payments/ notifications/ compliance/ administration/
+  payments/ notifications/ communication/ compliance/ administration/
 infrastructure/
   docker/              Dockerfiles
   monitoring/          Prometheus, Grafana, OpenTelemetry collector
@@ -80,7 +80,8 @@ Les dépendances entre domaines sont **acycliques** et limitées aux ports publi
 
 ```
 platform ← tous
-notifications  (feuille : consomme des événements, expose NotificationPort)
+communication  (feuille : transport des messages, expose le port COMMUNICATION)
+notifications  → communication (port COMMUNICATION) ; consomme des événements
 compliance     → (aucun domaine)
 members        → notifications
 auth           → notifications

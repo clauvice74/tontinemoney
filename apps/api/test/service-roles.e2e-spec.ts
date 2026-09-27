@@ -72,7 +72,8 @@ describe('schémas par service', () => {
       wallets: 4,
       transactions: 3,
       payments: 4,
-      notifications: 3,
+      notifications: 2,
+      communication: 1,
       administration: 3,
       payment_gateway: 1,
     });
@@ -111,6 +112,15 @@ describe('rôles PostgreSQL au moindre privilège', () => {
   it('aucun accès aux tables d’un autre service hors liste déclarée', async () => {
     expect(await can('tm_members', 'SELECT 1 FROM auth.auth_users')).toBe(false);
     expect(await can('tm_notifications', 'SELECT 1 FROM members.mbr_members')).toBe(false);
+    expect(await can('tm_notifications', 'SELECT 1 FROM communication.ntf_outbound_messages')).toBe(
+      false,
+    );
+    expect(await can('tm_communication', 'SELECT 1 FROM notifications.ntf_notifications')).toBe(
+      false,
+    );
+    expect(await can('tm_communication', 'SELECT 1 FROM communication.ntf_outbound_messages')).toBe(
+      true,
+    );
     expect(await can('tm_kyc', 'SELECT 1 FROM members.mbr_members')).toBe(false);
     expect(await can('tm_auth', 'SELECT 1 FROM members.mbr_members')).toBe(false);
     expect(await can('tm_payment_gateway', 'SELECT 1 FROM payments.pay_payments')).toBe(false);

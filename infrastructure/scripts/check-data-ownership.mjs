@@ -27,6 +27,7 @@ const SERVICES = [
   'transactions',
   'payments',
   'notifications',
+  'communication',
   'administration',
 ];
 const SHARED = new Set(['platform']);

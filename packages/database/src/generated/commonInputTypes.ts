@@ -1473,6 +1473,23 @@ export type EnumNotificationStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumNotificationStatusFilter<$PrismaModel>;
 };
 
+export type EnumDeliveryChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeliveryChannel | Prisma.EnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  in?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel> | $Enums.DeliveryChannel;
+};
+
+export type EnumDeliveryChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeliveryChannel | Prisma.EnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  in?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryChannelWithAggregatesFilter<$PrismaModel> | $Enums.DeliveryChannel;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel>;
+};
+
 export type EnumComplianceRuleTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.ComplianceRuleType | Prisma.EnumComplianceRuleTypeFieldRefInput<$PrismaModel>;
   in?: $Enums.ComplianceRuleType[] | Prisma.ListEnumComplianceRuleTypeFieldRefInput<$PrismaModel>;
@@ -3067,6 +3084,23 @@ export type NestedEnumNotificationStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumNotificationStatusFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumNotificationStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumDeliveryChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeliveryChannel | Prisma.EnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  in?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel> | $Enums.DeliveryChannel;
+};
+
+export type NestedEnumDeliveryChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeliveryChannel | Prisma.EnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  in?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DeliveryChannel[] | Prisma.ListEnumDeliveryChannelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryChannelWithAggregatesFilter<$PrismaModel> | $Enums.DeliveryChannel;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryChannelFilter<$PrismaModel>;
 };
 
 export type NestedEnumComplianceRuleTypeFilter<$PrismaModel = never> = {

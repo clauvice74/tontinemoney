@@ -75,6 +75,9 @@ importers:
       '@tontine/auth-service':
         specifier: workspace:*
         version: link:../../services/auth
+      '@tontine/communication':
+        specifier: workspace:*
+        version: link:../../services/communication
       '@tontine/compliance':
         specifier: workspace:*
         version: link:../../services/compliance
@@ -952,6 +955,70 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(@types/node@22.18.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.20.6)(yaml@2.9.1)
 
+  services/communication:
+    dependencies:
+      '@nestjs/common':
+        specifier: 11.1.6
+        version: 11.1.6(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 11.1.6
+        version: 11.1.6(@nestjs/common@11.1.6(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: 11.2.0
+        version: 11.2.0(@nestjs/common@11.1.6(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)
+      '@prisma/client':
+        specifier: 7.10.0
+        version: 7.10.0(prisma@7.10.0(@types/node@22.18.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3)
+      '@tontine/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@tontine/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@tontine/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@tontine/platform':
+        specifier: workspace:*
+        version: link:../../packages/platform
+      nodemailer:
+        specifier: 10.0.10
+        version: 10.0.10
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@swc/core':
+        specifier: 1.13.5
+        version: 1.13.5
+      '@tontine/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@tontine/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/node':
+        specifier: 22.18.0
+        version: 22.18.0
+      '@types/nodemailer':
+        specifier: 8.0.2
+        version: 8.0.2
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/node@22.18.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.20.6)(yaml@2.9.1))
+      eslint:
+        specifier: 9.39.5
+        version: 9.39.5(jiti@2.7.0)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      unplugin-swc:
+        specifier: 1.5.7
+        version: 1.5.7(@swc/core@1.13.5)(rollup@4.63.5)
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@22.18.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.20.6)(yaml@2.9.1)
+
   services/compliance:
     dependencies:
       '@nestjs/common':
@@ -1197,9 +1264,6 @@ importers:
       '@tontine/platform':
         specifier: workspace:*
         version: link:../../packages/platform
-      nodemailer:
-        specifier: 10.0.10
-        version: 10.0.10
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -1216,9 +1280,6 @@ importers:
       '@types/node':
         specifier: 22.18.0
         version: 22.18.0
-      '@types/nodemailer':
-        specifier: 8.0.2
-        version: 8.0.2
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@22.18.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.20.6)(yaml@2.9.1))

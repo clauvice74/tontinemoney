@@ -28,6 +28,7 @@ export const SERVICE_SCHEMAS = [
   'transactions',
   'payments',
   'notifications',
+  'communication',
   'administration',
   'payment_gateway',
 ] as const;

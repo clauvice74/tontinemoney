@@ -262,7 +262,7 @@ export type NotificationTemplate = Prisma.NotificationTemplateModel;
 export type Notification = Prisma.NotificationModel;
 /**
  * Model OutboundMessage
- * Messages transmis aux fournisseurs (SMS simulé, SMTP) — rapports de livraison.
+ * Journal de livraison des fournisseurs (SMS simulé, SMTP) — propriété de communication-service.
  */
 export type OutboundMessage = Prisma.OutboundMessageModel;
 /**
