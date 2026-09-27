@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { moneyView } from '@tontine/contracts';
+import { type ContributionStatus, moneyView } from '@tontine/contracts';
 import { type Tontine, type TontineCycle, type TxClient } from '@tontine/database';
 import {
   type Actor,
@@ -244,6 +244,29 @@ export class CyclesService {
     return { started: true, blockers: [] };
   }
 
+  /** `member.payout.due` : le bénéficiaire d'un cycle ouvert est connu. */
+  private async payoutDue(
+    tx: TxClient,
+    t: Tontine,
+    cycle: TontineCycle,
+    memberId: string,
+  ): Promise<void> {
+    await this.outbox.add(tx, {
+      type: 'member.payout.due',
+      aggregateType: 'tontine',
+      aggregateId: t.id,
+      payload: {
+        memberId,
+        tontineId: t.id,
+        cycleId: cycle.id,
+        cycleNumber: cycle.number,
+        dueDate: iso(cycle.dueDate),
+        expectedMinor: cycle.expectedMinor.toString(),
+        currency: t.currency,
+      },
+    });
+  }
+
   /**
    * Ouvre le cycle `n` : échéance calculée (US-4.4 §3), une contribution PENDING par membre actif,
    * événements `tontine.cycle.started` et `tontine.contribution.due`.
@@ -283,6 +306,7 @@ export class CyclesService {
       aggregateId: t.id,
       payload: { tontineId: t.id, cycleId: cycle.id, cycleNumber: n, beneficiaryId, dueDate: due },
     });
+    if (beneficiaryId) await this.payoutDue(tx, t, cycle, beneficiaryId);
     for (const memberId of memberIds) {
       const c = await tx.contribution.create({
         data: {
@@ -516,6 +540,7 @@ export class CyclesService {
           proof,
         },
       });
+      await this.payoutDue(tx, t, cycle, memberId);
       await this.audit.record(
         {
           action: 'tontine.beneficiary.designated',
@@ -657,6 +682,55 @@ export class CyclesService {
         graceUntil: iso(x.graceUntil),
         paidAt: x.paidAt?.toISOString() ?? null,
       })),
+    };
+  }
+
+  /** Tontine d'un cycle, pour les routes à plat `/cycles/:id` (contrôle d'accès ensuite). */
+  async tontineOfCycle(cycleId: string): Promise<string> {
+    const c = await this.prisma.tontineCycle.findUnique({
+      where: { id: cycleId },
+      select: { tontineId: true },
+    });
+    if (!c) throw new DomainError('NOT_FOUND', 'Cycle introuvable');
+    return c.tontineId;
+  }
+
+  /** Contributions d'un cycle (mêmes règles de visibilité que le détail), filtrables par statut. */
+  async cycleContributions(
+    actor: Actor,
+    tontineId: string,
+    cycleId: string,
+    status: ContributionStatus | undefined,
+  ) {
+    const detail = await this.cycle(actor, tontineId, cycleId);
+    return {
+      cycleId: detail.id,
+      number: detail.number,
+      data: status ? detail.contributions.filter((c) => c.status === status) : detail.contributions,
+    };
+  }
+
+  /** Bénéficiaire d'un cycle, sa preuve de désignation et le versement (participants). */
+  async cycleBeneficiary(actor: Actor, tontineId: string, cycleId: string) {
+    const { tontine } = await this.tontines.getVisible(actor, tontineId);
+    const c = await this.prisma.tontineCycle.findFirst({ where: { id: cycleId, tontineId } });
+    if (!c) throw new DomainError('NOT_FOUND', 'Cycle introuvable');
+    const snap = c.beneficiaryId ? await this.members.snapshot(c.beneficiaryId) : null;
+    return {
+      cycleId: c.id,
+      number: c.number,
+      status: c.status,
+      dueDate: iso(c.dueDate),
+      beneficiary: c.beneficiaryId
+        ? { memberId: c.beneficiaryId, firstName: snap?.firstName ?? '—' }
+        : null,
+      mode: tontine.drawMode,
+      proof: c.beneficiaryProof,
+      expected: moneyView(c.expectedMinor, tontine.currency),
+      payout: c.payoutMinor !== null ? moneyView(c.payoutMinor, tontine.currency) : null,
+      partialPayout: c.partialPayout,
+      paidOut: c.status === 'COMPLETED',
+      completedAt: c.completedAt?.toISOString() ?? null,
     };
   }
 }

@@ -8,7 +8,16 @@ import {
   priorityRequestSchema,
   tontineAccountSchema,
 } from '@tontine/contracts';
-import { type Actor, ApiZodBody, CurrentUser, Idempotent, ZodBody } from '@tontine/platform';
+import {
+  type Actor,
+  ApiZodBody,
+  ApiZodQuery,
+  CurrentUser,
+  DomainError,
+  Idempotent,
+  ZodBody,
+  ZodQuery,
+} from '@tontine/platform';
 import { z } from 'zod';
 import { AccountsService } from './accounts.service';
 import { ContributionsService } from './contributions.service';
@@ -16,6 +25,10 @@ import { CyclesService } from './cycles.service';
 import { TontinesService } from './tontines.service';
 
 const statusQuery = z.enum(CONTRIBUTION_STATUSES).optional();
+const cycleContributionsQuery = z
+  .object({ status: z.enum(CONTRIBUTION_STATUSES).optional() })
+  .strict();
+const cyclesQuery = z.object({ tontineId: z.string().uuid() }).strict();
 
 @ApiTags('Tontines — cycles et contributions')
 @ApiBearerAuth()
@@ -111,6 +124,53 @@ export class CyclesController {
     @Param('cycleId', ParseUUIDPipe) cycleId: string,
   ) {
     return this.cycles.cycle(actor, id, cycleId);
+  }
+
+  @Get('cycles')
+  @ApiOperation({ summary: 'Cycles d’une tontine (alias de /tontines/{id}/cycles)' })
+  @ApiZodQuery(cyclesQuery)
+  async listFlat(@CurrentUser() actor: Actor, @ZodQuery(cyclesQuery) q: { tontineId: string }) {
+    return { data: await this.cycles.cycles(actor, q.tontineId) };
+  }
+
+  @Get('cycles/:cycleId')
+  @ApiOperation({ summary: 'Détail d’un cycle (alias de /tontines/{id}/cycles/{cycleId})' })
+  async oneFlat(@CurrentUser() actor: Actor, @Param('cycleId', ParseUUIDPipe) cycleId: string) {
+    return this.cycles.cycle(actor, await this.cycles.tontineOfCycle(cycleId), cycleId);
+  }
+
+  @Get(['tontines/:id/cycles/:cycleId/contributions', 'cycles/:cycleId/contributions'])
+  @ApiOperation({
+    summary: 'Contributions d’un cycle (admin : toutes ; membre : la sienne), filtre par statut',
+  })
+  @ApiZodQuery(cycleContributionsQuery)
+  async cycleContributions(
+    @CurrentUser() actor: Actor,
+    @Param('cycleId', ParseUUIDPipe) cycleId: string,
+    @ZodQuery(cycleContributionsQuery) q: z.infer<typeof cycleContributionsQuery>,
+    @Param('id') tontineId?: string,
+  ) {
+    const tid = await this.resolveTontine(cycleId, tontineId);
+    return this.cycles.cycleContributions(actor, tid, cycleId, q.status);
+  }
+
+  @Get(['tontines/:id/cycles/:cycleId/beneficiary', 'cycles/:cycleId/beneficiary'])
+  @ApiOperation({ summary: 'Bénéficiaire d’un cycle, preuve de désignation et versement' })
+  async cycleBeneficiary(
+    @CurrentUser() actor: Actor,
+    @Param('cycleId', ParseUUIDPipe) cycleId: string,
+    @Param('id') tontineId?: string,
+  ) {
+    const tid = await this.resolveTontine(cycleId, tontineId);
+    return this.cycles.cycleBeneficiary(actor, tid, cycleId);
+  }
+
+  /** Route imbriquée : l'identifiant de tontine fourni doit être un UUID ; route à plat : déduit du cycle. */
+  private async resolveTontine(cycleId: string, tontineId: string | undefined): Promise<string> {
+    if (tontineId === undefined) return this.cycles.tontineOfCycle(cycleId);
+    if (!z.string().uuid().safeParse(tontineId).success)
+      throw new DomainError('VALIDATION_FAILED', 'Identifiant de tontine invalide');
+    return tontineId;
   }
 
   @Post('tontines/:id/contributions/:contributionId/pay')

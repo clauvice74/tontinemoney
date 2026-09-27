@@ -293,6 +293,19 @@ export const EVENT_CATALOG = {
     'tontines',
     z.object({ tontineId: id, cycleId: id, contributionId: id, memberId: id }),
   ),
+  /** Le bénéficiaire d'un cycle ouvert est connu : il recevra la cagnotte à l'échéance. */
+  'member.payout.due': def(
+    'tontines',
+    z.object({
+      memberId: id,
+      tontineId: id,
+      cycleId: id,
+      cycleNumber: z.number().int(),
+      dueDate: z.string(),
+      expectedMinor: minor,
+      currency,
+    }),
+  ),
   'tontine.payout.initiated': def(
     'tontines',
     z.object({
