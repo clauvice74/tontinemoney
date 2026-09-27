@@ -94,15 +94,23 @@ jobs:
       - name: Redpanda (broker Kafka) pour le transport réel
         run: |
           docker run -d --name redpanda -p 19092:19092 redpandadata/redpanda:v24.2.7 \
-            redpanda start --mode dev-container --smp 1 --memory 512M --overprovisioned \
+            redpanda start --mode dev-container --smp 1 --memory 2G --overprovisioned \
             --kafka-addr 0.0.0.0:19092 --advertise-kafka-addr localhost:19092
           for i in $(seq 1 60); do docker exec redpanda rpk cluster health | grep -qE 'Healthy:.+true' && break; sleep 2; done
       - name: Topics Kafka (création idempotente)
-        run: KAFKA_BROKERS=localhost:19092 pnpm kafka:topics
+        # 1 partition : la limite de partitions de Redpanda dépend de la mémoire, et les topics
+        # internes (offsets des groupes, coordinateur) doivent encore pouvoir être créés.
+        run: KAFKA_BROKERS=localhost:19092 KAFKA_TOPIC_PARTITIONS=1 pnpm kafka:topics
       - name: Tests du transport Kafka (Redpanda réel)
         run: pnpm --filter @tontine/api exec vitest run --config vitest.e2e.config.ts test/kafka.e2e-spec.ts
         env:
           KAFKA_TEST_BROKERS: localhost:19092
+      - name: Diagnostic Redpanda
+        if: failure()
+        run: |
+          docker exec redpanda rpk cluster info || true
+          docker exec redpanda rpk topic list -i | grep -E '^(__|_)' || true
+          docker logs redpanda 2>&1 | grep -iE 'error|warn|coordinator|partition' | tail -80 || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
