@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { moneyView } from '@tontine/contracts';
 import { type Contribution, type Tontine } from '@tontine/database';
@@ -12,7 +13,6 @@ import {
   UnitOfWork,
 } from '@tontine/platform';
 import { TransactionsService } from '@tontine/transactions';
-import { LedgerService } from '@tontine/wallets';
 import { TontinesService } from './tontines.service';
 
 const PAYABLE = ['PENDING', 'LATE', 'DEFAULTED'] as const;
@@ -41,12 +41,16 @@ export function contributionView(
     graceUntil: iso(c.graceUntil),
     paidAt: c.paidAt?.toISOString() ?? null,
     transactionId: c.transactionId,
+    /** Étape 5 : paiement asynchrone (saga) en cours, ou motif du dernier échec. */
+    paymentStatus: c.paymentRequestId ? ('PROCESSING' as const) : null,
+    paymentError: c.paymentError,
   };
 }
 
 /**
- * Paiement des contributions depuis le wallet (A-07, US-5.4 / US-5.5) : blocage (hold) puis
- * capture dans une transaction interne CONTRIBUTION (membre → cagnotte, pénalité → réserve, A-08).
+ * Paiement des contributions depuis le wallet (A-07, US-5.4 / US-5.5) : demande asynchrone
+ * exécutée par la saga CONTRIBUTION de Transaction Service (A-53) — blocage (hold) puis capture
+ * dans une transaction interne (membre → cagnotte, pénalité → réserve, A-08).
  */
 @Injectable()
 export class ContributionsService {
@@ -56,7 +60,6 @@ export class ContributionsService {
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
     private readonly audit: AuditService,
-    private readonly ledger: LedgerService,
     private readonly transactions: TransactionsService,
     private readonly tontines: TontinesService,
     private readonly kv: KvStore,
@@ -108,145 +111,129 @@ export class ContributionsService {
     if (!tontine.poolWalletId || !tontine.reserveWalletId)
       throw new DomainError('INTERNAL_ERROR', 'Comptes de la tontine absents');
 
-    // 1. US-5.5 : blocage des fonds (échoue proprement si solde disponible insuffisant)
-    const hold = await this.uow
-      .run(
-        (tx) =>
-          this.ledger.createHold(tx, {
-            walletId: wallet.id,
-            amountMinor: total,
-            context: 'TONTINE_CONTRIBUTION',
-            referenceId: c.id,
-            idempotencyKey: `contribution-hold:${c.id}:${c.status}`,
-          }),
-        { isolationLevel: 'Serializable', retries: 5 },
-      )
-      .catch(async (e: unknown) => {
-        if (e instanceof DomainError && e.code === 'INSUFFICIENT_FUNDS') {
-          await this.uow.run((tx) =>
-            this.outbox.add(tx, {
-              type: 'wallet.debit.failed',
-              aggregateType: 'wallet',
-              aggregateId: wallet.id,
-              payload: {
-                walletId: wallet.id,
-                memberId: actor.userId,
-                reason: 'INSUFFICIENT_FUNDS',
-                requestedMinor: total.toString(),
-              },
-            }),
-          );
-        }
-        throw e;
-      });
-    if (hold.status === 'CAPTURED')
-      return contributionView(
-        await this.prisma.contribution.findUniqueOrThrow({ where: { id: c.id } }),
-        tontine,
-        cycle.number,
+    if (c.paymentRequestId) return contributionView(c, tontine, cycle.number);
+    // Contrôles immédiats (retour synchrone au membre) ; la saga revérifie sous verrou
+    if (wallet.status !== 'ACTIVE')
+      throw new DomainError(
+        'WALLET_NOT_OPERATIONAL',
+        `Portefeuille ${wallet.status.toLowerCase()} : paiement impossible`,
+        { walletStatus: wallet.status },
       );
-
-    // 2. Transaction interne (conformité, SERIALIZABLE, capture du hold) — US-5.4 / US-6.x
-    let txId: string;
-    try {
-      const t = await this.transactions.execute({
-        idempotencyKey: `contribution:${c.id}:${c.status}`,
-        type: 'CONTRIBUTION',
-        amountMinor: total,
-        currency: tontine.currency,
-        initiatorId: actor.userId,
-        beneficiaryId: null,
-        sourceWalletId: wallet.id,
-        destinationWalletId: tontine.poolWalletId,
-        captureHoldId: hold.id,
-        contextType: 'TONTINE',
-        contextId: tontine.id,
-        description: `Contribution cycle ${cycle.number} — ${tontine.name}`,
-        metadata: {
-          contributionId: c.id,
-          cycleNumber: cycle.number,
-          penaltyMinor: penaltyDue.toString(),
-        },
-        lines: [
-          {
+    if (wallet.balanceMinor - wallet.blockedMinor < total) {
+      await this.uow.run((tx) =>
+        this.outbox.add(tx, {
+          type: 'wallet.debit.failed',
+          aggregateType: 'wallet',
+          aggregateId: wallet.id,
+          payload: {
             walletId: wallet.id,
-            direction: 'DEBIT',
-            amountMinor: total,
-            context: 'TONTINE_CONTRIBUTION',
-            contextRef: tontine.id,
-            description: `Contribution cycle ${cycle.number} — ${tontine.name}`,
+            memberId: actor.userId,
+            reason: 'INSUFFICIENT_FUNDS',
+            requestedMinor: total.toString(),
           },
-          {
-            walletId: tontine.poolWalletId,
-            direction: 'CREDIT',
-            amountMinor: c.amountMinor,
-            context: 'TONTINE_CONTRIBUTION',
-            contextRef: c.id,
-          },
-          ...(penaltyDue > 0n
-            ? [
-                {
-                  walletId: tontine.reserveWalletId,
-                  direction: 'CREDIT' as const,
-                  amountMinor: penaltyDue,
-                  context: 'PENALTY' as const,
-                  contextRef: c.id,
-                },
-              ]
-            : []),
-        ],
-        compliance: { operationType: 'TONTINE_CONTRIBUTION', memberId: actor.userId },
-      });
-      txId = t.id;
-    } catch (e) {
-      await this.uow.run((tx) => this.ledger.releaseHold(tx, hold.id), {
-        isolationLevel: 'Serializable',
-        retries: 5,
-      });
-      throw e;
+        }),
+      );
+      throw new DomainError(
+        'INSUFFICIENT_FUNDS',
+        'Le solde disponible est insuffisant pour cette opération',
+        {
+          availableMinor: (wallet.balanceMinor - wallet.blockedMinor).toString(),
+          requestedMinor: total.toString(),
+        },
+      );
     }
 
-    // 3. Mise à jour de l'échéance et du cycle
-    const now = this.clock.now();
-    const status = c.status === 'PENDING' ? 'PAID' : 'PAID_LATE';
+    // Demande de paiement (saga CONTRIBUTION, A-53) : une seule en cours par échéance
+    const requestId = randomUUID();
     const updated = await this.uow.run(async (tx) => {
       const res = await tx.contribution.updateMany({
-        where: { id: c.id, status: { in: [...PAYABLE] } },
+        where: { id: c.id, status: { in: [...PAYABLE] }, paymentRequestId: null },
         data: {
-          status,
-          paidAt: now,
-          transactionId: txId,
-          ...(penaltyDue > 0n ? { penaltyPaid: true, penaltyTxId: txId } : {}),
+          paymentRequestId: requestId,
+          paymentRequestedAt: this.clock.now(),
+          paymentError: null,
         },
       });
-      if (res.count === 1) {
-        await tx.tontineCycle.update({
-          where: { id: cycle.id },
-          data: { collectedMinor: { increment: c.amountMinor } },
-        });
-        // A-09 : un paiement à l'heure remet à zéro le compteur de défauts consécutifs
-        if (status === 'PAID')
-          await tx.tontineMember.update({
-            where: { tontineId_memberId: { tontineId, memberId: actor.userId } },
-            data: { consecutiveDefaults: 0 },
-          });
+      if (res.count === 1)
         await this.outbox.add(tx, {
-          type: 'tontine.contribution.received',
+          type: 'tontine.contribution.payment.requested',
           aggregateType: 'tontine',
           aggregateId: tontine.id,
           payload: {
+            requestId,
             tontineId: tontine.id,
             cycleId: cycle.id,
+            cycleNumber: cycle.number,
             contributionId: c.id,
             memberId: actor.userId,
+            currency: tontine.currency,
             amountMinor: c.amountMinor.toString(),
-            transactionId: txId,
+            penaltyMinor: penaltyDue.toString(),
+            memberWalletId: wallet.id,
+            poolWalletId: tontine.poolWalletId!,
+            reserveWalletId: tontine.reserveWalletId!,
+            description: `Contribution cycle ${cycle.number} — ${tontine.name}`,
           },
         });
-      }
       return tx.contribution.findUniqueOrThrow({ where: { id: c.id } });
     });
     return contributionView(updated, tontine, cycle.number);
+  }
+
+  /**
+   * Saga CONTRIBUTION terminée : échéance PAID (à l'heure) ou PAID_LATE, pénalité réglée,
+   * collecte du cycle, `tontine.contribution.received`. Ignoré si la demande n'est plus la
+   * demande en cours (transition gardée).
+   */
+  async completePayment(contributionId: string, requestId: string, txId: string): Promise<void> {
+    const c = await this.prisma.contribution.findUniqueOrThrow({ where: { id: contributionId } });
+    if (c.paymentRequestId !== requestId) return;
+    const penaltyDue = c.penaltyMinor > 0n && !c.penaltyPaid ? c.penaltyMinor : 0n;
+    const status = c.status === 'PENDING' ? 'PAID' : 'PAID_LATE';
+    await this.uow.run(async (tx) => {
+      const res = await tx.contribution.updateMany({
+        where: { id: c.id, status: { in: [...PAYABLE] }, paymentRequestId: requestId },
+        data: {
+          status,
+          paidAt: this.clock.now(),
+          transactionId: txId,
+          paymentRequestId: null,
+          ...(penaltyDue > 0n ? { penaltyPaid: true, penaltyTxId: txId } : {}),
+        },
+      });
+      if (res.count !== 1) return;
+      await tx.tontineCycle.update({
+        where: { id: c.cycleId },
+        data: { collectedMinor: { increment: c.amountMinor } },
+      });
+      // A-09 : un paiement à l'heure remet à zéro le compteur de défauts consécutifs
+      if (status === 'PAID')
+        await tx.tontineMember.update({
+          where: { tontineId_memberId: { tontineId: c.tontineId, memberId: c.memberId } },
+          data: { consecutiveDefaults: 0 },
+        });
+      await this.outbox.add(tx, {
+        type: 'tontine.contribution.received',
+        aggregateType: 'tontine',
+        aggregateId: c.tontineId,
+        payload: {
+          tontineId: c.tontineId,
+          cycleId: c.cycleId,
+          contributionId: c.id,
+          memberId: c.memberId,
+          amountMinor: c.amountMinor.toString(),
+          transactionId: txId,
+        },
+      });
+    });
+  }
+
+  /** Saga CONTRIBUTION en échec (fonds, conformité…) : l'échéance reste due, motif conservé. */
+  async paymentFailed(contributionId: string, requestId: string, reason: string): Promise<void> {
+    await this.prisma.contribution.updateMany({
+      where: { id: contributionId, paymentRequestId: requestId },
+      data: { paymentRequestId: null, paymentError: reason.slice(0, 500) },
+    });
   }
 
   /** Pénalité restée due après un paiement tardif sans pénalité (cas limite). */

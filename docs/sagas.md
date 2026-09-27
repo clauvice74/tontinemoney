@@ -87,7 +87,7 @@ sequenceDiagram
   W--)R: wallet.balance.updated.v1
 ```
 
-Aujourd'hui : webhook reçu par `payments` (`/payments/webhooks/:provider`), puis `payment.completed` → consommateur `settle()` qui appelle `TransactionsService.execute()` en synchrone.
+Aujourd'hui (étape 5, A-53) : webhook vérifié par le Payment Gateway puis `payments` → `payment.completed` (portant wallet, hold et libellé) → saga `PAYMENT_SETTLEMENT` de Transaction Service (`STARTED → LEDGER_POSTING → COMPLETED`) → `transaction.saga.completed` → `payments` rattache la transaction au paiement. Échec (wallet fermé…) : `FAILED`, alerte de réconciliation, paiement marqué `SETTLEMENT_FAILED`. Les crédits et débits restent exécutés par le grand livre appelé en bibliothèque (commandes au wallet-service à l'étape 7).
 
 ## 4. Contribution
 
@@ -114,7 +114,7 @@ sequenceDiagram
   T--)N: tontine.contribution.received.v1
 ```
 
-Aujourd'hui : `ContributionsService.pay()` crée le hold et appelle `TransactionsService.execute()` (conformité, capture) en synchrone, sous un verrou par échéance ; en cas d'échec le hold est libéré.
+Aujourd'hui (étape 5, A-53) : `POST …/contributions/{id}/pay` → contrôles immédiats puis `tontine.contribution.payment.requested` (202, `paymentStatus: PROCESSING`) → saga `CONTRIBUTION` (`STARTED → HOLD → COMPLIANCE_AND_CAPTURE → COMPLETED`) → `transaction.saga.completed` → contribution `PAID` / `PAID_LATE`, `tontine.contribution.received`. La conformité est un appel synchrone au module compliance à l'intérieur de la saga (pas encore `transaction.requested` / `compliance.transaction.approved`).
 
 ## 5. Paiement du bénéficiaire
 
@@ -137,7 +137,7 @@ sequenceDiagram
   T--)R: cycle.completed.v1
 ```
 
-Aujourd'hui : `PayoutsService.payout()` exécute la transaction `PAYOUT` en synchrone quand la collecte est complète, puis publie `tontine.payout.initiated` et `tontine.cycle.completed`. `member.payout.due` est déjà publié à l'ouverture du cycle.
+Aujourd'hui (étape 5, A-53) : collecte complète (ou paiement partiel) → cycle `PAYOUT_PROCESSING` + `tontine.payout.requested` (un `requestId` par tentative) → saga `TONTINE_PAYOUT` (`STARTED → COMPLIANCE_AND_LEDGER → COMPLETED`) → `transaction.saga.completed` → cycle `COMPLETED`, `tontine.payout.initiated`, `tontine.cycle.completed`, cycle suivant ou clôture. Arriérés après un paiement partiel : saga `TONTINE_PAYOUT_TOPUP`. `member.payout.due` est publié à l'ouverture du cycle.
 
 ## 6. Compensation
 
@@ -163,7 +163,7 @@ sequenceDiagram
   end
 ```
 
-Aujourd'hui : holds libérés en cas d'échec (`releaseHold`), contre-passation `REVERSAL` par `TransactionsService.reverse()`, remboursement PSP avec reversement interne, holds expirés par job.
+Aujourd'hui (étape 5, A-53) : saga `CONTRIBUTION` en échec après blocage → hold libéré dans la même transaction SQL que la fin de saga (`COMPENSATED`) ; paiement du pot en échec → aucune écriture, cycle `PAYOUT_PENDING` (relance possible) ; règlement PSP impossible → `FAILED` + `transaction.saga.reconciliation_required` (audit) ; `transaction.saga.failed` informe le demandeur. Contre-passation `REVERSAL` par `TransactionsService.reverse()`, holds expirés par job. Consultation : `GET /admin/sagas`, `GET /admin/sagas/{id}` (journal des transitions).
 
 ## 7. Réconciliation
 

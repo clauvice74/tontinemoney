@@ -269,6 +269,7 @@ export default function TontineAdminDashboardPage() {
                                     PENDING: 'À venir',
                                     IN_PROGRESS: 'En cours',
                                     PAYOUT_PENDING: 'Versement en attente',
+                                    PAYOUT_PROCESSING: 'Versement en cours',
                                     COMPLETED: 'Terminé',
                                   }}
                                 />

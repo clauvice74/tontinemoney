@@ -38,8 +38,11 @@ export class TontineOpsController {
   }
 
   @Post('tontines/:id/cycles/:cycleId/force-payout')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Paiement partiel explicite du pot (admin, journalisé) — A-10' })
+  @HttpCode(202)
+  @ApiOperation({
+    summary:
+      'Paiement partiel explicite du pot (admin, journalisé) — A-10 ; exécution asynchrone (saga, A-53)',
+  })
   @ApiZodBody(forcePayoutSchema)
   async forcePayout(
     @CurrentUser() actor: Actor,

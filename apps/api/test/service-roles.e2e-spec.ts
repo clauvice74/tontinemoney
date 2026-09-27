@@ -70,7 +70,7 @@ describe('schémas par service', () => {
       compliance: 5,
       tontines: 8,
       wallets: 4,
-      transactions: 3,
+      transactions: 5,
       payments: 4,
       notifications: 2,
       communication: 1,

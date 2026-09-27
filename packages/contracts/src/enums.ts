@@ -159,7 +159,13 @@ export type InvitationChannel = (typeof INVITATION_CHANNELS)[number];
 export const INVITATION_STATUSES = values('PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED');
 export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
 
-export const CYCLE_STATUSES = values('PENDING', 'IN_PROGRESS', 'PAYOUT_PENDING', 'COMPLETED');
+export const CYCLE_STATUSES = values(
+  'PENDING',
+  'IN_PROGRESS',
+  'PAYOUT_PENDING',
+  'PAYOUT_PROCESSING',
+  'COMPLETED',
+);
 export type CycleStatus = (typeof CYCLE_STATUSES)[number];
 
 export const CONTRIBUTION_STATUSES = values('PENDING', 'PAID', 'LATE', 'PAID_LATE', 'DEFAULTED');

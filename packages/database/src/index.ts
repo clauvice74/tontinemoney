@@ -125,6 +125,8 @@ export const ALL_TABLES = [
   'trx_transactions',
   'trx_audit_logs',
   'trx_reconciliation_reports',
+  'trx_saga_steps',
+  'trx_sagas',
   'pay_payments',
   'pay_status_history',
   'pay_webhook_events',

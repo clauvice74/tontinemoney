@@ -495,6 +495,14 @@ export class PaymentsService {
           amountMinor: p.amountMinor.toString(),
           currency: p.currency,
           transactionId: null,
+          walletId: p.walletId,
+          holdId: p.holdId,
+          description:
+            p.type === 'DEPOSIT'
+              ? p.method === 'CARD'
+                ? 'Dépôt par carte'
+                : 'Dépôt Mobile Money'
+              : `Retrait vers ${p.destinationMasked ?? 'Mobile Money'}`,
         },
       });
     });
@@ -502,77 +510,33 @@ export class PaymentsService {
   }
 
   /**
-   * US-5.3 / US-7.3 — règlement interne d'un paiement COMPLETED (consommateur de
-   * `payment.completed`) : crédit du wallet (dépôt) ou capture du hold (retrait). Idempotent.
+   * US-5.3 / US-7.3 — issue de la saga de règlement (Transaction Service, étape 5) :
+   * rattachement de la transaction interne au paiement. Idempotent.
    */
-  async settle(paymentId: string): Promise<void> {
-    const p = await this.prisma.payment.findUniqueOrThrow({ where: { id: paymentId } });
-    if (p.status !== 'COMPLETED' || p.transactionId) return;
-    const clearing = await this.wallets.ensureSystemWallet('PSP_CLEARING', p.currency);
-    const t =
-      p.type === 'DEPOSIT'
-        ? await this.transactions.execute({
-            idempotencyKey: `payment:${p.id}`,
-            type: 'DEPOSIT',
-            amountMinor: p.amountMinor,
-            currency: p.currency,
-            initiatorId: p.memberId,
-            beneficiaryId: p.memberId,
-            sourceWalletId: clearing.id,
-            destinationWalletId: p.walletId,
-            contextType: 'PAYMENT',
-            contextId: p.id,
-            description: p.method === 'CARD' ? 'Dépôt par carte' : 'Dépôt Mobile Money',
-            lines: [
-              {
-                walletId: clearing.id,
-                direction: 'DEBIT',
-                amountMinor: p.amountMinor,
-                context: 'DEPOSIT',
-                contextRef: p.id,
-              },
-              {
-                walletId: p.walletId,
-                direction: 'CREDIT',
-                amountMinor: p.amountMinor,
-                context: 'DEPOSIT',
-                contextRef: p.id,
-                description: p.method === 'CARD' ? 'Dépôt par carte' : 'Dépôt Mobile Money',
-              },
-            ],
-          })
-        : await this.transactions.execute({
-            idempotencyKey: `payment:${p.id}`,
-            type: 'WITHDRAWAL',
-            amountMinor: p.amountMinor,
-            currency: p.currency,
-            initiatorId: p.memberId,
-            beneficiaryId: p.memberId,
-            sourceWalletId: p.walletId,
-            destinationWalletId: clearing.id,
-            captureHoldId: p.holdId,
-            contextType: 'PAYMENT',
-            contextId: p.id,
-            description: `Retrait vers ${p.destinationMasked ?? 'Mobile Money'}`,
-            lines: [
-              {
-                walletId: p.walletId,
-                direction: 'DEBIT',
-                amountMinor: p.amountMinor,
-                context: 'WITHDRAWAL',
-                contextRef: p.id,
-                description: `Retrait vers ${p.destinationMasked ?? 'Mobile Money'}`,
-              },
-              {
-                walletId: clearing.id,
-                direction: 'CREDIT',
-                amountMinor: p.amountMinor,
-                context: 'WITHDRAWAL',
-                contextRef: p.id,
-              },
-            ],
-          });
-    await this.prisma.payment.update({ where: { id: p.id }, data: { transactionId: t.id } });
+  async recordSettlement(paymentId: string, transactionId: string): Promise<void> {
+    await this.prisma.payment.updateMany({
+      where: { id: paymentId, transactionId: null },
+      data: { transactionId, errorCode: null, errorMessage: null },
+    });
+  }
+
+  /**
+   * Règlement interne impossible alors que le PSP a exécuté le paiement : le paiement reste
+   * COMPLETED côté prestataire, l'anomalie est tracée pour réconciliation (A-53).
+   */
+  async recordSettlementFailure(paymentId: string, code: string, reason: string): Promise<void> {
+    const res = await this.prisma.payment.updateMany({
+      where: { id: paymentId, transactionId: null },
+      data: { errorCode: 'SETTLEMENT_FAILED', errorMessage: `${code} : ${reason}`.slice(0, 500) },
+    });
+    if (res.count === 1)
+      await this.audit.record({
+        action: 'payment.settlement.failed',
+        resourceType: 'payment',
+        resourceId: paymentId,
+        result: 'FAILURE',
+        metadata: { code, reason },
+      });
   }
 
   // ------------------------------------------------------------------ webhooks

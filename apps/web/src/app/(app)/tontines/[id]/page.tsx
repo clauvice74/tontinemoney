@@ -94,6 +94,9 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
   const query = useQuery({
     queryKey: ['tontines', tontine.id, 'dashboard', 'member'],
     queryFn: () => api.get<MemberTontineDashboard>(`/tontines/${tontine.id}/dashboard`),
+    // Paiement en cours (saga asynchrone, A-53) : rafraîchissement jusqu'à l'issue
+    refetchInterval: (q) =>
+      q.state.data?.myContributions.some((c) => c.paymentStatus === 'PROCESSING') ? 1500 : false,
   });
   return (
     <QueryState query={query} comingSoonTitle="Échéancier bientôt disponible">
@@ -129,8 +132,10 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
               </TableHeader>
               <TableBody>
                 {d.myContributions.map((c) => {
+                  const processing = c.paymentStatus === 'PROCESSING';
                   const payable =
-                    c.status === 'PENDING' || c.status === 'LATE' || c.status === 'DEFAULTED';
+                    !processing &&
+                    (c.status === 'PENDING' || c.status === 'LATE' || c.status === 'DEFAULTED');
                   return (
                     <TableRow key={c.id}>
                       <TableCell>{c.cycleNumber ?? '—'}</TableCell>
@@ -145,13 +150,22 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={c.status} labels={CONTRIBUTION_STATUS_LABELS} />
+                        {c.paymentError && payable ? (
+                          <span className="block text-xs text-destructive">
+                            Échec du dernier paiement : {c.paymentError}
+                          </span>
+                        ) : null}
                       </TableCell>
                       <TableCell className="text-right">
-                        {payable ? (
+                        {processing ? (
+                          <span className="text-xs text-muted-foreground" role="status">
+                            Paiement en cours…
+                          </span>
+                        ) : payable ? (
                           <PayDialog
                             label="Cotiser"
                             path={`/tontines/${tontine.id}/contributions/${c.id}/pay`}
-                            successMessage="Cotisation payée"
+                            successMessage="Paiement de la cotisation en cours de traitement"
                             summary={
                               <>
                                 Cotisation du cycle {c.cycleNumber ?? ''} de « {tontine.name} » :{' '}

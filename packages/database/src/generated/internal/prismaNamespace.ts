@@ -426,6 +426,8 @@ export const ModelName = {
   WalletStatusHistory: 'WalletStatusHistory',
   Transaction: 'Transaction',
   TransactionAuditLog: 'TransactionAuditLog',
+  TransactionSaga: 'TransactionSaga',
+  TransactionSagaStep: 'TransactionSagaStep',
   ReconciliationReport: 'ReconciliationReport',
   Payment: 'Payment',
   PaymentStatusHistory: 'PaymentStatusHistory',
@@ -501,6 +503,8 @@ export type TypeMap<
       | 'walletStatusHistory'
       | 'transaction'
       | 'transactionAuditLog'
+      | 'transactionSaga'
+      | 'transactionSagaStep'
       | 'reconciliationReport'
       | 'payment'
       | 'paymentStatusHistory'
@@ -3211,6 +3215,157 @@ export type TypeMap<
         };
       };
     };
+    TransactionSaga: {
+      payload: Prisma.$TransactionSagaPayload<ExtArgs>;
+      fields: Prisma.TransactionSagaFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.TransactionSagaFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.TransactionSagaFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        findFirst: {
+          args: Prisma.TransactionSagaFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.TransactionSagaFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        findMany: {
+          args: Prisma.TransactionSagaFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>[];
+        };
+        create: {
+          args: Prisma.TransactionSagaCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        createMany: {
+          args: Prisma.TransactionSagaCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.TransactionSagaCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>[];
+        };
+        delete: {
+          args: Prisma.TransactionSagaDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        update: {
+          args: Prisma.TransactionSagaUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        deleteMany: {
+          args: Prisma.TransactionSagaDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.TransactionSagaUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.TransactionSagaUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>[];
+        };
+        upsert: {
+          args: Prisma.TransactionSagaUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaPayload>;
+        };
+        aggregate: {
+          args: Prisma.TransactionSagaAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTransactionSaga>;
+        };
+        groupBy: {
+          args: Prisma.TransactionSagaGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.TransactionSagaGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.TransactionSagaCountArgs<ExtArgs>;
+          result:
+            runtime.Types.Utils.Optional<Prisma.TransactionSagaCountAggregateOutputType> | number;
+        };
+      };
+    };
+    TransactionSagaStep: {
+      payload: Prisma.$TransactionSagaStepPayload<ExtArgs>;
+      fields: Prisma.TransactionSagaStepFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.TransactionSagaStepFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.TransactionSagaStepFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        findFirst: {
+          args: Prisma.TransactionSagaStepFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.TransactionSagaStepFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        findMany: {
+          args: Prisma.TransactionSagaStepFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>[];
+        };
+        create: {
+          args: Prisma.TransactionSagaStepCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        createMany: {
+          args: Prisma.TransactionSagaStepCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.TransactionSagaStepCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>[];
+        };
+        delete: {
+          args: Prisma.TransactionSagaStepDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        update: {
+          args: Prisma.TransactionSagaStepUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        deleteMany: {
+          args: Prisma.TransactionSagaStepDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.TransactionSagaStepUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.TransactionSagaStepUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>[];
+        };
+        upsert: {
+          args: Prisma.TransactionSagaStepUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionSagaStepPayload>;
+        };
+        aggregate: {
+          args: Prisma.TransactionSagaStepAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTransactionSagaStep>;
+        };
+        groupBy: {
+          args: Prisma.TransactionSagaStepGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.TransactionSagaStepGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.TransactionSagaStepCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.TransactionSagaStepCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     ReconciliationReport: {
       payload: Prisma.$ReconciliationReportPayload<ExtArgs>;
       fields: Prisma.ReconciliationReportFieldRefs;
@@ -5226,6 +5381,9 @@ export const ContributionScalarFieldEnum = {
   defaultAt: 'defaultAt',
   paidAt: 'paidAt',
   transactionId: 'transactionId',
+  paymentRequestId: 'paymentRequestId',
+  paymentRequestedAt: 'paymentRequestedAt',
+  paymentError: 'paymentError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -5360,6 +5518,39 @@ export const TransactionAuditLogScalarFieldEnum = {
 
 export type TransactionAuditLogScalarFieldEnum =
   (typeof TransactionAuditLogScalarFieldEnum)[keyof typeof TransactionAuditLogScalarFieldEnum];
+
+export const TransactionSagaScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  sagaKey: 'sagaKey',
+  status: 'status',
+  step: 'step',
+  reference: 'reference',
+  request: 'request',
+  transactionId: 'transactionId',
+  failureCode: 'failureCode',
+  failureReason: 'failureReason',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt',
+} as const;
+
+export type TransactionSagaScalarFieldEnum =
+  (typeof TransactionSagaScalarFieldEnum)[keyof typeof TransactionSagaScalarFieldEnum];
+
+export const TransactionSagaStepScalarFieldEnum = {
+  id: 'id',
+  sagaId: 'sagaId',
+  fromStep: 'fromStep',
+  toStep: 'toStep',
+  status: 'status',
+  detail: 'detail',
+  createdAt: 'createdAt',
+} as const;
+
+export type TransactionSagaStepScalarFieldEnum =
+  (typeof TransactionSagaStepScalarFieldEnum)[keyof typeof TransactionSagaStepScalarFieldEnum];
 
 export const ReconciliationReportScalarFieldEnum = {
   id: 'id',
@@ -6470,6 +6661,22 @@ export type ListEnumTransactionContextTypeFieldRefInput<$PrismaModel> = FieldRef
 >;
 
 /**
+ * Reference to a field of type 'SagaStatus'
+ */
+export type EnumSagaStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SagaStatus'
+>;
+
+/**
+ * Reference to a field of type 'SagaStatus[]'
+ */
+export type ListEnumSagaStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SagaStatus[]'
+>;
+
+/**
  * Reference to a field of type 'ReconciliationKind'
  */
 export type EnumReconciliationKindFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -6976,6 +7183,8 @@ export type GlobalOmitConfig = {
   walletStatusHistory?: Prisma.WalletStatusHistoryOmit;
   transaction?: Prisma.TransactionOmit;
   transactionAuditLog?: Prisma.TransactionAuditLogOmit;
+  transactionSaga?: Prisma.TransactionSagaOmit;
+  transactionSagaStep?: Prisma.TransactionSagaStepOmit;
   reconciliationReport?: Prisma.ReconciliationReportOmit;
   payment?: Prisma.PaymentOmit;
   paymentStatusHistory?: Prisma.PaymentStatusHistoryOmit;

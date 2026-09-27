@@ -76,7 +76,7 @@ export async function settle(ctx: TestContext): Promise<void> {
 /** Déroule tous les cycles jusqu'à la clôture. */
 export async function runToCompletion(ctx: TestContext, s: StartedTontine): Promise<void> {
   for (let n = 1; n <= s.users.length; n++) {
-    for (const u of s.users) expect((await payCurrent(ctx, s, u)).status).toBe(200);
+    for (const u of s.users) expect((await payCurrent(ctx, s, u)).status).toBe(202);
     await settle(ctx);
     if (n < s.users.length) ctx.clock.advanceDays(28);
   }

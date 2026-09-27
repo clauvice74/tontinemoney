@@ -43,6 +43,8 @@ export type * from './models/WalletHold';
 export type * from './models/WalletStatusHistory';
 export type * from './models/Transaction';
 export type * from './models/TransactionAuditLog';
+export type * from './models/TransactionSaga';
+export type * from './models/TransactionSagaStep';
 export type * from './models/ReconciliationReport';
 export type * from './models/Payment';
 export type * from './models/PaymentStatusHistory';

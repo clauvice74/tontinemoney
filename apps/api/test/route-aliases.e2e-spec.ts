@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { type TestContext, bearer, createTestContext } from './support/test-app';
-import { payCurrent, startTontine } from './support/tontine';
+import { payCurrent, settle, startTontine } from './support/tontine';
 
 let ctx: TestContext;
 
@@ -234,11 +234,12 @@ describe('Contributions — routes à plat', () => {
       .set(bearer(token))
       .set('Idempotency-Key', randomUUID())
       .send();
-    expect(paid.status).toBe(200);
+    expect(paid.status).toBe(202);
+    await settle(ctx);
     expect((await ctx.prisma.contribution.findUniqueOrThrow({ where: { id: c.id } })).status).toBe(
       'PAID',
     );
     // la route imbriquée voit la même échéance déjà réglée
-    expect((await payCurrent(ctx, s, bella!)).status).toBe(200);
+    expect((await payCurrent(ctx, s, bella!)).status).toBe(202);
   });
 });

@@ -224,6 +224,17 @@ export type Transaction = Prisma.TransactionModel;
  */
 export type TransactionAuditLog = Prisma.TransactionAuditLogModel;
 /**
+ * Model TransactionSaga
+ * Saga orchestrée par Transaction Service (étape 5, A-53) : une par demande métier
+ * (`sagaKey` unique = idempotence), état persistant, transitions journalisées.
+ */
+export type TransactionSaga = Prisma.TransactionSagaModel;
+/**
+ * Model TransactionSagaStep
+ * Journal append-only des transitions d'une saga.
+ */
+export type TransactionSagaStep = Prisma.TransactionSagaStepModel;
+/**
  * Model ReconciliationReport
  *
  */

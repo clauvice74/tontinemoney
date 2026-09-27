@@ -50,6 +50,9 @@ export type ContributionMinAggregateOutputType = {
   defaultAt: Date | null;
   paidAt: Date | null;
   transactionId: string | null;
+  paymentRequestId: string | null;
+  paymentRequestedAt: Date | null;
+  paymentError: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -69,6 +72,9 @@ export type ContributionMaxAggregateOutputType = {
   defaultAt: Date | null;
   paidAt: Date | null;
   transactionId: string | null;
+  paymentRequestId: string | null;
+  paymentRequestedAt: Date | null;
+  paymentError: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -88,6 +94,9 @@ export type ContributionCountAggregateOutputType = {
   defaultAt: number;
   paidAt: number;
   transactionId: number;
+  paymentRequestId: number;
+  paymentRequestedAt: number;
+  paymentError: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -118,6 +127,9 @@ export type ContributionMinAggregateInputType = {
   defaultAt?: true;
   paidAt?: true;
   transactionId?: true;
+  paymentRequestId?: true;
+  paymentRequestedAt?: true;
+  paymentError?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -137,6 +149,9 @@ export type ContributionMaxAggregateInputType = {
   defaultAt?: true;
   paidAt?: true;
   transactionId?: true;
+  paymentRequestId?: true;
+  paymentRequestedAt?: true;
+  paymentError?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -156,6 +171,9 @@ export type ContributionCountAggregateInputType = {
   defaultAt?: true;
   paidAt?: true;
   transactionId?: true;
+  paymentRequestId?: true;
+  paymentRequestedAt?: true;
+  paymentError?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -266,6 +284,9 @@ export type ContributionGroupByOutputType = {
   defaultAt: Date;
   paidAt: Date | null;
   transactionId: string | null;
+  paymentRequestId: string | null;
+  paymentRequestedAt: Date | null;
+  paymentError: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: ContributionCountAggregateOutputType | null;
@@ -305,6 +326,9 @@ export type ContributionWhereInput = {
   defaultAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
   paidAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
   transactionId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+  paymentRequestId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+  paymentRequestedAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
+  paymentError?: Prisma.StringNullableFilter<'Contribution'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
   cycle?: Prisma.XOR<Prisma.TontineCycleScalarRelationFilter, Prisma.TontineCycleWhereInput>;
@@ -325,6 +349,9 @@ export type ContributionOrderByWithRelationInput = {
   defaultAt?: Prisma.SortOrder;
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentRequestId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentError?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   cycle?: Prisma.TontineCycleOrderByWithRelationInput;
@@ -350,6 +377,9 @@ export type ContributionWhereUniqueInput = Prisma.AtLeast<
     defaultAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
     paidAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
     transactionId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+    paymentRequestId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+    paymentRequestedAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
+    paymentError?: Prisma.StringNullableFilter<'Contribution'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
     cycle?: Prisma.XOR<Prisma.TontineCycleScalarRelationFilter, Prisma.TontineCycleWhereInput>;
@@ -372,6 +402,9 @@ export type ContributionOrderByWithAggregationInput = {
   defaultAt?: Prisma.SortOrder;
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentRequestId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  paymentError?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.ContributionCountOrderByAggregateInput;
@@ -404,6 +437,10 @@ export type ContributionScalarWhereWithAggregatesInput = {
   defaultAt?: Prisma.DateTimeWithAggregatesFilter<'Contribution'> | Date | string;
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Contribution'> | Date | string | null;
   transactionId?: Prisma.UuidNullableWithAggregatesFilter<'Contribution'> | string | null;
+  paymentRequestId?: Prisma.UuidNullableWithAggregatesFilter<'Contribution'> | string | null;
+  paymentRequestedAt?:
+    Prisma.DateTimeNullableWithAggregatesFilter<'Contribution'> | Date | string | null;
+  paymentError?: Prisma.StringNullableWithAggregatesFilter<'Contribution'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Contribution'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Contribution'> | Date | string;
 };
@@ -422,6 +459,9 @@ export type ContributionCreateInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   cycle: Prisma.TontineCycleCreateNestedOneWithoutContributionsInput;
@@ -442,6 +482,9 @@ export type ContributionUncheckedCreateInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -460,6 +503,9 @@ export type ContributionUpdateInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   cycle?: Prisma.TontineCycleUpdateOneRequiredWithoutContributionsNestedInput;
@@ -480,6 +526,9 @@ export type ContributionUncheckedUpdateInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -499,6 +548,9 @@ export type ContributionCreateManyInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -517,6 +569,9 @@ export type ContributionUpdateManyMutationInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -536,6 +591,9 @@ export type ContributionUncheckedUpdateManyInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -570,6 +628,9 @@ export type ContributionCountOrderByAggregateInput = {
   defaultAt?: Prisma.SortOrder;
   paidAt?: Prisma.SortOrder;
   transactionId?: Prisma.SortOrder;
+  paymentRequestId?: Prisma.SortOrder;
+  paymentRequestedAt?: Prisma.SortOrder;
+  paymentError?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -594,6 +655,9 @@ export type ContributionMaxOrderByAggregateInput = {
   defaultAt?: Prisma.SortOrder;
   paidAt?: Prisma.SortOrder;
   transactionId?: Prisma.SortOrder;
+  paymentRequestId?: Prisma.SortOrder;
+  paymentRequestedAt?: Prisma.SortOrder;
+  paymentError?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -613,6 +677,9 @@ export type ContributionMinOrderByAggregateInput = {
   defaultAt?: Prisma.SortOrder;
   paidAt?: Prisma.SortOrder;
   transactionId?: Prisma.SortOrder;
+  paymentRequestId?: Prisma.SortOrder;
+  paymentRequestedAt?: Prisma.SortOrder;
+  paymentError?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -726,6 +793,9 @@ export type ContributionCreateWithoutCycleInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -744,6 +814,9 @@ export type ContributionUncheckedCreateWithoutCycleInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -807,6 +880,9 @@ export type ContributionScalarWhereInput = {
   defaultAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
   paidAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
   transactionId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+  paymentRequestId?: Prisma.UuidNullableFilter<'Contribution'> | string | null;
+  paymentRequestedAt?: Prisma.DateTimeNullableFilter<'Contribution'> | Date | string | null;
+  paymentError?: Prisma.StringNullableFilter<'Contribution'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Contribution'> | Date | string;
 };
@@ -825,6 +901,9 @@ export type ContributionCreateManyCycleInput = {
   defaultAt: Date | string;
   paidAt?: Date | string | null;
   transactionId?: string | null;
+  paymentRequestId?: string | null;
+  paymentRequestedAt?: Date | string | null;
+  paymentError?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -843,6 +922,9 @@ export type ContributionUpdateWithoutCycleInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -861,6 +943,9 @@ export type ContributionUncheckedUpdateWithoutCycleInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -879,6 +964,9 @@ export type ContributionUncheckedUpdateManyWithoutCycleInput = {
   defaultAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paymentError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -901,6 +989,9 @@ export type ContributionSelect<
     defaultAt?: boolean;
     paidAt?: boolean;
     transactionId?: boolean;
+    paymentRequestId?: boolean;
+    paymentRequestedAt?: boolean;
+    paymentError?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     cycle?: boolean | Prisma.TontineCycleDefaultArgs<ExtArgs>;
@@ -926,6 +1017,9 @@ export type ContributionSelectCreateManyAndReturn<
     defaultAt?: boolean;
     paidAt?: boolean;
     transactionId?: boolean;
+    paymentRequestId?: boolean;
+    paymentRequestedAt?: boolean;
+    paymentError?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     cycle?: boolean | Prisma.TontineCycleDefaultArgs<ExtArgs>;
@@ -951,6 +1045,9 @@ export type ContributionSelectUpdateManyAndReturn<
     defaultAt?: boolean;
     paidAt?: boolean;
     transactionId?: boolean;
+    paymentRequestId?: boolean;
+    paymentRequestedAt?: boolean;
+    paymentError?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     cycle?: boolean | Prisma.TontineCycleDefaultArgs<ExtArgs>;
@@ -973,6 +1070,9 @@ export type ContributionSelectScalar = {
   defaultAt?: boolean;
   paidAt?: boolean;
   transactionId?: boolean;
+  paymentRequestId?: boolean;
+  paymentRequestedAt?: boolean;
+  paymentError?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -994,6 +1094,9 @@ export type ContributionOmit<
   | 'defaultAt'
   | 'paidAt'
   | 'transactionId'
+  | 'paymentRequestId'
+  | 'paymentRequestedAt'
+  | 'paymentError'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['contribution']
@@ -1037,6 +1140,15 @@ export type $ContributionPayload<
       defaultAt: Date;
       paidAt: Date | null;
       transactionId: string | null;
+      /**
+       * Étape 5 (A-53) : demande de paiement en cours (saga CONTRIBUTION), une à la fois.
+       */
+      paymentRequestId: string | null;
+      paymentRequestedAt: Date | null;
+      /**
+       * Motif du dernier échec de paiement (saga), effacé à la demande suivante.
+       */
+      paymentError: string | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -1636,6 +1748,9 @@ export interface ContributionFieldRefs {
   readonly defaultAt: Prisma.FieldRef<'Contribution', 'DateTime'>;
   readonly paidAt: Prisma.FieldRef<'Contribution', 'DateTime'>;
   readonly transactionId: Prisma.FieldRef<'Contribution', 'String'>;
+  readonly paymentRequestId: Prisma.FieldRef<'Contribution', 'String'>;
+  readonly paymentRequestedAt: Prisma.FieldRef<'Contribution', 'DateTime'>;
+  readonly paymentError: Prisma.FieldRef<'Contribution', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Contribution', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Contribution', 'DateTime'>;
 }

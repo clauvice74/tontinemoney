@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { applyPercentBps } from '@tontine/contracts';
 import { type Tontine, type TontineCycle } from '@tontine/database';
@@ -13,7 +14,6 @@ import {
   ScheduledJob,
   UnitOfWork,
 } from '@tontine/platform';
-import { TransactionsService } from '@tontine/transactions';
 import { localDate } from './domain/calendar';
 import { CyclesService } from './cycles.service';
 import { TontinesService } from './tontines.service';
@@ -37,7 +37,6 @@ export class PayoutsService {
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
     private readonly audit: AuditService,
-    private readonly transactions: TransactionsService,
     private readonly cycles: CyclesService,
     private readonly tontines: TontinesService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
@@ -61,7 +60,13 @@ export class PayoutsService {
     for (const t of tontines) {
       const today = d(localDate(t.timezone, this.clock.now()));
       const overdue = await this.prisma.contribution.findMany({
-        where: { tontineId: t.id, status: 'PENDING', graceUntil: { lt: today } },
+        // Paiement en cours (saga) : pas de retard tant que la demande n'a pas abouti
+        where: {
+          tontineId: t.id,
+          status: 'PENDING',
+          graceUntil: { lt: today },
+          paymentRequestId: null,
+        },
       });
       for (const c of overdue) {
         const r = await this.markLate(t, c.id);
@@ -74,7 +79,7 @@ export class PayoutsService {
       for (const c of toDefault) {
         await this.uow.run(async (tx) => {
           const res = await tx.contribution.updateMany({
-            where: { id: c.id, status: 'LATE' },
+            where: { id: c.id, status: 'LATE', paymentRequestId: null },
             data: { status: 'DEFAULTED' },
           });
           if (res.count !== 1) return;
@@ -104,7 +109,7 @@ export class PayoutsService {
       const c = await tx.contribution.findUniqueOrThrow({ where: { id: contributionId } });
       const penalty = applyPercentBps(c.amountMinor, t.lateFeeBps);
       const res = await tx.contribution.updateMany({
-        where: { id: c.id, status: 'PENDING' },
+        where: { id: c.id, status: 'PENDING', paymentRequestId: null },
         data: { status: 'LATE', penaltyMinor: penalty },
       });
       if (res.count !== 1) return { late: false, suspended: false };
@@ -156,35 +161,43 @@ export class PayoutsService {
       if (cycle.partialPayout) await this.topUp(cycle, contributionId, amountMinor);
       return;
     }
+    // Arriéré reçu pendant un paiement partiel en cours : traité après l'issue de la saga
+    // (redélivrance), jamais en parallèle — un échec du paiement le réintégrerait au pot.
+    if (cycle.status === 'PAYOUT_PROCESSING' && cycle.partialPayout)
+      throw new Error('Paiement partiel du pot en cours : complément différé');
     await this.payout(cycleId, { mode: 'AUTO' });
   }
 
   /**
-   * Paiement du pot : total = Σ contributions reçues − collation (A-39 : collation → réserve).
+   * Demande de paiement du pot (saga TONTINE_PAYOUT orchestrée par Transaction Service,
+   * étape 5, A-53) : total = Σ contributions reçues − collation (A-39 : collation → réserve).
    * AUTO : uniquement si toutes les contributions sont PAID / PAID_LATE. PARTIAL : paiement
    * partiel (politique PARTIAL_PAYOUT à l'échéance, ou décision explicite de l'admin).
+   * Le cycle passe en PAYOUT_PROCESSING ; l'issue arrive par `transaction.saga.*`.
    */
   async payout(
     cycleId: string,
     opts: { mode: 'AUTO' | 'PARTIAL'; actorId?: string; reason?: string },
-  ): Promise<{ paid: boolean; reason?: string }> {
+  ): Promise<{ requested: boolean; reason?: string }> {
     const cycle = await this.prisma.tontineCycle.findUniqueOrThrow({
       where: { id: cycleId },
       include: { contributions: true, tontine: true },
     });
     const t = cycle.tontine;
-    if (cycle.status === 'COMPLETED') return { paid: false, reason: 'Cycle déjà payé' };
-    if (t.status !== 'ACTIVE') return { paid: false, reason: `Tontine ${t.status}` };
-    if (!cycle.beneficiaryId) return { paid: false, reason: 'Bénéficiaire non désigné' };
+    if (cycle.status === 'COMPLETED') return { requested: false, reason: 'Cycle déjà payé' };
+    if (cycle.status === 'PAYOUT_PROCESSING')
+      return { requested: false, reason: 'Paiement du pot déjà en cours' };
+    if (t.status !== 'ACTIVE') return { requested: false, reason: `Tontine ${t.status}` };
+    if (!cycle.beneficiaryId) return { requested: false, reason: 'Bénéficiaire non désigné' };
     const complete = cycle.contributions.every((c) =>
       (PAID as readonly string[]).includes(c.status),
     );
     if (!complete && opts.mode === 'AUTO')
-      return { paid: false, reason: 'Contributions incomplètes' };
+      return { requested: false, reason: 'Contributions incomplètes' };
     const collected = cycle.contributions
       .filter((c) => (PAID as readonly string[]).includes(c.status))
       .reduce((s, c) => s + c.amountMinor, 0n);
-    if (collected <= 0n) return { paid: false, reason: 'Aucune contribution reçue' };
+    if (collected <= 0n) return { requested: false, reason: 'Aucune contribution reçue' };
     const collation = t.collationMinor < collected ? t.collationMinor : 0n;
     const net = collected - collation;
     const beneficiaryWallet = await this.prisma.wallet.findUnique({
@@ -193,89 +206,75 @@ export class PayoutsService {
     if (!beneficiaryWallet || !t.poolWalletId || !t.reserveWalletId)
       throw new DomainError('INTERNAL_ERROR', 'Portefeuilles introuvables');
 
-    let txId: string;
-    try {
-      const tr = await this.transactions.execute({
-        idempotencyKey: `payout:${cycle.id}`,
-        type: 'PAYOUT',
-        amountMinor: collected,
-        currency: t.currency,
-        initiatorId: opts.actorId ?? null,
-        beneficiaryId: cycle.beneficiaryId,
-        sourceWalletId: t.poolWalletId,
-        destinationWalletId: beneficiaryWallet.id,
-        contextType: 'TONTINE',
-        contextId: t.id,
-        description: `Pot du cycle ${cycle.number} — ${t.name}`,
-        metadata: {
-          cycleId: cycle.id,
-          cycleNumber: cycle.number,
-          collationMinor: collation.toString(),
-          partial: !complete,
-        },
-        lines: [
-          {
-            walletId: t.poolWalletId,
-            direction: 'DEBIT',
-            amountMinor: collected,
-            context: 'TONTINE_PAYOUT',
-            contextRef: cycle.id,
-          },
-          {
-            walletId: beneficiaryWallet.id,
-            direction: 'CREDIT',
-            amountMinor: net,
-            context: 'TONTINE_PAYOUT',
-            contextRef: t.id,
-            description: `Pot du cycle ${cycle.number} — ${t.name}`,
-          },
-          ...(collation > 0n
-            ? [
-                {
-                  walletId: t.reserveWalletId,
-                  direction: 'CREDIT' as const,
-                  amountMinor: collation,
-                  context: 'COLLATION' as const,
-                  contextRef: cycle.id,
-                },
-              ]
-            : []),
-        ],
-        compliance: {
-          operationType: 'TONTINE_PAYOUT',
-          memberId: cycle.beneficiaryId,
-          creditMemberId: cycle.beneficiaryId,
-        },
-      });
-      txId = tr.id;
-    } catch (e) {
-      // Paiement bloqué (conformité, wallet) : le cycle reste en attente de paiement, l'admin est alerté
-      const reason = e instanceof DomainError ? e.message : 'Erreur technique';
-      this.logger.warn(`Paiement du cycle ${cycle.id} bloqué : ${reason}`);
-      await this.prisma.tontineCycle.updateMany({
-        where: { id: cycle.id, status: 'IN_PROGRESS' },
-        data: { status: 'PAYOUT_PENDING' },
-      });
-      await this.audit.record({
-        action: 'tontine.payout.blocked',
-        resourceType: 'tontine',
-        resourceId: t.id,
-        result: 'FAILURE',
-        metadata: { cycleId: cycle.id, reason },
-      });
-      return { paid: false, reason };
-    }
-
-    const next = await this.uow.run(async (tx) => {
+    const requested = await this.uow.run(async (tx) => {
       const res = await tx.tontineCycle.updateMany({
         where: { id: cycle.id, status: { in: ['IN_PROGRESS', 'PAYOUT_PENDING'] } },
-        data: {
-          status: 'COMPLETED',
-          payoutMinor: net,
-          payoutTxId: txId,
-          partialPayout: !complete,
-          completedAt: this.clock.now(),
+        data: { status: 'PAYOUT_PROCESSING', payoutMinor: net, partialPayout: !complete },
+      });
+      if (res.count !== 1) return false;
+      await this.outbox.add(tx, {
+        type: 'tontine.payout.requested',
+        aggregateType: 'tontine',
+        aggregateId: t.id,
+        payload: {
+          requestId: randomUUID(),
+          tontineId: t.id,
+          cycleId: cycle.id,
+          cycleNumber: cycle.number,
+          beneficiaryId: cycle.beneficiaryId!,
+          currency: t.currency,
+          collectedMinor: collected.toString(),
+          netMinor: net.toString(),
+          collationMinor: collation.toString(),
+          poolWalletId: t.poolWalletId!,
+          reserveWalletId: t.reserveWalletId!,
+          beneficiaryWalletId: beneficiaryWallet.id,
+          partial: !complete,
+          initiatorId: opts.actorId ?? null,
+          description: `Pot du cycle ${cycle.number} — ${t.name}`,
         },
+      });
+      // Décision journalisée au moment où elle est prise (A-10)
+      if (!complete)
+        await this.audit.record(
+          {
+            action: 'tontine.payout.partial',
+            resourceType: 'tontine',
+            resourceId: t.id,
+            result: 'SUCCESS',
+            actorId: opts.actorId ?? null,
+            metadata: {
+              cycleId: cycle.id,
+              reason: opts.reason ?? 'Politique PARTIAL_PAYOUT',
+              collected: collected.toString(),
+              expected: cycle.expectedMinor.toString(),
+            },
+          },
+          tx,
+        );
+      return true;
+    });
+    return requested
+      ? { requested: true }
+      : { requested: false, reason: 'Paiement du pot déjà en cours' };
+  }
+
+  /**
+   * Saga TONTINE_PAYOUT terminée : cycle COMPLETED, bénéficiaire marqué, événements, puis
+   * cycle suivant ou clôture (US-4.8). Idempotent (transition gardée).
+   */
+  async completePayout(cycleId: string, transactionId: string): Promise<void> {
+    const cycle = await this.prisma.tontineCycle.findUniqueOrThrow({
+      where: { id: cycleId },
+      include: { tontine: true },
+    });
+    const t = cycle.tontine;
+    const net = cycle.payoutMinor ?? 0n;
+    const partial = cycle.partialPayout;
+    const next = await this.uow.run(async (tx) => {
+      const res = await tx.tontineCycle.updateMany({
+        where: { id: cycle.id, status: 'PAYOUT_PROCESSING' },
+        data: { status: 'COMPLETED', payoutTxId: transactionId, completedAt: this.clock.now() },
       });
       if (res.count !== 1) return null;
       await tx.tontineMember.update({
@@ -293,7 +292,7 @@ export class PayoutsService {
             beneficiaryId: cycle.beneficiaryId!,
             totalMinor: net.toString(),
             currency: t.currency,
-            partial: !complete,
+            partial,
           },
         },
         {
@@ -310,24 +309,6 @@ export class PayoutsService {
           },
         },
       ]);
-      if (!complete) {
-        await this.audit.record(
-          {
-            action: 'tontine.payout.partial',
-            resourceType: 'tontine',
-            resourceId: t.id,
-            result: 'SUCCESS',
-            actorId: opts.actorId ?? null,
-            metadata: {
-              cycleId: cycle.id,
-              reason: opts.reason ?? 'Politique PARTIAL_PAYOUT',
-              collected: collected.toString(),
-              expected: cycle.expectedMinor.toString(),
-            },
-          },
-          tx,
-        );
-      }
       // US-4.8 : cycle suivant ou clôture
       const total = t.totalCycles ?? 0;
       if (cycle.number >= total) return 'CLOSE' as const;
@@ -349,10 +330,38 @@ export class PayoutsService {
       return 'NEXT' as const;
     });
     if (next === 'CLOSE') await this.tryClose(t.id);
-    return { paid: next !== null };
   }
 
-  /** Arriérés payés après un paiement partiel : reversés au bénéficiaire du cycle concerné. */
+  /**
+   * Saga TONTINE_PAYOUT en échec (conformité, wallet…) : aucune écriture n'a été passée ; le
+   * cycle revient en attente de paiement et l'admin est alerté (compensation côté tontine).
+   */
+  async payoutFailed(cycleId: string, code: string, reason: string): Promise<void> {
+    const cycle = await this.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycleId } });
+    this.logger.warn(`Paiement du cycle ${cycle.id} bloqué : ${reason}`);
+    await this.uow.run(async (tx) => {
+      const res = await tx.tontineCycle.updateMany({
+        where: { id: cycle.id, status: 'PAYOUT_PROCESSING' },
+        data: { status: 'PAYOUT_PENDING', payoutMinor: null, partialPayout: false },
+      });
+      if (res.count !== 1) return;
+      await this.audit.record(
+        {
+          action: 'tontine.payout.blocked',
+          resourceType: 'tontine',
+          resourceId: cycle.tontineId,
+          result: 'FAILURE',
+          metadata: { cycleId: cycle.id, code, reason },
+        },
+        tx,
+      );
+    });
+  }
+
+  /**
+   * Arriérés payés après un paiement partiel : reversés au bénéficiaire du cycle concerné
+   * (saga TONTINE_PAYOUT_TOPUP, A-53).
+   */
   private async topUp(
     cycle: TontineCycle,
     contributionId: string,
@@ -361,41 +370,44 @@ export class PayoutsService {
     const t = await this.prisma.tontine.findUniqueOrThrow({ where: { id: cycle.tontineId } });
     const w = await this.prisma.wallet.findUnique({ where: { memberId: cycle.beneficiaryId! } });
     if (!w || !t.poolWalletId) return;
-    await this.transactions.execute({
-      idempotencyKey: `payout-topup:${contributionId}`,
-      type: 'PAYOUT',
-      amountMinor,
-      currency: t.currency,
-      initiatorId: null,
-      beneficiaryId: cycle.beneficiaryId,
-      sourceWalletId: t.poolWalletId,
-      destinationWalletId: w.id,
-      contextType: 'TONTINE',
-      contextId: t.id,
-      description: `Complément du pot du cycle ${cycle.number} — ${t.name}`,
-      lines: [
-        {
-          walletId: t.poolWalletId,
-          direction: 'DEBIT',
-          amountMinor,
-          context: 'TONTINE_PAYOUT',
-          contextRef: cycle.id,
-        },
-        {
-          walletId: w.id,
-          direction: 'CREDIT',
-          amountMinor,
-          context: 'TONTINE_PAYOUT',
-          contextRef: t.id,
+    await this.uow.run((tx) =>
+      this.outbox.add(tx, {
+        type: 'tontine.payout.topup.requested',
+        aggregateType: 'tontine',
+        aggregateId: t.id,
+        payload: {
+          tontineId: t.id,
+          cycleId: cycle.id,
+          contributionId,
+          beneficiaryId: cycle.beneficiaryId!,
+          currency: t.currency,
+          amountMinor: amountMinor.toString(),
+          poolWalletId: t.poolWalletId!,
+          beneficiaryWalletId: w.id,
           description: `Complément du pot du cycle ${cycle.number} — ${t.name}`,
         },
-      ],
-    });
-    await this.prisma.tontineCycle.update({
-      where: { id: cycle.id },
+      }),
+    );
+  }
+
+  /** Complément versé : montant du pot mis à jour, clôture si possible. */
+  async completeTopUp(cycleId: string, amountMinor: bigint): Promise<void> {
+    const cycle = await this.prisma.tontineCycle.update({
+      where: { id: cycleId },
       data: { payoutMinor: { increment: amountMinor } },
     });
-    await this.tryClose(t.id);
+    await this.tryClose(cycle.tontineId);
+  }
+
+  async topUpFailed(cycleId: string, code: string, reason: string): Promise<void> {
+    const cycle = await this.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycleId } });
+    await this.audit.record({
+      action: 'tontine.payout.topup_blocked',
+      resourceType: 'tontine',
+      resourceId: cycle.tontineId,
+      result: 'FAILURE',
+      metadata: { cycleId, code, reason },
+    });
   }
 
   /** A-10 — paiement partiel explicite par l'admin (journalisé). */
@@ -404,8 +416,9 @@ export class PayoutsService {
     const cycle = await this.prisma.tontineCycle.findFirst({ where: { id: cycleId, tontineId } });
     if (!cycle) throw new DomainError('NOT_FOUND', 'Cycle introuvable');
     const r = await this.payout(cycleId, { mode: 'PARTIAL', actorId: actor.userId, reason });
-    if (!r.paid) throw new DomainError('PAYOUT_NOT_READY', r.reason ?? 'Paiement impossible');
-    return { paid: true };
+    if (!r.requested) throw new DomainError('PAYOUT_NOT_READY', r.reason ?? 'Paiement impossible');
+    // Exécution asynchrone (saga) : le cycle est PAYOUT_PROCESSING jusqu'à l'issue
+    return { status: 'PAYOUT_PROCESSING' as const };
   }
 
   /** Échéance dépassée : PARTIAL_PAYOUT → paiement partiel ; POSTPONE → report (A-10). */
@@ -432,7 +445,7 @@ export class PayoutsService {
               mode: 'PARTIAL',
               reason: 'Politique PARTIAL_PAYOUT à l’échéance',
             })
-          ).paid
+          ).requested
         )
           partial++;
       } else {

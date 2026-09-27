@@ -297,6 +297,7 @@ export function statusVariant(status: string | null | undefined): BadgeVariant {
     case 'KYC_IN_REVIEW':
     case 'READY':
     case 'IN_PROGRESS':
+    case 'PAYOUT_PROCESSING':
     case 'DRAFT':
       return 'info';
     case 'LATE':

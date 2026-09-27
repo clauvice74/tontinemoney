@@ -73,7 +73,7 @@ describe('Routes à plat /cycles', () => {
     const s = await startTontine(ctx);
     const [admin, bella] = s.users;
     const cycle = await firstCycle(s.tontineId);
-    expect((await payCurrent(ctx, s, bella!)).status).toBe(200);
+    expect((await payCurrent(ctx, s, bella!)).status).toBe(202);
     await settle(ctx);
 
     const all = await ctx.http
@@ -112,7 +112,7 @@ describe('Routes à plat /cycles', () => {
       payout: null,
       paidOut: false,
     });
-    for (const u of s.users) expect((await payCurrent(ctx, s, u)).status).toBe(200);
+    for (const u of s.users) expect((await payCurrent(ctx, s, u)).status).toBe(202);
     await settle(ctx);
     const after = await ctx.http
       .get(`/api/v1/tontines/${s.tontineId}/cycles/${cycle.id}/beneficiary`)

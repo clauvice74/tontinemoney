@@ -43,6 +43,7 @@ const CYCLE_LABELS: Record<string, string> = {
   PENDING: 'À venir',
   IN_PROGRESS: 'En cours',
   PAYOUT_PENDING: 'Versement en attente',
+  PAYOUT_PROCESSING: 'Versement en cours',
   COMPLETED: 'Terminé',
 };
 
@@ -144,7 +145,7 @@ function CycleDetail({
                   {c.beneficiary?.fullName ?? c.beneficiary?.firstName ?? 'à déterminer'}
                 </CardDescription>
               </div>
-              {c.status !== 'COMPLETED' ? (
+              {c.status !== 'COMPLETED' && c.status !== 'PAYOUT_PROCESSING' ? (
                 <ActionDialog
                   trigger="Forcer un versement partiel"
                   triggerVariant="destructive"
@@ -153,7 +154,7 @@ function CycleDetail({
                   reason={{ label: 'Motif', required: true }}
                   confirmVariant="destructive"
                   confirmLabel="Verser"
-                  successMessage="Versement partiel effectué"
+                  successMessage="Versement partiel demandé : exécution en cours"
                   onConfirm={async (reason) => {
                     await api.post(`/tontines/${tontineId}/cycles/${cycleId}/force-payout`, {
                       reason,

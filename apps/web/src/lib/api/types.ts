@@ -395,6 +395,9 @@ export interface ContributionView {
   paidAt?: string | null;
   tontineId?: string;
   tontineName?: string;
+  /** Paiement asynchrone (saga, A-53) en cours ; motif du dernier échec sinon. */
+  paymentStatus?: 'PROCESSING' | null;
+  paymentError?: string | null;
 }
 
 export interface CycleView {

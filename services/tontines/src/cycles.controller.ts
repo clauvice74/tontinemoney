@@ -175,9 +175,10 @@ export class CyclesController {
 
   @Post('tontines/:id/contributions/:contributionId/pay')
   @Idempotent('tontine.contribution.pay')
-  @HttpCode(200)
+  @HttpCode(202)
   @ApiOperation({
-    summary: 'Payer sa contribution depuis le wallet (hold + capture, pénalité incluse) — US-5.4',
+    summary:
+      'Payer sa contribution depuis le wallet (pénalité incluse) — US-5.4 ; demande acceptée, exécutée par la saga CONTRIBUTION (hold + capture, A-53)',
   })
   async pay(
     @CurrentUser() actor: Actor,
@@ -189,7 +190,7 @@ export class CyclesController {
 
   @Post('contributions/:contributionId/pay')
   @Idempotent('tontine.contribution.pay')
-  @HttpCode(200)
+  @HttpCode(202)
   @ApiOperation({
     summary: 'Payer sa contribution (alias de tontines/{id}/contributions/{id}/pay)',
   })

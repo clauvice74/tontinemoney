@@ -93,7 +93,7 @@ describe('US-4.7 / US-4.8 / US-4.9 — cycle de vie complet', () => {
         where: { tontineId_number: { tontineId: s.tontineId, number: n } },
       });
       beneficiaries.push(cycle.beneficiaryId!);
-      for (const u of s.users) expect((await payCurrent(s, u)).status).toBe(200);
+      for (const u of s.users) expect((await payCurrent(s, u)).status).toBe(202);
       await settle();
       const done = await ctx.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycle.id } });
       expect(done).toMatchObject({
@@ -183,9 +183,23 @@ describe('US-4.5 — retards, pénalités, défauts, suspension', () => {
       penalty: { amountMinor: '500' },
     });
     const pay = await payCurrent(s, late);
-    expect(pay.body).toMatchObject({ status: 'PAID_LATE', penaltyPaid: true });
-    expect((await ctx.balance(late.id)).balance).toBe(89_500n); // 10 000 + 500 de pénalité
+    // Saga CONTRIBUTION (A-53) : demande acceptée, exécutée de façon asynchrone
+    expect(pay.status).toBe(202);
+    expect(pay.body).toMatchObject({ status: 'LATE', paymentStatus: 'PROCESSING' });
     await settle();
+    expect(await ctx.prisma.contribution.findUniqueOrThrow({ where: { id: c.id } })).toMatchObject({
+      status: 'PAID_LATE',
+      penaltyPaid: true,
+      paymentRequestId: null,
+    });
+    // 10 000 + 500 de pénalité débités en une transaction (le pot a pu être versé depuis)
+    expect(
+      (
+        await ctx.prisma.transaction.findFirstOrThrow({
+          where: { initiatorId: late.id, type: 'CONTRIBUTION' },
+        })
+      ).amountMinor,
+    ).toBe(10_500n);
     const reserve = await ctx.prisma.wallet.findFirstOrThrow({
       where: { tontineId: s.tontineId, ownerType: 'TONTINE_RESERVE' },
     });
@@ -220,7 +234,15 @@ describe('US-4.5 — retards, pénalités, défauts, suspension', () => {
       }),
     ).toBeGreaterThanOrEqual(1);
     // un membre suspendu peut régulariser ses arriérés
-    expect((await payCurrent(s, late)).body.status).toBe('PAID_LATE');
+    expect((await payCurrent(s, late)).status).toBe(202);
+    await settle();
+    expect(
+      (
+        await ctx.prisma.contribution.findFirstOrThrow({
+          where: { tontineId: s.tontineId, memberId: late.id },
+        })
+      ).status,
+    ).toBe('PAID_LATE');
   });
 });
 
@@ -236,6 +258,11 @@ describe('US-4.7 §7 — politique en cas de contributions incomplètes (A-10)',
     ctx.clock.set('2026-11-08T09:00:00.000Z');
     const run = await ctx.jobs.run('tontines.payouts', 'test');
     expect(run.summary['partial']).toBe(1);
+    // Saga TONTINE_PAYOUT (A-53) : demandé, puis exécuté par Transaction Service
+    expect(
+      (await ctx.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycle.id } })).status,
+    ).toBe('PAYOUT_PROCESSING');
+    await settle();
     const done = await ctx.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycle.id } });
     expect(done).toMatchObject({ status: 'COMPLETED', partialPayout: true, payoutMinor: 19_000n });
     expect(await ctx.prisma.auditLog.count({ where: { action: 'tontine.payout.partial' } })).toBe(
@@ -252,7 +279,7 @@ describe('US-4.7 §7 — politique en cas de contributions incomplètes (A-10)',
       .set(bearer(await ctx.token(debtor)))
       .set('Idempotency-Key', randomUUID())
       .send()
-      .expect(200);
+      .expect(202);
     await settle();
     expect((await ctx.balance(cycle.beneficiaryId!)).balance - before).toBe(10_000n);
   });
@@ -279,7 +306,18 @@ describe('US-4.7 §7 — politique en cas de contributions incomplètes (A-10)',
       .post(`/api/v1/tontines/${s.tontineId}/cycles/${cycle.id}/force-payout`)
       .set(bearer(await ctx.token(s.admin)))
       .send({ reason: 'Accord des membres en réunion' });
-    expect(forced.status).toBe(200);
+    expect(forced.status).toBe(202);
+    expect(forced.body).toEqual({ status: 'PAYOUT_PROCESSING' });
+    // Seconde demande pendant la saga : refusée
+    const again = await ctx.http
+      .post(`/api/v1/tontines/${s.tontineId}/cycles/${cycle.id}/force-payout`)
+      .set(bearer(await ctx.token(s.admin)))
+      .send({ reason: 'Accord des membres en réunion' });
+    expect(again.status).toBe(422);
+    await settle();
+    expect(
+      (await ctx.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycle.id } })).status,
+    ).toBe('COMPLETED');
     expect(
       (await ctx.prisma.tontineCycle.findUniqueOrThrow({ where: { id: cycle.id } })).payoutMinor,
     ).toBe(9_000n);
@@ -318,7 +356,7 @@ describe('pause / reprise (super-admin)', () => {
           .send({ reason: 'Contrôle terminé' })
       ).status,
     ).toBe(200);
-    expect((await payCurrent(s, s.users[1]!)).status).toBe(200);
+    expect((await payCurrent(s, s.users[1]!)).status).toBe(202);
   });
 });
 
@@ -326,6 +364,7 @@ describe('US-4.10 — tableau de bord', () => {
   it('vue admin (agrégats) et vue membre (ses contributions, ses tours, pénalités)', async () => {
     const s = await startedTontine();
     await payCurrent(s, s.users[1]!);
+    await settle();
     const admin = await ctx.http
       .get(`/api/v1/tontines/${s.tontineId}/dashboard`)
       .set(bearer(await ctx.token(s.admin)));
@@ -364,6 +403,7 @@ describe('US-10.3 — messagerie ciblée', () => {
   it('envoi filtré (retardataires), historique, réservé à l’admin', async () => {
     const s = await startedTontine();
     await payCurrent(s, s.users[1]!);
+    await settle();
     ctx.clock.set('2026-11-08T09:00:00.000Z');
     await ctx.jobs.run('tontines.late-detection', 'test');
     const token = await ctx.token(s.admin);
@@ -404,6 +444,7 @@ describe('US-5.2 — solde et historique du wallet', () => {
     const s = await startedTontine();
     const u = s.users[1]!;
     await payCurrent(s, u);
+    await settle();
     const token = await ctx.token(u);
     const w = await ctx.http.get('/api/v1/me/wallet').set(bearer(token));
     expect(w.body).toMatchObject({

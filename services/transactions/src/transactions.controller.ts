@@ -14,16 +14,26 @@ import {
   ApiZodBody,
   ApiZodQuery,
   CurrentUser,
+  DomainError,
   Idempotent,
   PrismaService,
   Roles,
   ZodBody,
   ZodQuery,
 } from '@tontine/platform';
+import { type TransactionSaga } from '@tontine/database';
 import { type Request } from 'express';
 import { z } from 'zod';
 import { TransactionsService, transactionView } from './transactions.service';
 import { TransfersService } from './transfers.service';
+import { SAGA_TYPES } from './sagas/saga-orchestrator';
+
+const sagaQuery = z.object({
+  status: z.enum(['STARTED', 'COMPLETED', 'FAILED', 'COMPENSATED']).optional(),
+  type: z.enum(SAGA_TYPES).optional(),
+  reference: z.string().max(100).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
 
 const listQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -31,6 +41,23 @@ const listQuery = z.object({
   status: z.enum(TRANSACTION_STATUSES).optional(),
   type: z.enum(TRANSACTION_TYPES).optional(),
 });
+
+function sagaView(s: TransactionSaga) {
+  return {
+    id: s.id,
+    type: s.type,
+    status: s.status,
+    step: s.step,
+    reference: s.reference,
+    transactionId: s.transactionId,
+    failureCode: s.failureCode,
+    failureReason: s.failureReason,
+    attempts: s.attempts,
+    createdAt: s.createdAt.toISOString(),
+    updatedAt: s.updatedAt.toISOString(),
+    completedAt: s.completedAt?.toISOString() ?? null,
+  };
+}
 
 @ApiTags('Transactions')
 @ApiBearerAuth()
@@ -124,6 +151,45 @@ export class TransactionsController {
         ...r,
         createdAt: r.createdAt.toISOString(),
         retainUntil: r.retainUntil.toISOString(),
+      })),
+    };
+  }
+
+  @Get('admin/sagas')
+  @Roles('SUPER_ADMIN')
+  @ApiOperation({ summary: 'Sagas orchestrées par Transaction Service (étape 5, A-53)' })
+  @ApiZodQuery(sagaQuery)
+  async sagas(@ZodQuery(sagaQuery) q: z.infer<typeof sagaQuery>) {
+    const rows = await this.prisma.transactionSaga.findMany({
+      where: {
+        ...(q.status ? { status: q.status } : {}),
+        ...(q.type ? { type: q.type } : {}),
+        ...(q.reference ? { reference: q.reference } : {}),
+      },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      take: q.limit,
+    });
+    return { data: rows.map(sagaView) };
+  }
+
+  @Get('admin/sagas/:id')
+  @Roles('SUPER_ADMIN')
+  @ApiOperation({ summary: 'Détail d’une saga et journal de ses transitions' })
+  async saga(@Param('id', ParseUUIDPipe) id: string) {
+    const s = await this.prisma.transactionSaga.findUnique({
+      where: { id },
+      include: { steps: { orderBy: { createdAt: 'asc' } } },
+    });
+    if (!s) throw new DomainError('NOT_FOUND', 'Saga introuvable');
+    return {
+      ...sagaView(s),
+      request: s.request,
+      steps: s.steps.map((st) => ({
+        from: st.fromStep,
+        to: st.toStep,
+        status: st.status,
+        detail: st.detail,
+        at: st.createdAt.toISOString(),
       })),
     };
   }

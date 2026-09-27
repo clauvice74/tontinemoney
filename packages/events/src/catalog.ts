@@ -327,6 +327,62 @@ export const EVENT_CATALOG = {
       partial: z.boolean(),
     }),
   ),
+  /** Étape 5 (A-53) : demande de paiement du pot, exécutée par la saga TONTINE_PAYOUT. */
+  'tontine.payout.requested': def(
+    'tontines',
+    z.object({
+      /** Une demande par tentative : un paiement bloqué puis relancé est une nouvelle saga. */
+      requestId: id,
+      tontineId: id,
+      cycleId: id,
+      cycleNumber: z.number().int(),
+      beneficiaryId: id,
+      currency,
+      collectedMinor: minor,
+      netMinor: minor,
+      collationMinor: minor,
+      poolWalletId: id,
+      reserveWalletId: id,
+      beneficiaryWalletId: id,
+      partial: z.boolean(),
+      initiatorId: nullableId,
+      description: z.string().max(200),
+    }),
+  ),
+  /** Étape 5 (A-53) : paiement d'une contribution, exécuté par la saga CONTRIBUTION. */
+  'tontine.contribution.payment.requested': def(
+    'tontines',
+    z.object({
+      requestId: id,
+      tontineId: id,
+      cycleId: id,
+      cycleNumber: z.number().int(),
+      contributionId: id,
+      memberId: id,
+      currency,
+      amountMinor: minor,
+      penaltyMinor: minor,
+      memberWalletId: id,
+      poolWalletId: id,
+      reserveWalletId: id,
+      description: z.string().max(200),
+    }),
+  ),
+  /** Arriéré reçu après un paiement partiel : complément au bénéficiaire (saga). */
+  'tontine.payout.topup.requested': def(
+    'tontines',
+    z.object({
+      tontineId: id,
+      cycleId: id,
+      contributionId: id,
+      beneficiaryId: id,
+      currency,
+      amountMinor: minor,
+      poolWalletId: id,
+      beneficiaryWalletId: id,
+      description: z.string().max(200),
+    }),
+  ),
   'tontine.cycle.completed': def(
     'tontines',
     z.object({
@@ -445,6 +501,25 @@ export const EVENT_CATALOG = {
     'transactions',
     z.object({ txId: id, reversalTxId: id, reason: z.string(), initiatorId: nullableId }),
   ),
+  /** Étape 5 (A-53) : issue d'une saga orchestrée par Transaction Service. */
+  'transaction.saga.completed': def(
+    'transactions',
+    z.object({ sagaId: id, sagaType: z.string(), reference: z.string(), transactionId: id }),
+  ),
+  'transaction.saga.failed': def(
+    'transactions',
+    z.object({
+      sagaId: id,
+      sagaType: z.string(),
+      reference: z.string(),
+      failureCode: z.string(),
+      failureReason: z.string(),
+      /** Les effets déjà produits ont été annulés (holds libérés, contre-passation). */
+      compensated: z.boolean(),
+      /** Fonds déjà sortis ou entrés chez le PSP : intervention et réconciliation requises. */
+      requiresReconciliation: z.boolean(),
+    }),
+  ),
   'reconciliation.completed': def(
     'transactions',
     z.object({
@@ -477,6 +552,10 @@ export const EVENT_CATALOG = {
       amountMinor: minor,
       currency,
       transactionId: nullableId,
+      // Ajouts rétrocompatibles (étape 5) : instructions de règlement pour la saga
+      walletId: id.optional(),
+      holdId: nullableId.optional(),
+      description: z.string().max(200).optional(),
     }),
   ),
   'payment.failed': def(

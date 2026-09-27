@@ -84,6 +84,8 @@ export const ModelName = {
   WalletStatusHistory: 'WalletStatusHistory',
   Transaction: 'Transaction',
   TransactionAuditLog: 'TransactionAuditLog',
+  TransactionSaga: 'TransactionSaga',
+  TransactionSagaStep: 'TransactionSagaStep',
   ReconciliationReport: 'ReconciliationReport',
   Payment: 'Payment',
   PaymentStatusHistory: 'PaymentStatusHistory',
@@ -665,6 +667,9 @@ export const ContributionScalarFieldEnum = {
   defaultAt: 'defaultAt',
   paidAt: 'paidAt',
   transactionId: 'transactionId',
+  paymentRequestId: 'paymentRequestId',
+  paymentRequestedAt: 'paymentRequestedAt',
+  paymentError: 'paymentError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -799,6 +804,39 @@ export const TransactionAuditLogScalarFieldEnum = {
 
 export type TransactionAuditLogScalarFieldEnum =
   (typeof TransactionAuditLogScalarFieldEnum)[keyof typeof TransactionAuditLogScalarFieldEnum];
+
+export const TransactionSagaScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  sagaKey: 'sagaKey',
+  status: 'status',
+  step: 'step',
+  reference: 'reference',
+  request: 'request',
+  transactionId: 'transactionId',
+  failureCode: 'failureCode',
+  failureReason: 'failureReason',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt',
+} as const;
+
+export type TransactionSagaScalarFieldEnum =
+  (typeof TransactionSagaScalarFieldEnum)[keyof typeof TransactionSagaScalarFieldEnum];
+
+export const TransactionSagaStepScalarFieldEnum = {
+  id: 'id',
+  sagaId: 'sagaId',
+  fromStep: 'fromStep',
+  toStep: 'toStep',
+  status: 'status',
+  detail: 'detail',
+  createdAt: 'createdAt',
+} as const;
+
+export type TransactionSagaStepScalarFieldEnum =
+  (typeof TransactionSagaStepScalarFieldEnum)[keyof typeof TransactionSagaStepScalarFieldEnum];
 
 export const ReconciliationReportScalarFieldEnum = {
   id: 'id',

@@ -334,12 +334,20 @@ describe('US-5.4 / US-5.5 — paiement des contributions depuis le wallet', () =
     const s = await started();
     await ctx.fund(s.m.id, 25_000n);
     const res = await pay(s, s.token, s.contributionId);
-    expect(res.status).toBe(200);
+    // Saga CONTRIBUTION (A-53) : demande acceptée, puis hold + capture par Transaction Service
+    expect(res.status).toBe(202);
     expect(res.body).toMatchObject({
-      status: 'PAID',
+      status: 'PENDING',
+      paymentStatus: 'PROCESSING',
       amount: { amountMinor: '10000' },
       cycleNumber: 1,
     });
+    expect(await ctx.balance(s.m.id)).toEqual({ balance: 25_000n, blocked: 0n });
+    await ctx.drain();
+    const paid = await ctx.http
+      .get(`/api/v1/contributions/${s.contributionId}`)
+      .set(bearer(s.token));
+    expect(paid.body).toMatchObject({ status: 'PAID', paymentStatus: null });
     expect(await ctx.balance(s.m.id)).toEqual({ balance: 15_000n, blocked: 0n });
     const pool = await ctx.prisma.wallet.findFirstOrThrow({
       where: { tontineId: s.tontineId, ownerType: 'TONTINE_POOL' },
@@ -386,9 +394,14 @@ describe('US-5.4 / US-5.5 — paiement des contributions depuis le wallet', () =
       pay(s, s.token, s.contributionId),
       pay(s, s.token, s.contributionId),
     ]);
-    expect(results.some((r) => r.status === 200)).toBe(true);
+    expect(results.some((r) => r.status === 202)).toBe(true);
     await pay(s, s.token, s.contributionId, key);
     await pay(s, s.token, s.contributionId);
+    await ctx.drain();
+    await pay(s, s.token, s.contributionId, key);
+    await pay(s, s.token, s.contributionId);
+    await ctx.drain();
+    expect(await ctx.prisma.transactionSaga.count({ where: { type: 'CONTRIBUTION' } })).toBe(1);
     expect((await ctx.balance(s.m.id)).balance).toBe(40_000n);
     expect((await ctx.balance(s.m.id)).blocked).toBe(0n);
     expect(

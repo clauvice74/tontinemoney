@@ -24,6 +24,7 @@ const STATUS_FR: Record<string, string> = {
   DEFAULTED: 'En défaut',
   IN_PROGRESS: 'En cours',
   PAYOUT_PENDING: 'Paiement en attente',
+  PAYOUT_PROCESSING: 'Paiement en cours',
   COMPLETED: 'Terminé',
 };
 /** A-18 : rapports archivés 5 ans minimum (US-4.9 §6). */

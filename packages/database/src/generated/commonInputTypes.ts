@@ -1293,6 +1293,23 @@ export type EnumTransactionContextTypeWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumTransactionContextTypeFilter<$PrismaModel>;
 };
 
+export type EnumSagaStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SagaStatus | Prisma.EnumSagaStatusFieldRefInput<$PrismaModel>;
+  in?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel> | $Enums.SagaStatus;
+};
+
+export type EnumSagaStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SagaStatus | Prisma.EnumSagaStatusFieldRefInput<$PrismaModel>;
+  in?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumSagaStatusWithAggregatesFilter<$PrismaModel> | $Enums.SagaStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel>;
+};
+
 export type EnumReconciliationKindFilter<$PrismaModel = never> = {
   equals?: $Enums.ReconciliationKind | Prisma.EnumReconciliationKindFieldRefInput<$PrismaModel>;
   in?: $Enums.ReconciliationKind[] | Prisma.ListEnumReconciliationKindFieldRefInput<$PrismaModel>;
@@ -2904,6 +2921,23 @@ export type NestedEnumTransactionContextTypeWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumTransactionContextTypeFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumTransactionContextTypeFilter<$PrismaModel>;
+};
+
+export type NestedEnumSagaStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SagaStatus | Prisma.EnumSagaStatusFieldRefInput<$PrismaModel>;
+  in?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel> | $Enums.SagaStatus;
+};
+
+export type NestedEnumSagaStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SagaStatus | Prisma.EnumSagaStatusFieldRefInput<$PrismaModel>;
+  in?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.SagaStatus[] | Prisma.ListEnumSagaStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumSagaStatusWithAggregatesFilter<$PrismaModel> | $Enums.SagaStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSagaStatusFilter<$PrismaModel>;
 };
 
 export type NestedEnumReconciliationKindFilter<$PrismaModel = never> = {

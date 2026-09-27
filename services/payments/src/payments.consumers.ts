@@ -5,7 +5,10 @@ import { APP_CONFIG, Clock, OnEvent, PrismaService, ScheduledJob } from '@tontin
 import { PaymentsService } from './payments.service';
 import { ProviderRegistry } from './provider-registry';
 
-/** US-5.3 : crédit du wallet (ou capture du hold de retrait) à réception de `payment.completed`. */
+/**
+ * US-5.3 : le règlement interne (crédit du wallet ou capture du hold de retrait) est orchestré
+ * par Transaction Service (saga PAYMENT_SETTLEMENT, A-53) ; Payment Service en reçoit l'issue.
+ */
 @Injectable()
 export class PaymentsConsumers {
   private readonly logger = new Logger(PaymentsConsumers.name);
@@ -18,10 +21,20 @@ export class PaymentsConsumers {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
-  @OnEvent('payment.completed', { consumer: 'payments.settlement' })
-  async onCompleted(e: EventEnvelope<'payment.completed'>): Promise<void> {
-    if (e.payload.type === 'REFUND') return;
-    await this.payments.settle(e.payload.paymentId);
+  @OnEvent('transaction.saga.completed', { consumer: 'payments.settlement-result' })
+  async onSettled(e: EventEnvelope<'transaction.saga.completed'>): Promise<void> {
+    if (e.payload.sagaType !== 'PAYMENT_SETTLEMENT') return;
+    await this.payments.recordSettlement(e.payload.reference, e.payload.transactionId);
+  }
+
+  @OnEvent('transaction.saga.failed', { consumer: 'payments.settlement-result' })
+  async onSettlementFailed(e: EventEnvelope<'transaction.saga.failed'>): Promise<void> {
+    if (e.payload.sagaType !== 'PAYMENT_SETTLEMENT') return;
+    await this.payments.recordSettlementFailure(
+      e.payload.reference,
+      e.payload.failureCode,
+      e.payload.failureReason,
+    );
   }
 
   /**

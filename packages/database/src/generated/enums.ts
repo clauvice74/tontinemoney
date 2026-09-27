@@ -335,6 +335,7 @@ export const CycleStatus = {
   PENDING: 'PENDING',
   IN_PROGRESS: 'IN_PROGRESS',
   PAYOUT_PENDING: 'PAYOUT_PENDING',
+  PAYOUT_PROCESSING: 'PAYOUT_PROCESSING',
   COMPLETED: 'COMPLETED',
 } as const;
 
@@ -436,6 +437,15 @@ export const TransactionStatus = {
 } as const;
 
 export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus];
+
+export const SagaStatus = {
+  STARTED: 'STARTED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  COMPENSATED: 'COMPENSATED',
+} as const;
+
+export type SagaStatus = (typeof SagaStatus)[keyof typeof SagaStatus];
 
 export const TransactionContextType = {
   TONTINE: 'TONTINE',

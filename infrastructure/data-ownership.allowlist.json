@@ -143,7 +143,7 @@
       "object": "trx_transactions",
       "access": "sql",
       "reason": "Plafonds journaliers et mensuels : cumul des transactions validées (US-9.2).",
-      "removal": "étape 5 : projection des cumuls via transaction.completed"
+      "removal": "étape 6 : projection des cumuls via transaction.completed"
     },
     {
       "service": "compliance",
@@ -151,7 +151,7 @@
       "object": "wallet",
       "access": "read",
       "reason": "Règle WALLET_LIMIT : solde du wallet crédité lu au moment de la validation synchrone (US-9.2).",
-      "removal": "étape 5 : projection des soldes via wallet.balance.updated"
+      "removal": "étape 6 : projection des soldes via wallet.balance.updated"
     },
     {
       "service": "members",
@@ -167,7 +167,7 @@
       "object": "wallet",
       "access": "read",
       "reason": "Wallet du membre (devise, statut) avant l’initiation d’un dépôt ou d’un retrait.",
-      "removal": "étape 5 : sagas asynchrones"
+      "removal": "étape 7 : port de requête wallet-service (règlement déjà via saga, étape 5)"
     },
     {
       "service": "tontines",
@@ -175,7 +175,7 @@
       "object": "wallet",
       "access": "read",
       "reason": "Lecture des wallets cagnotte / réserve et du wallet membre (soldes, devise) pendant les opérations de tontine.",
-      "removal": "étape 5 : sagas orchestrées par transaction-service"
+      "removal": "étape 7 : port de requête wallet-service (écritures déjà via sagas, étape 5)"
     },
     {
       "service": "transactions",
@@ -191,7 +191,7 @@
       "object": "wal_holds",
       "access": "sql",
       "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
-      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+      "removal": "étape 7 : commandes au wallet-service (le grand livre y reste) ; sagas en place (étape 5)"
     },
     {
       "service": "transactions",
@@ -199,7 +199,7 @@
       "object": "wal_movements",
       "access": "sql",
       "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
-      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+      "removal": "étape 7 : commandes au wallet-service (le grand livre y reste) ; sagas en place (étape 5)"
     },
     {
       "service": "transactions",
@@ -207,7 +207,7 @@
       "object": "wal_wallets",
       "access": "sql",
       "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
-      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+      "removal": "étape 7 : commandes au wallet-service (le grand livre y reste) ; sagas en place (étape 5)"
     },
     {
       "service": "transactions",
@@ -215,7 +215,7 @@
       "object": "wallet",
       "access": "read",
       "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
-      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+      "removal": "étape 7 : commandes au wallet-service (le grand livre y reste) ; sagas en place (étape 5)"
     },
     {
       "service": "transactions",
@@ -223,7 +223,7 @@
       "object": "walletMovement",
       "access": "read",
       "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
-      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+      "removal": "étape 7 : commandes au wallet-service (le grand livre y reste) ; sagas en place (étape 5)"
     }
   ]
 }

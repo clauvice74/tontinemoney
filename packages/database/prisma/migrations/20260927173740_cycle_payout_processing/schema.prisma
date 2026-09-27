@@ -1260,28 +1260,23 @@ model TontineCycle {
 }
 
 model Contribution {
-  id                 String             @id @default(uuid()) @db.Uuid
-  cycleId            String             @db.Uuid
-  tontineId          String             @db.Uuid
-  memberId           String             @db.Uuid
-  amountMinor        BigInt
-  penaltyMinor       BigInt             @default(0)
-  penaltyPaid        Boolean            @default(false)
-  penaltyTxId        String?            @db.Uuid
-  status             ContributionStatus @default(PENDING)
-  dueDate            DateTime           @db.Date
-  graceUntil         DateTime           @db.Date
-  defaultAt          DateTime           @db.Date
-  paidAt             DateTime?          @db.Timestamptz(3)
-  transactionId      String?            @db.Uuid
-  /// Étape 5 (A-53) : demande de paiement en cours (saga CONTRIBUTION), une à la fois.
-  paymentRequestId   String?            @db.Uuid
-  paymentRequestedAt DateTime?          @db.Timestamptz(3)
-  /// Motif du dernier échec de paiement (saga), effacé à la demande suivante.
-  paymentError       String?
-  createdAt          DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime           @updatedAt @db.Timestamptz(3)
-  cycle              TontineCycle       @relation(fields: [cycleId], references: [id])
+  id            String             @id @default(uuid()) @db.Uuid
+  cycleId       String             @db.Uuid
+  tontineId     String             @db.Uuid
+  memberId      String             @db.Uuid
+  amountMinor   BigInt
+  penaltyMinor  BigInt             @default(0)
+  penaltyPaid   Boolean            @default(false)
+  penaltyTxId   String?            @db.Uuid
+  status        ContributionStatus @default(PENDING)
+  dueDate       DateTime           @db.Date
+  graceUntil    DateTime           @db.Date
+  defaultAt     DateTime           @db.Date
+  paidAt        DateTime?          @db.Timestamptz(3)
+  transactionId String?            @db.Uuid
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+  cycle         TontineCycle       @relation(fields: [cycleId], references: [id])
 
   @@unique([cycleId, memberId])
   @@index([tontineId, memberId])
