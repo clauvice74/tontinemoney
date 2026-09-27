@@ -13,13 +13,34 @@ export interface CreatePrismaOptions {
   log?: boolean;
 }
 
+/**
+ * Schémas PostgreSQL des services (extraction, étape 4) ; `public` ne contient que les
+ * extensions. Ordre = chemin de recherche des requêtes SQL brutes aux noms non qualifiés.
+ */
+export const SERVICE_SCHEMAS = [
+  'platform',
+  'auth',
+  'members',
+  'kyc',
+  'compliance',
+  'tontines',
+  'wallets',
+  'transactions',
+  'payments',
+  'notifications',
+  'administration',
+  'payment_gateway',
+] as const;
+export type ServiceSchema = (typeof SERVICE_SCHEMAS)[number];
+
 /** Options du client Prisma 7 (sans moteur natif) connecté via l'adaptateur `pg`. */
 export function prismaClientOptions(options: CreatePrismaOptions) {
-  // Session en UTC : l'adaptateur transmet les horodatages sans fuseau.
+  // Session en UTC : l'adaptateur transmet les horodatages sans fuseau. Chemin de recherche
+  // explicite : ne dépend pas du réglage de la base (ALTER DATABASE … SET search_path).
   const adapter = new PrismaPg({
     connectionString: options.url,
     max: options.poolSize ?? 10,
-    options: '-c TimeZone=UTC',
+    options: `-c TimeZone=UTC -c search_path=public,${SERVICE_SCHEMAS.join(',')}`,
   });
   return {
     adapter,

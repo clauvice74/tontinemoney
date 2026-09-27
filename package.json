@@ -2,7 +2,7 @@
   "name": "tontinemoney",
   "private": true,
   "version": "0.1.0",
-  "description": "Plateforme SaaS de gestion de tontines avec wallet, KYC, paiements et conformit\u00e9",
+  "description": "Plateforme SaaS de gestion de tontines avec wallet, KYC, paiements et conformité",
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=22"
@@ -18,7 +18,7 @@
     "test:coverage": "turbo run test:coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm format:check && pnpm arch:check && pnpm lint && pnpm typecheck && pnpm test",
     "db:generate": "pnpm --filter @tontine/database db:generate",
     "db:migrate": "pnpm --filter @tontine/database db:migrate",
     "db:migrate:test": "pnpm --filter @tontine/database db:migrate:test",
@@ -29,7 +29,9 @@
     "keys:generate": "node infrastructure/scripts/generate-dev-keys.mjs",
     "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check",
     "test:e2e:local": "bash infrastructure/scripts/e2e-local.sh",
-    "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build"
+    "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build",
+    "db:roles": "pnpm --filter @tontine/database db:roles",
+    "arch:check": "node infrastructure/scripts/check-data-ownership.mjs"
   },
   "devDependencies": {
     "prettier": "3.9.9",

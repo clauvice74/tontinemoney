@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { isE164, normalizePhone } from '@tontine/contracts';
-import { type Member } from '@tontine/database';
+import { type Member, Prisma } from '@tontine/database';
 import { type MemberQueryPort, type MemberSnapshot, PrismaService } from '@tontine/platform';
 
 function snap(m: Member): MemberSnapshot {
@@ -33,6 +33,26 @@ export class MemberQueryService implements MemberQueryPort {
     if (memberIds.length === 0) return [];
     const rows = await this.prisma.member.findMany({ where: { id: { in: memberIds } } });
     return rows.map(snap);
+  }
+
+  async snapshotsByStatus(status: string): Promise<MemberSnapshot[]> {
+    const rows = await this.prisma.member.findMany({
+      where: { status: status as Member['status'] },
+      orderBy: { id: 'asc' },
+    });
+    return rows.map(snap);
+  }
+
+  async countryChangesSince(memberId: string, since: Date): Promise<number> {
+    return this.prisma.memberAuditLog.count({
+      where: {
+        memberId,
+        action: 'UPDATED',
+        createdAt: { gte: since },
+        trigger: { in: ['profile.update'] },
+        newValues: { path: ['country'], not: Prisma.AnyNull },
+      },
+    });
   }
 
   async findByIdentifier(identifier: string): Promise<MemberSnapshot | null> {

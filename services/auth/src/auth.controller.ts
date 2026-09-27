@@ -37,6 +37,8 @@ import {
   Clock,
   CurrentUser,
   DomainError,
+  MEMBER_QUERY,
+  type MemberQueryPort,
   PrismaService,
   Public,
   ZodBody,
@@ -67,6 +69,7 @@ export class AuthController {
     private readonly prisma: PrismaService,
     private readonly clock: Clock,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
 
   /** Refresh token uniquement en cookie HttpOnly Secure SameSite=Strict (US-1.4, A-24). */
@@ -167,10 +170,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Mon compte : rôle, statut, état d’accès, MFA' })
   async me(@CurrentUser() actor: Actor) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.userId } });
-    const member = await this.prisma.member.findUnique({
-      where: { id: actor.userId },
-      select: { status: true, kycLevel: true },
-    });
+    const member = await this.members.snapshot(actor.userId);
     return {
       id: user.id,
       role: user.role,

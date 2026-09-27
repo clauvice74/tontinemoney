@@ -5729,6 +5729,22 @@ export type ListEnumActorRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'KycTargetLevel'
+ */
+export type EnumKycTargetLevelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'KycTargetLevel'
+>;
+
+/**
+ * Reference to a field of type 'KycTargetLevel[]'
+ */
+export type ListEnumKycTargetLevelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'KycTargetLevel[]'
+>;
+
+/**
  * Reference to a field of type 'KycRequestStatus'
  */
 export type EnumKycRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<

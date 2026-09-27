@@ -1,32 +1,54 @@
 # Propriété des données
 
-Règle : **seul le service propriétaire lit et écrit ses tables.** Les autres services obtiennent l'information par événement (projection locale) ou par un appel synchrone court en lecture.
+Règle : **seul le service propriétaire lit et écrit ses tables.** Les autres services obtiennent l'information par un port (appel synchrone court en lecture), un événement ou une projection locale.
 
-## 1. Tables par service
+Depuis l'étape 4 de l'extraction, la règle est **matérialisée et contrôlée** :
 
-| Service cible        | Schéma cible   | Tables actuelles (schéma `public`)                                                                                                                                        |
-| -------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| auth-service         | `auth`         | `auth_users`, `auth_password_history`, `auth_tokens`, `auth_refresh_sessions`, `auth_login_attempts`, `auth_recovery_codes`, `auth_known_devices`, `auth_access_requests` |
-| member-service       | `member`       | `mbr_members`, `mbr_audit_logs`                                                                                                                                           |
-| kyc-service          | `kyc`          | `kyc_requests`, `kyc_documents`, `kyc_checks`, `kyc_agent_actions`, `kyc_biometric_templates`, `kyc_duplicate_alerts`, `kyc_aml_matches`, `kyc_aml_whitelist`             |
-| compliance-service   | `compliance`   | `cmp_rules`, `cmp_rule_history`, `cmp_violations`, `cmp_cases`, `cmp_case_alerts`                                                                                         |
-| tontine-service      | `tontine`      | `ton_tontines`, `ton_members`, `ton_invitations`, `ton_cycles`, `ton_contributions`, `ton_priority_requests`                                                              |
-| wallet-service       | `wallet`       | `wal_wallets`, `wal_movements`, `wal_holds`, `wal_status_history`                                                                                                         |
-| transaction-service  | `transaction`  | `trx_transactions`, `trx_audit_logs`, `trx_reconciliation_reports`                                                                                                        |
-| payment-service      | `payment`      | `pay_payments`, `pay_status_history`, `pay_webhook_events`, `pay_sim_operations`                                                                                          |
-| notification-service | `notification` | `ntf_templates`, `ntf_notifications`, `ntf_outbound_messages`                                                                                                             |
-| admin-service        | `admin`        | `adm_tontine_accounts`, `adm_messages`, `adm_reports`                                                                                                                     |
-| chaque service       | son schéma     | `outbox_events`, `processed_events` (inbox), `idempotency_keys`, `audit_logs`, `job_runs` — une copie par service après l'étape 4                                         |
+1. **un schéma PostgreSQL par service** (`@@schema` dans `schema.prisma`) ; `public` ne contient plus que les extensions et la table de suivi des migrations ;
+2. **contrôle statique en CI** (`pnpm arch:check`, `infrastructure/scripts/check-data-ownership.mjs`) : tout accès du code d'un service aux tables d'un autre schéma doit figurer dans `infrastructure/data-ownership.allowlist.json`, avec sa justification et l'étape qui le supprimera ; une entrée devenue inutile fait aussi échouer le contrôle ;
+3. **rôles PostgreSQL au moindre privilège** (`pnpm db:roles`, `packages/database/scripts/service-roles.mjs`) : `tm_<schéma>` lit et écrit son schéma, utilise les tables techniques partagées (`platform`), et n'a qu'un droit de **lecture** sur les tables de la liste ; aucune écriture inter-schémas. Vérifié par `apps/api/test/service-roles.e2e-spec.ts`.
 
-## 2. Lectures inter-domaines existantes (à supprimer)
+## 1. Schémas et tables
 
-| Lecteur                                                 | Données d'autrui lues                                         | Remplacement prévu                                                |
-| ------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `administration` (rapports tontine et plateforme, A-28) | `trx_*`, `pay_*`, `wal_*`, `ton_*`, `mbr_*`, `kyc_*`, `cmp_*` | projections de `reporting-service` (étape 6)                      |
-| `members` (annuaire d'une tontine)                      | `ton_members`                                                 | projection des adhésions via `tontine.member.added` / `removed`   |
-| `kyc` (screening quotidien, statut)                     | `mbr_members`                                                 | port de lecture `MemberQueryPort` (appel synchrone) ou projection |
-| `compliance` (cumuls des plafonds)                      | `trx_transactions`                                            | projection des transactions réalisées via `transaction.completed` |
-| `wallets`, `tontines`, `payments`                       | appels in-process à `LedgerService` / `TransactionsService`   | sagas asynchrones (étape 5)                                       |
+| Service              | Schéma            | Tables                                                                                                                                                                    | Rôle                                           |
+| -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| (partagé)            | `platform`        | `outbox_events`, `processed_events` (inbox), `idempotency_keys`, `audit_logs` (ajout seul), `job_runs`                                                                    | — (une copie par service à l'étape 7)          |
+| auth-service         | `auth`            | `auth_users`, `auth_password_history`, `auth_tokens`, `auth_refresh_sessions`, `auth_login_attempts`, `auth_recovery_codes`, `auth_known_devices`, `auth_access_requests` | `tm_auth`                                      |
+| member-service       | `members`         | `mbr_members`, `mbr_audit_logs`                                                                                                                                           | `tm_members`                                   |
+| kyc-service          | `kyc`             | `kyc_requests`, `kyc_documents`, `kyc_checks`, `kyc_agent_actions`, `kyc_biometric_templates`, `kyc_duplicate_alerts`, `kyc_aml_matches`, `kyc_aml_whitelist`             | `tm_kyc`                                       |
+| compliance-service   | `compliance`      | `cmp_rules`, `cmp_rule_history`, `cmp_violations`, `cmp_cases`, `cmp_case_alerts`                                                                                         | `tm_compliance`                                |
+| tontine-service      | `tontines`        | `ton_tontines`, `ton_members`, `ton_invitations`, `ton_cycles`, `ton_contributions`, `ton_priority_requests`, `adm_tontine_accounts`, `adm_messages`                      | `tm_tontines`                                  |
+| wallet-service       | `wallets`         | `wal_wallets`, `wal_movements`, `wal_holds`, `wal_status_history`                                                                                                         | `tm_wallets`                                   |
+| transaction-service  | `transactions`    | `trx_transactions`, `trx_audit_logs`, `trx_reconciliation_reports`                                                                                                        | `tm_transactions`                              |
+| payment-service      | `payments`        | `pay_payments`, `pay_status_history`, `pay_webhook_events`, `pay_sim_operations`                                                                                          | `tm_payments`                                  |
+| notification-service | `notifications`   | `ntf_templates`, `ntf_notifications`, `ntf_outbound_messages`                                                                                                             | `tm_notifications`                             |
+| admin-service        | `administration`  | `adm_reports`                                                                                                                                                             | `tm_administration`                            |
+| payment-gateway      | `payment_gateway` | `pgw_webhook_receipts`                                                                                                                                                    | `tm_payment_gateway` (sans accès à `platform`) |
+
+Les noms de tables gardent leur préfixe historique ; `adm_tontine_accounts` et `adm_messages`, écrites uniquement par le service Tontines, appartiennent au schéma `tontines` (A-48).
+
+## 2. Accès inter-schémas tolérés (à supprimer)
+
+Liste exacte, générée à partir de `infrastructure/data-ownership.allowlist.json` (28 accès, tous en lecture) :
+
+| Service        | Schéma lu    | Tables / modèles                                                                            | Raison                                                                                                                                    | Suppression                                                            |
+| -------------- | ------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| administration | compliance   | `cmp_cases`, `cmp_violations`                                                               | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | kyc          | `kyc_aml_matches`, `kyc_requests`                                                           | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | members      | `mbr_members`                                                                               | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | payments     | `pay_payments`                                                                              | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | tontines     | `ton_contributions`, `ton_cycles`, `ton_members`, `ton_tontines`, `tontine`, `tontineCycle` | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | transactions | `reconciliationReport`, `trx_transactions`                                                  | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| administration | wallets      | `wal_movements`, `wal_wallets`, `wallet`                                                    | Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.                       | étape 6 : reporting-service alimenté par projections                   |
+| compliance     | transactions | `trx_transactions`                                                                          | Plafonds journaliers et mensuels : cumul des transactions validées (US-9.2).                                                              | étape 5 : projection des cumuls via transaction.completed              |
+| compliance     | wallets      | `wallet`                                                                                    | Règle WALLET_LIMIT : solde du wallet crédité lu au moment de la validation synchrone (US-9.2).                                            | étape 5 : projection des soldes via wallet.balance.updated             |
+| members        | tontines     | `ton_members`                                                                               | Annuaire des membres d’une tontine (US-2.3) : jointure sur les adhésions pour filtrer et paginer en SQL.                                  | étape 6 : projection des adhésions (tontine.member.added / removed)    |
+| payments       | wallets      | `wallet`                                                                                    | Wallet du membre (devise, statut) avant l’initiation d’un dépôt ou d’un retrait.                                                          | étape 5 : sagas asynchrones                                            |
+| tontines       | wallets      | `wallet`                                                                                    | Lecture des wallets cagnotte / réserve et du wallet membre (soldes, devise) pendant les opérations de tontine.                            | étape 5 : sagas orchestrées par transaction-service                    |
+| transactions   | payments     | `pay_payments`                                                                              | Réconciliation interne : rapprochement des paiements PSP et des écritures.                                                                | étape 6 : réconciliation par projections                               |
+| transactions   | wallets      | `wal_holds`, `wal_movements`, `wal_wallets`, `wallet`, `walletMovement`                     | Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne. | étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service |
+
+Supprimés à l'étape 4 : lectures directes des profils membres par `auth` (`/auth/me`), `kyc` (file de revue, détail, screening, batch AML), `notifications` (coordonnées) et `compliance` (changements de pays), remplacées par les ports `MemberQueryPort` et `RecipientDirectory` ; écritures de `tontines` dans le schéma `administration` (tables rattachées à `tontines`).
 
 ## 3. Données sensibles
 

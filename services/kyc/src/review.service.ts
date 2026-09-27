@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { type KycDecisionInput } from '@tontine/contracts';
 import { type KycRequest } from '@tontine/database';
 import {
@@ -6,6 +6,8 @@ import {
   AuditService,
   Clock,
   DomainError,
+  MEMBER_QUERY,
+  type MemberQueryPort,
   OutboxService,
   PrismaService,
   UnitOfWork,
@@ -20,6 +22,7 @@ export class KycReviewService {
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
     private readonly audit: AuditService,
+    @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
 
   /** File des dossiers à revoir, triés par ancienneté, avec l'échéance SLA (24 h ouvrées). */
@@ -30,11 +33,13 @@ export class KycReviewService {
       take: 200,
       include: { checks: { select: { step: true, outcome: true, score: true } } },
     });
-    const members = await this.prisma.member.findMany({
-      where: { id: { in: rows.map((r) => r.memberId) } },
-      select: { id: true, firstName: true, lastName: true, countryCode: true },
-    });
-    const byId = new Map(members.map((m) => [m.id, m]));
+    const members = await this.members.snapshots([...new Set(rows.map((r) => r.memberId))]);
+    const byId = new Map(
+      members.map((m) => [
+        m.id,
+        { id: m.id, firstName: m.firstName, lastName: m.lastName, countryCode: m.country },
+      ]),
+    );
     const now = this.clock.now();
     return {
       data: rows.map((r) => ({
@@ -64,7 +69,7 @@ export class KycReviewService {
     });
     if (!r) throw new DomainError('NOT_FOUND', 'Dossier introuvable');
     const [member, duplicates, amlMatches, previous] = await Promise.all([
-      this.prisma.member.findUnique({ where: { id: r.memberId } }),
+      this.members.snapshot(r.memberId),
       this.prisma.kycDuplicateAlert.findMany({
         where: { OR: [{ requestId: r.id }, { memberId: r.memberId, status: 'OPEN' }] },
       }),
@@ -92,8 +97,8 @@ export class KycReviewService {
             id: member.id,
             firstName: member.firstName,
             lastName: member.lastName,
-            dateOfBirth: member.dateOfBirth?.toISOString().slice(0, 10) ?? null,
-            country: member.countryCode,
+            dateOfBirth: member.dateOfBirth,
+            country: member.country,
             status: member.status,
             kycLevel: member.kycLevel,
           }

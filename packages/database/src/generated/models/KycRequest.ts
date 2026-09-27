@@ -26,7 +26,7 @@ export type AggregateKycRequest = {
 export type KycRequestMinAggregateOutputType = {
   id: string | null;
   memberId: string | null;
-  targetLevel: $Enums.KycLevel | null;
+  targetLevel: $Enums.KycTargetLevel | null;
   status: $Enums.KycRequestStatus | null;
   documentType: $Enums.KycDocumentType | null;
   documentCountry: string | null;
@@ -48,7 +48,7 @@ export type KycRequestMinAggregateOutputType = {
 export type KycRequestMaxAggregateOutputType = {
   id: string | null;
   memberId: string | null;
-  targetLevel: $Enums.KycLevel | null;
+  targetLevel: $Enums.KycTargetLevel | null;
   status: $Enums.KycRequestStatus | null;
   documentType: $Enums.KycDocumentType | null;
   documentCountry: string | null;
@@ -238,7 +238,7 @@ export type KycRequestGroupByArgs<
 export type KycRequestGroupByOutputType = {
   id: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry: string | null;
@@ -280,7 +280,7 @@ export type KycRequestWhereInput = {
   NOT?: Prisma.KycRequestWhereInput | Prisma.KycRequestWhereInput[];
   id?: Prisma.UuidFilter<'KycRequest'> | string;
   memberId?: Prisma.UuidFilter<'KycRequest'> | string;
-  targetLevel?: Prisma.EnumKycLevelFilter<'KycRequest'> | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFilter<'KycRequest'> | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFilter<'KycRequest'> | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFilter<'KycRequest'> | $Enums.KycDocumentType;
   documentCountry?: Prisma.StringNullableFilter<'KycRequest'> | string | null;
@@ -339,7 +339,7 @@ export type KycRequestWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.KycRequestWhereInput[];
     NOT?: Prisma.KycRequestWhereInput | Prisma.KycRequestWhereInput[];
     memberId?: Prisma.UuidFilter<'KycRequest'> | string;
-    targetLevel?: Prisma.EnumKycLevelFilter<'KycRequest'> | $Enums.KycLevel;
+    targetLevel?: Prisma.EnumKycTargetLevelFilter<'KycRequest'> | $Enums.KycTargetLevel;
     status?: Prisma.EnumKycRequestStatusFilter<'KycRequest'> | $Enums.KycRequestStatus;
     documentType?: Prisma.EnumKycDocumentTypeFilter<'KycRequest'> | $Enums.KycDocumentType;
     documentCountry?: Prisma.StringNullableFilter<'KycRequest'> | string | null;
@@ -403,7 +403,7 @@ export type KycRequestScalarWhereWithAggregatesInput = {
     | Prisma.KycRequestScalarWhereWithAggregatesInput[];
   id?: Prisma.UuidWithAggregatesFilter<'KycRequest'> | string;
   memberId?: Prisma.UuidWithAggregatesFilter<'KycRequest'> | string;
-  targetLevel?: Prisma.EnumKycLevelWithAggregatesFilter<'KycRequest'> | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelWithAggregatesFilter<'KycRequest'> | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusWithAggregatesFilter<'KycRequest'> | $Enums.KycRequestStatus;
   documentType?:
     Prisma.EnumKycDocumentTypeWithAggregatesFilter<'KycRequest'> | $Enums.KycDocumentType;
@@ -432,7 +432,7 @@ export type KycRequestScalarWhereWithAggregatesInput = {
 export type KycRequestCreateInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -459,7 +459,7 @@ export type KycRequestCreateInput = {
 export type KycRequestUncheckedCreateInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -486,7 +486,7 @@ export type KycRequestUncheckedCreateInput = {
 export type KycRequestUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -516,7 +516,7 @@ export type KycRequestUpdateInput = {
 export type KycRequestUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -546,7 +546,7 @@ export type KycRequestUncheckedUpdateInput = {
 export type KycRequestCreateManyInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -570,7 +570,7 @@ export type KycRequestCreateManyInput = {
 export type KycRequestUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -597,7 +597,7 @@ export type KycRequestUpdateManyMutationInput = {
 export type KycRequestUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -694,6 +694,10 @@ export type KycRequestScalarRelationFilter = {
   isNot?: Prisma.KycRequestWhereInput;
 };
 
+export type EnumKycTargetLevelFieldUpdateOperationsInput = {
+  set?: $Enums.KycTargetLevel;
+};
+
 export type EnumKycRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.KycRequestStatus;
 };
@@ -787,7 +791,7 @@ export type KycRequestUpdateOneRequiredWithoutAgentActionsNestedInput = {
 export type KycRequestCreateWithoutDocumentsInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -813,7 +817,7 @@ export type KycRequestCreateWithoutDocumentsInput = {
 export type KycRequestUncheckedCreateWithoutDocumentsInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -867,7 +871,7 @@ export type KycRequestUpdateToOneWithWhereWithoutDocumentsInput = {
 export type KycRequestUpdateWithoutDocumentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -896,7 +900,7 @@ export type KycRequestUpdateWithoutDocumentsInput = {
 export type KycRequestUncheckedUpdateWithoutDocumentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -925,7 +929,7 @@ export type KycRequestUncheckedUpdateWithoutDocumentsInput = {
 export type KycRequestCreateWithoutChecksInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -951,7 +955,7 @@ export type KycRequestCreateWithoutChecksInput = {
 export type KycRequestUncheckedCreateWithoutChecksInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -1005,7 +1009,7 @@ export type KycRequestUpdateToOneWithWhereWithoutChecksInput = {
 export type KycRequestUpdateWithoutChecksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1034,7 +1038,7 @@ export type KycRequestUpdateWithoutChecksInput = {
 export type KycRequestUncheckedUpdateWithoutChecksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1063,7 +1067,7 @@ export type KycRequestUncheckedUpdateWithoutChecksInput = {
 export type KycRequestCreateWithoutAgentActionsInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -1089,7 +1093,7 @@ export type KycRequestCreateWithoutAgentActionsInput = {
 export type KycRequestUncheckedCreateWithoutAgentActionsInput = {
   id?: string;
   memberId: string;
-  targetLevel: $Enums.KycLevel;
+  targetLevel: $Enums.KycTargetLevel;
   status?: $Enums.KycRequestStatus;
   documentType: $Enums.KycDocumentType;
   documentCountry?: string | null;
@@ -1143,7 +1147,7 @@ export type KycRequestUpdateToOneWithWhereWithoutAgentActionsInput = {
 export type KycRequestUpdateWithoutAgentActionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1172,7 +1176,7 @@ export type KycRequestUpdateWithoutAgentActionsInput = {
 export type KycRequestUncheckedUpdateWithoutAgentActionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   memberId?: Prisma.StringFieldUpdateOperationsInput | string;
-  targetLevel?: Prisma.EnumKycLevelFieldUpdateOperationsInput | $Enums.KycLevel;
+  targetLevel?: Prisma.EnumKycTargetLevelFieldUpdateOperationsInput | $Enums.KycTargetLevel;
   status?: Prisma.EnumKycRequestStatusFieldUpdateOperationsInput | $Enums.KycRequestStatus;
   documentType?: Prisma.EnumKycDocumentTypeFieldUpdateOperationsInput | $Enums.KycDocumentType;
   documentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1424,7 +1428,7 @@ export type $KycRequestPayload<
     {
       id: string;
       memberId: string;
-      targetLevel: $Enums.KycLevel;
+      targetLevel: $Enums.KycTargetLevel;
       status: $Enums.KycRequestStatus;
       documentType: $Enums.KycDocumentType;
       documentCountry: string | null;
@@ -2047,7 +2051,7 @@ export interface Prisma__KycRequestClient<
 export interface KycRequestFieldRefs {
   readonly id: Prisma.FieldRef<'KycRequest', 'String'>;
   readonly memberId: Prisma.FieldRef<'KycRequest', 'String'>;
-  readonly targetLevel: Prisma.FieldRef<'KycRequest', 'KycLevel'>;
+  readonly targetLevel: Prisma.FieldRef<'KycRequest', 'KycTargetLevel'>;
   readonly status: Prisma.FieldRef<'KycRequest', 'KycRequestStatus'>;
   readonly documentType: Prisma.FieldRef<'KycRequest', 'KycDocumentType'>;
   readonly documentCountry: Prisma.FieldRef<'KycRequest', 'String'>;

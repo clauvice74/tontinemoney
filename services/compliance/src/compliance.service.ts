@@ -361,15 +361,7 @@ export class ComplianceService {
   /** US-9.4 — changement de pays suspect : deux changements en 30 jours → compte restreint + alerte. */
   async onCountryChanged(memberId: string, from: unknown, to: unknown): Promise<void> {
     const since = new Date(this.clock.now().getTime() - 30 * 86_400_000);
-    const changes = await this.prisma.memberAuditLog.count({
-      where: {
-        memberId,
-        action: 'UPDATED',
-        createdAt: { gte: since },
-        trigger: { in: ['profile.update'] },
-        newValues: { path: ['country'], not: Prisma.AnyNull },
-      },
-    });
+    const changes = await this.members.countryChangesSince(memberId, since);
     if (changes < 2) return;
     this.logger.warn(
       `Changement de pays suspect pour ${memberId} (${String(from)} → ${String(to)})`,

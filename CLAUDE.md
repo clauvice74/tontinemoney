@@ -10,6 +10,7 @@ cp .env.example .env
 pnpm install
 docker compose up -d          # postgres, redis, redpanda, minio, mailpit, prometheus, grafana
 pnpm db:migrate               # prisma migrate deploy
+pnpm db:roles                 # rôles PostgreSQL par service (moindre privilège)
 pnpm db:seed                  # comptes de démonstration
 pnpm dev                      # api :4000 (Swagger /api/docs), api-gateway :8080 (point d'entrée), web :3000
 
@@ -61,7 +62,7 @@ pnpm db:migration:new <nom>   # nouvelle migration (dev)
 
 ## Extraction en microservices
 
-En cours, étape par étape : `docs/extraction-plan.md` (état, étapes, prérequis), `docs/service-map.md`, `docs/data-ownership.md`, `docs/sagas.md`. Un domaine non extrait reste un module de `apps/api`. Nouvelle lecture d'une table d'un autre domaine interdite (sauf rapports existants, A-28) : passer par un événement ou un port. Montants : toujours `bigint` en unités mineures (A-43).
+En cours, étape par étape : `docs/extraction-plan.md` (état, étapes, prérequis), `docs/service-map.md`, `docs/data-ownership.md`, `docs/sagas.md`. Un domaine non extrait reste un module de `apps/api`. Un schéma PostgreSQL par service (A-48) : lire ou écrire les tables d'un autre schéma est interdit — passer par un port, un événement ou une projection. `pnpm arch:check` (inclus dans `pnpm check`) échoue sur tout accès non déclaré dans `infrastructure/data-ownership.allowlist.json` ; après ajout d'une table, relancer `pnpm db:roles`. Montants : toujours `bigint` en unités mineures (A-43).
 
 ## Pièges locaux
 

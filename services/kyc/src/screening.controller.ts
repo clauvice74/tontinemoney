@@ -1,11 +1,12 @@
-import { Controller, HttpCode, Post } from '@nestjs/common';
+import { Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { type ScreeningRequest, screeningRequestSchema } from '@tontine/contracts';
 import {
   ApiZodBody,
   AuditService,
   DomainError,
-  PrismaService,
+  MEMBER_QUERY,
+  type MemberQueryPort,
   RequirePermission,
   ZodBody,
 } from '@tontine/platform';
@@ -21,7 +22,7 @@ import { AmlScreeningService, type ScreeningScope } from './aml-screening.servic
 @Controller({ version: '1' })
 export class ScreeningController {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
     private readonly screening: AmlScreeningService,
     private readonly audit: AuditService,
   ) {}
@@ -54,12 +55,18 @@ export class ScreeningController {
   }
 
   private async run(memberId: string, scope: ScreeningScope) {
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { id: true, firstName: true, lastName: true, dateOfBirth: true },
-    });
+    const member = await this.members.snapshot(memberId);
     if (!member) throw new DomainError('NOT_FOUND', 'Membre introuvable');
-    const { hits, whitelisted } = await this.screening.screenMember(member, scope, 'ON_DEMAND');
+    const { hits, whitelisted } = await this.screening.screenMember(
+      {
+        id: member.id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        dateOfBirth: member.dateOfBirth ? new Date(`${member.dateOfBirth}T00:00:00Z`) : null,
+      },
+      scope,
+      'ON_DEMAND',
+    );
     await this.audit.record({
       action: 'kyc.screening.on_demand',
       resourceType: 'member',

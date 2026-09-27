@@ -9,6 +9,7 @@ cp .env.example .env
 pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel, Prometheus, Grafana
 pnpm db:migrate
+pnpm db:roles              # rôles PostgreSQL par service (moindre privilège)
 pnpm db:seed
 pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000
 ```
@@ -34,10 +35,18 @@ PostgreSQL 16 peut être installé sans droits administrateur à partir des bina
 
 Rôle `tontine` / mot de passe `tontine`, bases `tontinemoney` et `tontinemoney_test` (voir `infrastructure/docker/postgres/init.sql`). Non disponibles dans ce mode : Kafka (donc aucun service extrait ne peut tourner dans un processus séparé, A-46), Mailpit, MinIO, Prometheus, Grafana.
 
-## 3. Vérifications
+## 3. Rôles PostgreSQL par service
+
+`pnpm db:roles` (idempotent) crée les rôles `tm_<schéma>` et leurs droits. Il faut un rôle disposant de `CREATEROLE` : superutilisateur en Docker ; sans Docker, l'accorder une fois au rôle `tontine` avec le compte administrateur local :
 
 ```bash
-pnpm check                  # format, lint, typecheck, tests unitaires
+~/.local/opt/pgsql16/bin/psql -U postgres -d postgres -c "ALTER ROLE tontine CREATEROLE"
+```
+
+## 4. Vérifications
+
+```bash
+pnpm check                  # format, propriété des données, lint, typecheck, tests unitaires
 pnpm test:int               # intégration API + PostgreSQL (base de test migrée automatiquement)
 pnpm build:demo && pnpm test:e2e:local   # Playwright (build avec simulateurs visibles)
 ```
@@ -49,7 +58,7 @@ Pièges :
 - Playwright peut utiliser un Chrome installé : `PLAYWRIGHT_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`.
 - En mode `pnpm dev`, l'API redémarre à chaque changement de `dist/` ; pour des tests navigateur fiables, préférer `pnpm test:e2e:local`.
 
-## 4. Adresses
+## 5. Adresses
 
 | Service                                         | URL                                                      |
 | ----------------------------------------------- | -------------------------------------------------------- |

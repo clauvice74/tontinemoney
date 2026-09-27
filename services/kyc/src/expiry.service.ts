@@ -139,10 +139,12 @@ export class KycMaintenanceService {
     description: 'Screening AML quotidien des membres actifs (US-3.5)',
   })
   async amlBatch(): Promise<{ screened: number; newMatches: number }> {
-    const active = await this.prisma.member.findMany({
-      where: { status: 'ACTIVE' },
-      select: { id: true, firstName: true, lastName: true, dateOfBirth: true },
-    });
+    const active = (await this.members.snapshotsByStatus('ACTIVE')).map((m) => ({
+      id: m.id,
+      firstName: m.firstName,
+      lastName: m.lastName,
+      dateOfBirth: m.dateOfBirth ? new Date(`${m.dateOfBirth}T00:00:00Z`) : null,
+    }));
     let newMatches = 0;
     for (const m of active) {
       const { hits } = await this.screening.screenMember(m, 'ALL', 'BATCH');

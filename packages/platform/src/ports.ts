@@ -45,6 +45,10 @@ export interface MemberQueryPort {
   snapshot(memberId: string): Promise<MemberSnapshot | null>;
   snapshots(memberIds: string[]): Promise<MemberSnapshot[]>;
   findByIdentifier(identifier: string): Promise<MemberSnapshot | null>;
+  /** Membres dans un statut donné (ex. screening AML quotidien des membres ACTIVE). */
+  snapshotsByStatus(status: string): Promise<MemberSnapshot[]>;
+  /** Changements de pays saisis par le membre depuis `since` (US-9.4, détection d'abus). */
+  countryChangesSince(memberId: string, since: Date): Promise<number>;
 }
 
 export const MEMBER_QUERY = Symbol('MEMBER_QUERY');

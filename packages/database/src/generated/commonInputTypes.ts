@@ -685,6 +685,13 @@ export type EnumActorRoleWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumActorRoleFilter<$PrismaModel>;
 };
 
+export type EnumKycTargetLevelFilter<$PrismaModel = never> = {
+  equals?: $Enums.KycTargetLevel | Prisma.EnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  in?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel> | $Enums.KycTargetLevel;
+};
+
 export type EnumKycRequestStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.KycRequestStatus | Prisma.EnumKycRequestStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.KycRequestStatus[] | Prisma.ListEnumKycRequestStatusFieldRefInput<$PrismaModel>;
@@ -710,6 +717,16 @@ export type EnumKycRejectCategoryNullableFilter<$PrismaModel = never> = {
     | Prisma.NestedEnumKycRejectCategoryNullableFilter<$PrismaModel>
     | $Enums.KycRejectCategory
     | null;
+};
+
+export type EnumKycTargetLevelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KycTargetLevel | Prisma.EnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  in?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumKycTargetLevelWithAggregatesFilter<$PrismaModel> | $Enums.KycTargetLevel;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel>;
 };
 
 export type EnumKycRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -2286,6 +2303,13 @@ export type NestedEnumActorRoleWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumActorRoleFilter<$PrismaModel>;
 };
 
+export type NestedEnumKycTargetLevelFilter<$PrismaModel = never> = {
+  equals?: $Enums.KycTargetLevel | Prisma.EnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  in?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel> | $Enums.KycTargetLevel;
+};
+
 export type NestedEnumKycRequestStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.KycRequestStatus | Prisma.EnumKycRequestStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.KycRequestStatus[] | Prisma.ListEnumKycRequestStatusFieldRefInput<$PrismaModel>;
@@ -2311,6 +2335,16 @@ export type NestedEnumKycRejectCategoryNullableFilter<$PrismaModel = never> = {
     | Prisma.NestedEnumKycRejectCategoryNullableFilter<$PrismaModel>
     | $Enums.KycRejectCategory
     | null;
+};
+
+export type NestedEnumKycTargetLevelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KycTargetLevel | Prisma.EnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  in?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.KycTargetLevel[] | Prisma.ListEnumKycTargetLevelFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumKycTargetLevelWithAggregatesFilter<$PrismaModel> | $Enums.KycTargetLevel;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumKycTargetLevelFilter<$PrismaModel>;
 };
 
 export type NestedEnumKycRequestStatusWithAggregatesFilter<$PrismaModel = never> = {

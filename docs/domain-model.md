@@ -1,6 +1,6 @@
 # Modèle de domaine
 
-Le schéma de référence est `packages/database/prisma/schema.prisma` ; les contraintes qui ne s'expriment pas en Prisma (CHECK, triggers append-only, index trigram) sont dans les migrations SQL. Conventions : tables `snake_case` préfixées par domaine, colonnes `camelCase`, identifiants UUID v4, horodatages `timestamptz`, montants `BIGINT` en unités mineures suffixés `Minor` (A-13).
+Le schéma de référence est `packages/database/prisma/schema.prisma` ; les contraintes qui ne s'expriment pas en Prisma (CHECK, triggers append-only, index trigram) sont dans les migrations SQL. Conventions : un schéma PostgreSQL par service (docs/data-ownership.md, A-48), tables `snake_case` préfixées par domaine, colonnes `camelCase`, identifiants UUID v4, horodatages `timestamptz`, montants `BIGINT` en unités mineures suffixés `Minor` (A-13).
 
 ## 1. Carte des agrégats par domaine
 

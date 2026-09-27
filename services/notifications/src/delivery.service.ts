@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Clock, OutboxService, PrismaService, ScheduledJob, UnitOfWork } from '@tontine/platform';
+import { RECIPIENT_DIRECTORY, type RecipientDirectory } from './ports';
 import { EmailProvider, ProviderError, SmsProvider } from './providers';
 import { emailHtml } from './render';
 
@@ -34,6 +35,7 @@ export class DeliveryService {
     private readonly clock: Clock,
     private readonly sms: SmsProvider,
     private readonly email: EmailProvider,
+    @Inject(RECIPIENT_DIRECTORY) private readonly directory: RecipientDirectory,
   ) {}
 
   @ScheduledJob({
@@ -67,10 +69,7 @@ export class DeliveryService {
   private async contactOf(
     recipientId: string,
   ): Promise<{ email: string | null; phone: string | null }> {
-    const m = await this.prisma.member.findUnique({
-      where: { id: recipientId },
-      select: { email: true, phone: true },
-    });
+    const [m] = await this.directory.getMany([recipientId]);
     return { email: m?.email ?? null, phone: m?.phone ?? null };
   }
 

@@ -565,7 +565,7 @@ enum TontineAccountType {
   SAVINGS
   LOAN
 
-  @@schema("tontines")
+  @@schema("administration")
 }
 
 enum MessageTemplate {
@@ -574,7 +574,7 @@ enum MessageTemplate {
   INFORMATION
   CUSTOM
 
-  @@schema("tontines")
+  @@schema("administration")
 }
 
 enum AuditResult {
@@ -1715,7 +1715,7 @@ model TontineAccount {
 
   @@unique([tontineId, type])
   @@map("adm_tontine_accounts")
-  @@schema("tontines")
+  @@schema("administration")
 }
 
 /// Rapports générés et archivés (rapport final de clôture US-4.9, exports US-10.4, réconciliations).
@@ -1750,5 +1750,5 @@ model AdminMessage {
 
   @@index([tontineId, createdAt(sort: Desc)])
   @@map("adm_messages")
-  @@schema("tontines")
+  @@schema("administration")
 }

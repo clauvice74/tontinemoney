@@ -96,9 +96,9 @@ Règle vérifiée par ESLint (`import/no-restricted-paths`) : aucun import d'un 
 
 ## 4. Données
 
-Une seule base PostgreSQL en MVP, un **schéma logique par domaine** matérialisé par le préfixe des tables et par la règle « seul le domaine propriétaire écrit ses tables ». Les jointures inter-domaines en SQL sont interdites hors du module `reports` de `administration`, qui utilise des requêtes en lecture seule (A-28).
+Une seule base PostgreSQL, **un schéma par service** (`auth`, `members`, `kyc`, …, `platform` pour les tables techniques partagées) et un rôle PostgreSQL au moindre privilège par service. Tout accès d'un service aux tables d'un autre schéma est interdit, sauf les lectures déclarées dans `infrastructure/data-ownership.allowlist.json` (contrôlées par `pnpm arch:check` en CI et par les droits des rôles), chacune avec l'étape qui la supprimera (A-48).
 
-Voir `docs/domain-model.md`.
+Voir `docs/data-ownership.md` et `docs/domain-model.md`.
 
 ## 5. Flux transverses
 

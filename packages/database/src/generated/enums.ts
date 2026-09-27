@@ -84,6 +84,15 @@ export const KycLevel = {
 
 export type KycLevel = (typeof KycLevel)[keyof typeof KycLevel];
 
+export const KycTargetLevel = {
+  NONE: 'NONE',
+  TIER_1: 'TIER_1',
+  TIER_2: 'TIER_2',
+  TIER_3: 'TIER_3',
+} as const;
+
+export type KycTargetLevel = (typeof KycTargetLevel)[keyof typeof KycTargetLevel];
+
 export const ComplianceStatus = {
   COMPLIANT: 'COMPLIANT',
   RESTRICTED: 'RESTRICTED',

@@ -13,6 +13,7 @@ cp .env.example .env
 pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel collector, Prometheus, Grafana
 pnpm db:migrate             # migrations SQL versionnées (packages/database/prisma/migrations)
+pnpm db:roles               # rôles PostgreSQL par service (moindre privilège)
 pnpm db:seed                # comptes et tontine de démonstration
 pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000
 ```
@@ -112,7 +113,7 @@ Cas sensibles couverts : accès aux données d'autres membres, double webhook, d
 
 ## Documentation
 
-`docs/specification-analysis.md` · `docs/architecture.md` · `docs/domain-model.md` · `docs/security.md` · `docs/event-catalog.md` · `docs/api-conventions.md` · `docs/api-catalog.md` · `docs/openapi.json` · `docs/assumptions.md` (A-00 → A-46) · `docs/implementation-plan.md` · `docs/progress.md` · `docs/extraction-plan.md` · `docs/service-map.md` · `docs/data-ownership.md` · `docs/sagas.md` · `docs/local-development.md` · `CLAUDE.md`
+`docs/specification-analysis.md` · `docs/architecture.md` · `docs/domain-model.md` · `docs/security.md` · `docs/event-catalog.md` · `docs/api-conventions.md` · `docs/api-catalog.md` · `docs/openapi.json` · `docs/assumptions.md` (A-00 → A-46) · `docs/implementation-plan.md` · `docs/progress.md` · `docs/extraction-plan.md` · `docs/service-map.md` · `docs/data-ownership.md` · `infrastructure/data-ownership.allowlist.json` · `docs/sagas.md` · `docs/local-development.md` · `CLAUDE.md`
 
 ## Limitations connues
 

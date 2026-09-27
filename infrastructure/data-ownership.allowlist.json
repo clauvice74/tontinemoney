@@ -1,0 +1,229 @@
+{
+  "$comment": "Accès inter-schémas tolérés et contrôlés par infrastructure/scripts/check-data-ownership.mjs. Toute entrée doit disparaître à l’étape indiquée (docs/extraction-plan.md).",
+  "entries": [
+    {
+      "service": "administration",
+      "schema": "compliance",
+      "object": "cmp_cases",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "compliance",
+      "object": "cmp_violations",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "kyc",
+      "object": "kyc_aml_matches",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "kyc",
+      "object": "kyc_requests",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "members",
+      "object": "mbr_members",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "payments",
+      "object": "pay_payments",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "ton_contributions",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "ton_cycles",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "ton_members",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "ton_tontines",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "tontine",
+      "access": "read",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "tontines",
+      "object": "tontineCycle",
+      "access": "read",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "transactions",
+      "object": "reconciliationReport",
+      "access": "read",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "transactions",
+      "object": "trx_transactions",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "wallets",
+      "object": "wal_movements",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "wallets",
+      "object": "wal_wallets",
+      "access": "sql",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "administration",
+      "schema": "wallets",
+      "object": "wallet",
+      "access": "read",
+      "reason": "Rapports financiers et plateforme en lecture seule (A-28), seule exception documentée aux jointures inter-domaines.",
+      "removal": "étape 6 : reporting-service alimenté par projections"
+    },
+    {
+      "service": "compliance",
+      "schema": "transactions",
+      "object": "trx_transactions",
+      "access": "sql",
+      "reason": "Plafonds journaliers et mensuels : cumul des transactions validées (US-9.2).",
+      "removal": "étape 5 : projection des cumuls via transaction.completed"
+    },
+    {
+      "service": "compliance",
+      "schema": "wallets",
+      "object": "wallet",
+      "access": "read",
+      "reason": "Règle WALLET_LIMIT : solde du wallet crédité lu au moment de la validation synchrone (US-9.2).",
+      "removal": "étape 5 : projection des soldes via wallet.balance.updated"
+    },
+    {
+      "service": "members",
+      "schema": "tontines",
+      "object": "ton_members",
+      "access": "sql",
+      "reason": "Annuaire des membres d’une tontine (US-2.3) : jointure sur les adhésions pour filtrer et paginer en SQL.",
+      "removal": "étape 6 : projection des adhésions (tontine.member.added / removed)"
+    },
+    {
+      "service": "payments",
+      "schema": "wallets",
+      "object": "wallet",
+      "access": "read",
+      "reason": "Wallet du membre (devise, statut) avant l’initiation d’un dépôt ou d’un retrait.",
+      "removal": "étape 5 : sagas asynchrones"
+    },
+    {
+      "service": "tontines",
+      "schema": "wallets",
+      "object": "wallet",
+      "access": "read",
+      "reason": "Lecture des wallets cagnotte / réserve et du wallet membre (soldes, devise) pendant les opérations de tontine.",
+      "removal": "étape 5 : sagas orchestrées par transaction-service"
+    },
+    {
+      "service": "transactions",
+      "schema": "payments",
+      "object": "pay_payments",
+      "access": "sql",
+      "reason": "Réconciliation interne : rapprochement des paiements PSP et des écritures.",
+      "removal": "étape 6 : réconciliation par projections"
+    },
+    {
+      "service": "transactions",
+      "schema": "wallets",
+      "object": "wal_holds",
+      "access": "sql",
+      "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
+      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+    },
+    {
+      "service": "transactions",
+      "schema": "wallets",
+      "object": "wal_movements",
+      "access": "sql",
+      "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
+      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+    },
+    {
+      "service": "transactions",
+      "schema": "wallets",
+      "object": "wal_wallets",
+      "access": "sql",
+      "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
+      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+    },
+    {
+      "service": "transactions",
+      "schema": "wallets",
+      "object": "wallet",
+      "access": "read",
+      "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
+      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+    },
+    {
+      "service": "transactions",
+      "schema": "wallets",
+      "object": "walletMovement",
+      "access": "read",
+      "reason": "Orchestrateur des opérations financières : lecture des wallets et mouvements dans la transaction du grand livre ; réconciliation interne.",
+      "removal": "étape 5 : sagas asynchrones ; le grand livre reste dans wallet-service"
+    }
+  ]
+}

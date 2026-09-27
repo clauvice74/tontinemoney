@@ -33,6 +33,8 @@ jobs:
       - run: cp .env.example .env
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
+      - name: Propriété des données (aucun accès inter-schémas non déclaré)
+        run: pnpm arch:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
