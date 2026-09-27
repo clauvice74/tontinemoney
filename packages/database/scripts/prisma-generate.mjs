@@ -19,4 +19,15 @@ const res = spawnSync('prisma', ['generate'], {
   env,
   shell: process.platform === 'win32',
 });
-process.exit(res.status ?? 1);
+if (res.status !== 0) process.exit(res.status ?? 1);
+
+// Le client généré est versionné : on le formate comme le reste du dépôt, sinon chaque build
+// le modifie et fait échouer `pnpm format:check`. Prettier absent (installation sans
+// dépendances de dev) : on laisse le client tel quel.
+const fmt = spawnSync('prettier', ['--write', '--log-level', 'warn', 'src/generated'], {
+  stdio: 'inherit',
+  shell: process.platform === 'win32',
+});
+if (fmt.error && fmt.error.code !== 'ENOENT')
+  console.warn(`Formatage ignoré : ${fmt.error.message}`);
+process.exit(0);
