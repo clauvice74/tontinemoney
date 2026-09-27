@@ -28,7 +28,7 @@ export function requestFingerprint(value: unknown): string {
 const TTL_MS = 24 * 3600 * 1000;
 
 /**
- * Clés d'idempotence (docs/security-model.md §4) :
+ * Clés d'idempotence (docs/security.md §4) :
  * même clé + même requête → réponse rejouée ; même clé + requête différente → 422 ;
  * même clé en cours → 409.
  */

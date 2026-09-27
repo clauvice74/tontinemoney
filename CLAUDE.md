@@ -59,6 +59,16 @@ pnpm db:migration:new <nom>   # nouvelle migration (dev)
 - Aucune suppression/modification d'écriture : contre-passation (REVERSAL).
 - Devise unique par opération ; sinon `CURRENCY_MISMATCH`.
 
+## Extraction en microservices
+
+En cours, étape par étape : `docs/extraction-plan.md` (état, étapes, prérequis), `docs/service-map.md`, `docs/data-ownership.md`, `docs/sagas.md`. Un domaine non extrait reste un module de `apps/api`. Nouvelle lecture d'une table d'un autre domaine interdite (sauf rapports existants, A-28) : passer par un événement ou un port. Montants : toujours `bigint` en unités mineures (A-43).
+
+## Pièges locaux
+
+- Arrêter `pnpm dev` avant `pnpm check` ou `pnpm build` : le build Next écrase `.next/` du serveur de dev.
+- Ne pas exporter `.env` dans le shell courant (`set -a; . .env`) : `NODE_ENV=development` fait échouer `next build`. Utiliser un sous-shell.
+- E2E Playwright : `pnpm build:demo` (simulateurs visibles) puis `pnpm test:e2e:local`, serveurs de dev arrêtés.
+
 ## Événements
 
 Publier uniquement via `OutboxService.add(tx, event)` dans la même transaction Prisma. Consommateurs : `@OnEvent('type', { consumer: 'nom' })` — idempotents par construction (`processed_events`). Nouveau type → l'ajouter à `packages/events/src/catalog.ts` et à `docs/event-catalog.md`.

@@ -1,5 +1,5 @@
 /**
- * Types des réponses de l'API (cf. docs/api-routes.md). Les schémas d'entrée sont ceux de
+ * Types des réponses de l'API (cf. docs/api-catalog.md). Les schémas d'entrée sont ceux de
  * `@tontine/contracts` ; seules les formes de sortie sont décrites ici.
  */
 import type {

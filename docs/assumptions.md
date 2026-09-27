@@ -185,3 +185,19 @@ Les spécifications ne définissent pas de score de risque. `POST /risk-score` (
 ## A-42 — Dossiers de conformité
 
 Un dossier (`cmp_cases`) regroupe les alertes d'un membre par type : `AML_SCREENING` (correspondances AML/PEP/sanctions), `DUPLICATE_IDENTITY`, `RULE_VIOLATION`, `FRAUD`. Un seul dossier ouvert par membre et par type (index partiel) ; il est alimenté par les événements `kyc.aml.match`, `kyc.duplicate.detected`, `compliance.violation.detected` et `fraud.user.flagged`, de façon idempotente. Gravité : PEP MEDIUM, sanction HIGH (CRITICAL si score ≥ 90), doublon HIGH, fraude CRITICAL, violations LOW → MEDIUM (3) → HIGH (5, seuil de suspension US-9.4) ; elle ne diminue jamais. La clôture (`CONFIRMED` ou `DISMISSED`, commentaire obligatoire) est refusée tant qu'une correspondance AML ou une alerte doublon du dossier n'a pas été tranchée dans la revue KYC, qui reste le seul circuit de décision sur ces alertes. Clore un dossier ne lève aucune suspension.
+
+## A-43 — Montants : entiers en unités mineures plutôt que Decimal
+
+Le prompt d'extraction demande des montants `Decimal`. Le projet utilise `BIGINT` en unités mineures (A-13), aussi sûr (aucun flottant, arithmétique exacte), déjà couvert par les tests et imposé par `CLAUDE.md`. Décision de l'utilisateur (2026-09-27) : conserver les unités mineures. Les API continuent d'exposer des chaînes décimales en unités majeures.
+
+## A-44 — Documents sources absents
+
+`API Gateway_ARCHITECTURE.docx` et `UI-UX.docx` ne sont pas disponibles. Les responsabilités des gateways sont reprises du prompt d'extraction (§4) ; `TontineMoney_Charte.pdf` est une charte graphique sans impact sur le backend. Les user stories (`docs/specs/`) restent la source de vérité.
+
+## A-45 — Extraction progressive
+
+Décision de l'utilisateur (2026-09-27) : extraire les microservices étape par étape à partir du monolithe modulaire existant (docs/extraction-plan.md) plutôt que de tout réécrire. Tant qu'un domaine n'est pas extrait, il reste un module de `apps/api`, routé par l'API Gateway comme un service.
+
+## A-46 — Broker Kafka en local
+
+Les étapes qui font communiquer plusieurs processus par Kafka exigent Docker Desktop (Redpanda). Sans Docker, le développement local utilise `EVENT_TRANSPORT=inprocess` dans un seul processus et les gateways routent vers `apps/api`.

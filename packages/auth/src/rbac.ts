@@ -1,7 +1,7 @@
 import { type PlatformRole } from '@tontine/contracts';
 
 /**
- * Matrice RBAC de référence (docs/security-model.md §2).
+ * Matrice RBAC de référence (docs/security.md §2).
  * Le contrôle de rôle est TOUJOURS complété par un contrôle de propriété de la ressource.
  */
 export const PERMISSIONS = [

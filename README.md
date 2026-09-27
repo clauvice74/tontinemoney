@@ -69,7 +69,7 @@ Intégration continue : `.github/workflows/ci.yml` (format, lint, types, tests u
 
 ## Architecture
 
-Monorepo pnpm + Turborepo. **Monolithe modulaire NestJS** dont chaque domaine est un package indépendant (extraction future en microservices), communiquant par **événements versionnés via outbox** et consommateurs idempotents. Détails : `docs/architecture.md`.
+Monorepo pnpm + Turborepo. **Monolithe modulaire NestJS** dont chaque domaine est un package indépendant (extraction future en microservices), communiquant par **événements versionnés via outbox** et consommateurs idempotents. Détails : `docs/architecture.md`. **Extraction progressive en microservices en cours** : `docs/extraction-plan.md`.
 
 ```
 apps/api            hôte NestJS (REST v1, Swagger, santé, métriques, OpenTelemetry)
@@ -112,7 +112,7 @@ Cas sensibles couverts : accès aux données d'autres membres, double webhook, d
 
 ## Documentation
 
-`docs/specification-analysis.md` · `docs/architecture.md` · `docs/domain-model.md` · `docs/security-model.md` · `docs/event-catalog.md` · `docs/api-conventions.md` · `docs/api-routes.md` · `docs/openapi.json` · `docs/assumptions.md` (A-00 → A-40) · `docs/implementation-plan.md` · `docs/progress.md` · `CLAUDE.md`
+`docs/specification-analysis.md` · `docs/architecture.md` · `docs/domain-model.md` · `docs/security.md` · `docs/event-catalog.md` · `docs/api-conventions.md` · `docs/api-catalog.md` · `docs/openapi.json` · `docs/assumptions.md` (A-00 → A-46) · `docs/implementation-plan.md` · `docs/progress.md` · `docs/extraction-plan.md` · `docs/service-map.md` · `docs/data-ownership.md` · `docs/sagas.md` · `docs/local-development.md` · `CLAUDE.md`
 
 ## Limitations connues
 
