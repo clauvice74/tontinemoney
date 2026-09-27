@@ -149,9 +149,20 @@ export class KafkaTransport implements EventTransport {
     await admin.disconnect();
     if (topics.length === 0) return;
     this.consumer = this.kafka.consumer({ groupId: this.options.groupId });
-    await this.consumer.connect();
-    await this.consumer.subscribe({ topics, fromBeginning: false });
-    await this.consumer.run({
+    const consumer = this.consumer;
+    // Prêt seulement une fois membre du groupe (partitions attribuées)
+    const joined = new Promise<void>((resolve) => {
+      const off = consumer.on(consumer.events.GROUP_JOIN, () => {
+        off();
+        resolve();
+      });
+    });
+    await consumer.connect();
+    // Nouveau groupe : lecture depuis le début (au moins une fois) — un événement publié
+    // avant la première jonction n'est jamais perdu ; les doublons sont absorbés par l'inbox.
+    // Groupe existant : reprise aux offsets validés.
+    await consumer.subscribe({ topics, fromBeginning: true });
+    await consumer.run({
       eachMessage: async ({ message, topic, partition }) => {
         const headers: Record<string, string> = {};
         for (const [k, v] of Object.entries(message.headers ?? {}))
@@ -167,6 +178,7 @@ export class KafkaTransport implements EventTransport {
         if (outcome !== 'processed') this.logger.warn(`${topic}#${message.offset} : ${outcome}`);
       },
     });
+    await joined;
   }
 
   async publish(event: EventEnvelope): Promise<void> {
