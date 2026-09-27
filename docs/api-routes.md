@@ -126,13 +126,18 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 
 ## Conformité & fraude (épique 9, A-14)
 
-| POST 🔒     | `/compliance/validate`                   | staff : `{operationType, memberId, amountMinor, currency, country?, context?}` → `{compliant, appliedRules[], violations[]}` |
-| ----------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| GET/POST 🔒 | `/admin/compliance/rules`                | liste / création                                                                                                             |
-| PATCH 🔒    | `/admin/compliance/rules/{code}`         | `{params?, active?, operationTypes?, description?, changeReason}`                                                            |
-| GET 🔒      | `/admin/compliance/rules/{code}/history` | historique                                                                                                                   |
-| GET 🔒      | `/admin/compliance/violations`           | violations                                                                                                                   |
-| POST 🔒     | `/admin/fraud/flag`                      | `{memberId, reason}`                                                                                                         |
+| POST 🔒     | `/compliance/validate`                                              | staff : `{operationType, memberId, amountMinor, currency, country?, context?}` → `{compliant, appliedRules[], violations[]}`                                                           |
+| ----------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET/POST 🔒 | `/admin/compliance/rules`                                           | liste / création                                                                                                                                                                       |
+| PATCH 🔒    | `/admin/compliance/rules/{code}`                                    | `{params?, active?, operationTypes?, description?, changeReason}`                                                                                                                      |
+| GET 🔒      | `/admin/compliance/rules/{code}/history`                            | historique                                                                                                                                                                             |
+| GET 🔒      | `/admin/compliance/violations`                                      | violations                                                                                                                                                                             |
+| POST 🔒     | `/admin/fraud/flag`                                                 | `{memberId, reason}`                                                                                                                                                                   |
+| GET 🔒      | `/compliance/cases?limit&cursor&status&type&severity&memberId&sort` | `compliance.cases.manage` (SUPER_ADMIN, KYC_AGENT) : `{data:[{id, memberId, type, status, severity, openedAt, closedAt, outcome, alertCount, …}], page}` (A-42)                        |
+| GET 🔒      | `/compliance/cases/{id}`                                            | dossier + `alerts:[{alertType, sourceId, summary, open, createdAt, resolvedAt}]`                                                                                                       |
+| POST 🔒     | `/compliance/cases/{id}/close`                                      | `{outcome: CONFIRMED\|DISMISSED, comment}` ; 422 si une alerte AML/doublon est encore ouverte (`openAlerts`) ou si déjà clos                                                           |
+| POST 🔒     | `/risk-score` · `/fraud/analyze`                                    | `{memberId}` → `{score, level, factors:[{code, points, detail}], computedAt}` (A-41, lecture seule, journalisé)                                                                        |
+| POST 🔒     | `/aml/check` · `/sanctions/check` · `/pep/check`                    | `kyc.review` : `{memberId}` → `{scope, clear, newMatches, whitelisted, hits:[{matchId, listName, entryName, score, status, isNew}]}` ; nouvelles correspondances → revue KYC + dossier |
 
 ## Exploitation
 

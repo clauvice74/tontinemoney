@@ -53,6 +53,8 @@ export type * from './models/OutboundMessage';
 export type * from './models/ComplianceRule';
 export type * from './models/ComplianceRuleHistory';
 export type * from './models/ComplianceViolation';
+export type * from './models/ComplianceCase';
+export type * from './models/ComplianceCaseAlert';
 export type * from './models/TontineAccount';
 export type * from './models/GeneratedReport';
 export type * from './models/AdminMessage';

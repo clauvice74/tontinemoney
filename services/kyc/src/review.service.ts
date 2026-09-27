@@ -394,6 +394,12 @@ export class KycReviewService {
           resolutionComment: comment,
         },
       });
+      await this.outbox.add(tx, {
+        type: 'kyc.aml.resolved',
+        aggregateType: 'member',
+        aggregateId: m.memberId,
+        payload: { memberId: m.memberId, matchId: m.id, resolution },
+      });
       if (resolution === 'FALSE_POSITIVE') {
         await tx.kycAmlWhitelist.upsert({
           where: {

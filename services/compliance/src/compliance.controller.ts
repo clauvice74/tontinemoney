@@ -1,11 +1,17 @@
-import { Controller, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  type CloseComplianceCaseInput,
+  type ComplianceCasesQuery,
   type ComplianceRuleInput,
   type OperationType,
+  type RiskScoreRequest,
+  closeComplianceCaseSchema,
+  complianceCasesQuerySchema,
   complianceRuleSchema,
   complianceRuleUpdateSchema,
   complianceValidateSchema,
+  riskScoreRequestSchema,
 } from '@tontine/contracts';
 import {
   type Actor,
@@ -17,6 +23,7 @@ import {
   ZodQuery,
 } from '@tontine/platform';
 import { z } from 'zod';
+import { ComplianceCasesService } from './cases.service';
 import { ComplianceService } from './compliance.service';
 
 const listQuery = z.object({ country: z.string().length(2).toUpperCase().optional() });
@@ -29,7 +36,10 @@ const violationsQuery = z.object({
 @ApiBearerAuth()
 @Controller({ version: '1' })
 export class ComplianceController {
-  constructor(private readonly compliance: ComplianceService) {}
+  constructor(
+    private readonly compliance: ComplianceService,
+    private readonly cases: ComplianceCasesService,
+  ) {}
 
   /** US-9.2 — API synchrone de validation (usage interne / staff). */
   @Post('compliance/validate')
@@ -101,5 +111,48 @@ export class ComplianceController {
   @ApiZodQuery(violationsQuery)
   async violations(@ZodQuery(violationsQuery) q: z.infer<typeof violationsQuery>) {
     return { data: await this.compliance.violations(q.memberId, q.limit) };
+  }
+
+  @Get('compliance/cases')
+  @RequirePermission('compliance.cases.manage')
+  @ApiOperation({ summary: 'Dossiers de conformité : filtres, tri, pagination par curseur' })
+  @ApiZodQuery(complianceCasesQuerySchema)
+  async listCases(@ZodQuery(complianceCasesQuerySchema) q: ComplianceCasesQuery) {
+    return this.cases.list(q);
+  }
+
+  @Get('compliance/cases/:id')
+  @RequirePermission('compliance.cases.manage')
+  @ApiOperation({ summary: 'Détail d’un dossier et de ses alertes' })
+  async getCase(@Param('id', ParseUUIDPipe) id: string) {
+    return this.cases.get(id);
+  }
+
+  @Post('compliance/cases/:id/close')
+  @HttpCode(200)
+  @RequirePermission('compliance.cases.manage')
+  @ApiOperation({
+    summary: 'Clore un dossier (CONFIRMED | DISMISSED, commentaire obligatoire)',
+    description:
+      'Refusé (422) tant qu’une correspondance AML ou une alerte doublon du dossier n’a pas été tranchée dans la revue KYC. La clôture ne lève aucune suspension : utiliser /members/{id}/reactivate.',
+  })
+  @ApiZodBody(closeComplianceCaseSchema)
+  async closeCase(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZodBody(closeComplianceCaseSchema) body: CloseComplianceCaseInput,
+  ) {
+    return this.cases.close(actor, id, body);
+  }
+
+  @Post(['risk-score', 'fraud/analyze'])
+  @HttpCode(200)
+  @RequirePermission('compliance.cases.manage')
+  @ApiOperation({
+    summary: 'Score de risque d’un membre (0–100) et facteurs — lecture seule, aucune action',
+  })
+  @ApiZodBody(riskScoreRequestSchema)
+  async riskScore(@ZodBody(riskScoreRequestSchema) body: RiskScoreRequest) {
+    return this.cases.risk(body.memberId);
   }
 }

@@ -184,6 +184,14 @@ export const EVENT_CATALOG = {
     'kyc',
     z.object({ memberId: id, matchId: id, listName: z.string(), score: z.number() }),
   ),
+  'kyc.aml.resolved': def(
+    'kyc',
+    z.object({
+      memberId: id,
+      matchId: id,
+      resolution: z.enum(['CONFIRMED_MATCH', 'FALSE_POSITIVE']),
+    }),
+  ),
 
   // --- tontines ---
   'tontine.created': def(
@@ -480,6 +488,20 @@ export const EVENT_CATALOG = {
   ),
   'compliance.user.restricted': def('compliance', z.object({ memberId: id, reason: z.string() })),
   'compliance.user.suspended': def('compliance', z.object({ memberId: id, reason: z.string() })),
+  'compliance.case.opened': def(
+    'compliance',
+    z.object({ caseId: id, memberId: id, type: z.string(), severity: z.string() }),
+  ),
+  'compliance.case.closed': def(
+    'compliance',
+    z.object({
+      caseId: id,
+      memberId: id,
+      type: z.string(),
+      outcome: z.enum(['CONFIRMED', 'DISMISSED']),
+      closedBy: id,
+    }),
+  ),
 
   // --- fraude (A-14) ---
   'fraud.user.flagged': def(

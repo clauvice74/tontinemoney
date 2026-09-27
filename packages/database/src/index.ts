@@ -113,6 +113,8 @@ export const ALL_TABLES = [
   'cmp_rules',
   'cmp_rule_history',
   'cmp_violations',
+  'cmp_case_alerts',
+  'cmp_cases',
   'adm_tontine_accounts',
   'adm_messages',
 ] as const;

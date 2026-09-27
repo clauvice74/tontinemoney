@@ -8,7 +8,7 @@ import {
   ScheduledJob,
   UnitOfWork,
 } from '@tontine/platform';
-import { AmlScreeningProvider } from './providers/providers';
+import { AmlScreeningService } from './aml-screening.service';
 
 interface Warnings {
   d30?: boolean;
@@ -33,7 +33,7 @@ export class KycMaintenanceService {
     private readonly uow: UnitOfWork,
     private readonly outbox: OutboxService,
     private readonly clock: Clock,
-    private readonly aml: AmlScreeningProvider,
+    private readonly screening: AmlScreeningService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
 
@@ -145,48 +145,8 @@ export class KycMaintenanceService {
     });
     let newMatches = 0;
     for (const m of active) {
-      const hits = await this.aml.screen(
-        `${m.firstName} ${m.lastName}`,
-        m.dateOfBirth?.toISOString().slice(0, 10) ?? null,
-      );
-      for (const h of hits) {
-        const known = await this.prisma.kycAmlMatch.findFirst({
-          where: {
-            memberId: m.id,
-            listName: h.listName,
-            entryId: h.entryId,
-            status: { in: ['OPEN', 'CONFIRMED'] },
-          },
-        });
-        const white = await this.prisma.kycAmlWhitelist.findUnique({
-          where: {
-            memberId_listName_entryId: { memberId: m.id, listName: h.listName, entryId: h.entryId },
-          },
-        });
-        if (known || white) continue;
-        await this.uow.run(async (tx) => {
-          const match = await tx.kycAmlMatch.create({
-            data: {
-              memberId: m.id,
-              listName: h.listName,
-              entryId: h.entryId,
-              entryName: h.entryName,
-              entryCountry: h.entryCountry,
-              entryReason: h.entryReason,
-              entryAddedAt: new Date(`${h.entryAddedAt}T00:00:00Z`),
-              score: h.score,
-              source: 'BATCH',
-            },
-          });
-          await this.outbox.add(tx, {
-            type: 'kyc.aml.match',
-            aggregateType: 'member',
-            aggregateId: m.id,
-            payload: { memberId: m.id, matchId: match.id, listName: h.listName, score: h.score },
-          });
-        });
-        newMatches++;
-      }
+      const { hits } = await this.screening.screenMember(m, 'ALL', 'BATCH');
+      newMatches += hits.filter((h) => h.isNew).length;
     }
     return { screened: active.length, newMatches };
   }

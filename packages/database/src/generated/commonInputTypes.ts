@@ -1511,6 +1511,108 @@ export type EnumViolationActionWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumViolationActionFilter<$PrismaModel>;
 };
 
+export type EnumComplianceCaseTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseType | Prisma.EnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel> | $Enums.ComplianceCaseType;
+};
+
+export type EnumComplianceCaseStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseStatus | Prisma.EnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  in?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel> | $Enums.ComplianceCaseStatus;
+};
+
+export type EnumCaseSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseSeverity | Prisma.EnumCaseSeverityFieldRefInput<$PrismaModel>;
+  in?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel> | $Enums.CaseSeverity;
+};
+
+export type EnumCaseOutcomeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseOutcome | Prisma.EnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  in?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  notIn?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  not?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel> | $Enums.CaseOutcome | null;
+};
+
+export type EnumComplianceCaseTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseType | Prisma.EnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceCaseTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceCaseType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel>;
+};
+
+export type EnumComplianceCaseStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseStatus | Prisma.EnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  in?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceCaseStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceCaseStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel>;
+};
+
+export type EnumCaseSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseSeverity | Prisma.EnumCaseSeverityFieldRefInput<$PrismaModel>;
+  in?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCaseSeverityWithAggregatesFilter<$PrismaModel> | $Enums.CaseSeverity;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel>;
+};
+
+export type EnumCaseOutcomeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseOutcome | Prisma.EnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  in?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  notIn?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  not?:
+    | Prisma.NestedEnumCaseOutcomeNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.CaseOutcome
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel>;
+};
+
+export type EnumComplianceAlertTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceAlertType | Prisma.EnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel> | $Enums.ComplianceAlertType;
+};
+
+export type EnumComplianceAlertTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceAlertType | Prisma.EnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceAlertTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceAlertType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel>;
+};
+
 export type EnumTontineAccountTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.TontineAccountType | Prisma.EnumTontineAccountTypeFieldRefInput<$PrismaModel>;
   in?: $Enums.TontineAccountType[] | Prisma.ListEnumTontineAccountTypeFieldRefInput<$PrismaModel>;
@@ -2986,6 +3088,108 @@ export type NestedEnumViolationActionWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumViolationActionFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumViolationActionFilter<$PrismaModel>;
+};
+
+export type NestedEnumComplianceCaseTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseType | Prisma.EnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel> | $Enums.ComplianceCaseType;
+};
+
+export type NestedEnumComplianceCaseStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseStatus | Prisma.EnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  in?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel> | $Enums.ComplianceCaseStatus;
+};
+
+export type NestedEnumCaseSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseSeverity | Prisma.EnumCaseSeverityFieldRefInput<$PrismaModel>;
+  in?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel> | $Enums.CaseSeverity;
+};
+
+export type NestedEnumCaseOutcomeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseOutcome | Prisma.EnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  in?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  notIn?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  not?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel> | $Enums.CaseOutcome | null;
+};
+
+export type NestedEnumComplianceCaseTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseType | Prisma.EnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseType[] | Prisma.ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceCaseTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceCaseType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceCaseTypeFilter<$PrismaModel>;
+};
+
+export type NestedEnumComplianceCaseStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceCaseStatus | Prisma.EnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  in?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceCaseStatus[] | Prisma.ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceCaseStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceCaseStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceCaseStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumCaseSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseSeverity | Prisma.EnumCaseSeverityFieldRefInput<$PrismaModel>;
+  in?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.CaseSeverity[] | Prisma.ListEnumCaseSeverityFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCaseSeverityWithAggregatesFilter<$PrismaModel> | $Enums.CaseSeverity;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCaseSeverityFilter<$PrismaModel>;
+};
+
+export type NestedEnumCaseOutcomeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CaseOutcome | Prisma.EnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  in?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  notIn?: $Enums.CaseOutcome[] | Prisma.ListEnumCaseOutcomeFieldRefInput<$PrismaModel> | null;
+  not?:
+    | Prisma.NestedEnumCaseOutcomeNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.CaseOutcome
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCaseOutcomeNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumComplianceAlertTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceAlertType | Prisma.EnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel> | $Enums.ComplianceAlertType;
+};
+
+export type NestedEnumComplianceAlertTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ComplianceAlertType | Prisma.EnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    $Enums.ComplianceAlertType[] | Prisma.ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumComplianceAlertTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.ComplianceAlertType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumComplianceAlertTypeFilter<$PrismaModel>;
 };
 
 export type NestedEnumTontineAccountTypeFilter<$PrismaModel = never> = {

@@ -15,7 +15,7 @@ Le schéma de référence est `packages/database/prisma/schema.prisma` ; les con
 | transactions   | `trx_transactions`, `trx_audit_logs`, `trx_reconciliation_reports`                                                                                                        |
 | payments       | `pay_payments`, `pay_status_history`, `pay_webhook_events`                                                                                                                |
 | notifications  | `ntf_templates`, `ntf_notifications`, `ntf_outbound_messages`                                                                                                             |
-| compliance     | `cmp_rules`, `cmp_rule_history`, `cmp_violations`                                                                                                                         |
+| compliance     | `cmp_rules`, `cmp_rule_history`, `cmp_violations`, `cmp_cases`, `cmp_case_alerts`                                                                                         |
 | administration | `adm_tontine_accounts`, `adm_messages`                                                                                                                                    |
 
 ## 2. Machines à états

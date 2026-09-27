@@ -248,6 +248,16 @@ export type ComplianceRuleHistory = Prisma.ComplianceRuleHistoryModel;
  */
 export type ComplianceViolation = Prisma.ComplianceViolationModel;
 /**
+ * Model ComplianceCase
+ * Dossier de conformité : regroupe les alertes d'un membre par type (un seul dossier OPEN par couple).
+ */
+export type ComplianceCase = Prisma.ComplianceCaseModel;
+/**
+ * Model ComplianceCaseAlert
+ * Alerte rattachée à un dossier. `open` : l'alerte source attend encore une décision (AML, doublon).
+ */
+export type ComplianceCaseAlert = Prisma.ComplianceCaseAlertModel;
+/**
  * Model TontineAccount
  *
  */

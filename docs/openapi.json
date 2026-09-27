@@ -2918,6 +2918,276 @@
         "tags": ["Conformité"]
       }
     },
+    "/api/v1/compliance/cases": {
+      "get": {
+        "operationId": "ComplianceController_listCases_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["OPEN", "CLOSED"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["AML_SCREENING", "DUPLICATE_IDENTITY", "RULE_VIOLATION", "FRAUD"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "memberId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["opened_desc", "opened_asc"],
+              "default": "opened_desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dossiers de conformité : filtres, tri, pagination par curseur",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/compliance/cases/{id}": {
+      "get": {
+        "operationId": "ComplianceController_getCase_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un dossier et de ses alertes",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/compliance/cases/{id}/close": {
+      "post": {
+        "description": "Refusé (422) tant qu’une correspondance AML ou une alerte doublon du dossier n’a pas été tranchée dans la revue KYC. La clôture ne lève aucune suspension : utiliser /members/{id}/reactivate.",
+        "operationId": "ComplianceController_closeCase_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": ["CONFIRMED", "DISMISSED"]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["outcome", "comment"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Clore un dossier (CONFIRMED | DISMISSED, commentaire obligatoire)",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/risk-score": {
+      "post": {
+        "operationId": "ComplianceController_riskScore[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Score de risque d’un membre (0–100) et facteurs — lecture seule, aucune action",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/fraud/analyze": {
+      "post": {
+        "operationId": "ComplianceController_riskScore[1]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Score de risque d’un membre (0–100) et facteurs — lecture seule, aucune action",
+        "tags": ["Conformité"]
+      }
+    },
     "/api/v1/me/wallet/transfers": {
       "post": {
         "operationId": "TransactionsController_transfer_v1",
@@ -3678,6 +3948,114 @@
             "bearer": []
           }
         ],
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/aml/check": {
+      "post": {
+        "operationId": "ScreeningController_aml_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Screening AML complet d’un membre (sanctions + PEP)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/sanctions/check": {
+      "post": {
+        "operationId": "ScreeningController_sanctions_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Screening sanctions d’un membre (OFAC, ONU, UE, Interpol)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/pep/check": {
+      "post": {
+        "operationId": "ScreeningController_pep_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Screening PEP (personne politiquement exposée) d’un membre",
         "tags": ["KYC"]
       }
     },

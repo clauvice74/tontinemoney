@@ -177,3 +177,11 @@ La collation par tour est déduite du pot versé au bénéficiaire et créditée
 ## A-40 — Paiements partiels et arriérés
 
 Après un paiement partiel (politique `PARTIAL_PAYOUT` ou décision de l'admin), les arriérés payés plus tard sont immédiatement reversés au bénéficiaire du cycle concerné (transaction `PAYOUT` idempotente `payout-topup:{contribution}`). Un paiement bloqué par la conformité passe le cycle en `PAYOUT_PENDING` (audit) ; l'admin peut relancer par le paiement forcé.
+
+## A-41 — Score de risque d'un membre
+
+Les spécifications ne définissent pas de score de risque. `POST /risk-score` (alias `/fraud/analyze`) calcule un indicateur 0–100 **en lecture seule** pour le personnel, sans aucune action automatique. Pondérations (`services/compliance/src/domain/risk.ts`) : niveau KYC (NONE 25, TIER_1 15, TIER_2 5, TIER_3 0) ; chaque dossier de conformité ouvert selon sa gravité (LOW 5, MEDIUM 15, HIGH 30, CRITICAL 50) ; violations des 30 derniers jours (3 points chacune, plafond 15) ; statut de conformité RESTRICTED / UNDER_REVIEW +10, NON_COMPLIANT / SUSPENDED +20 ; compte suspendu +10. Niveaux : < 25 LOW, < 50 MEDIUM, < 75 HIGH, sinon CRITICAL. **À valider par la conformité avant production.**
+
+## A-42 — Dossiers de conformité
+
+Un dossier (`cmp_cases`) regroupe les alertes d'un membre par type : `AML_SCREENING` (correspondances AML/PEP/sanctions), `DUPLICATE_IDENTITY`, `RULE_VIOLATION`, `FRAUD`. Un seul dossier ouvert par membre et par type (index partiel) ; il est alimenté par les événements `kyc.aml.match`, `kyc.duplicate.detected`, `compliance.violation.detected` et `fraud.user.flagged`, de façon idempotente. Gravité : PEP MEDIUM, sanction HIGH (CRITICAL si score ≥ 90), doublon HIGH, fraude CRITICAL, violations LOW → MEDIUM (3) → HIGH (5, seuil de suspension US-9.4) ; elle ne diminue jamais. La clôture (`CONFIRMED` ou `DISMISSED`, commentaire obligatoire) est refusée tant qu'une correspondance AML ou une alerte doublon du dossier n'a pas été tranchée dans la revue KYC, qui reste le seul circuit de décision sur ces alertes. Clore un dossier ne lève aucune suspension.

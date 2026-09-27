@@ -31,3 +31,40 @@ export const complianceRuleUpdateSchema = complianceRuleSchema
   .omit({ code: true, countryCode: true })
   .partial()
   .extend({ changeReason: reasonSchema });
+
+/** Screening AML / sanctions / PEP à la demande d'un membre (personnel KYC). */
+export const screeningRequestSchema = z.object({ memberId: uuidSchema }).strict();
+export type ScreeningRequest = z.infer<typeof screeningRequestSchema>;
+
+/** Score de risque d'un membre (lecture seule, aucune action automatique). */
+export const riskScoreRequestSchema = z.object({ memberId: uuidSchema }).strict();
+export type RiskScoreRequest = z.infer<typeof riskScoreRequestSchema>;
+
+export const COMPLIANCE_CASE_TYPES = [
+  'AML_SCREENING',
+  'DUPLICATE_IDENTITY',
+  'RULE_VIOLATION',
+  'FRAUD',
+] as const;
+export const COMPLIANCE_CASE_STATUSES = ['OPEN', 'CLOSED'] as const;
+export const CASE_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
+
+/** Dossiers de conformité : filtres, tri, pagination par curseur. */
+export const complianceCasesQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    cursor: z.string().max(512).optional(),
+    status: z.enum(COMPLIANCE_CASE_STATUSES).optional(),
+    type: z.enum(COMPLIANCE_CASE_TYPES).optional(),
+    severity: z.enum(CASE_SEVERITIES).optional(),
+    memberId: uuidSchema.optional(),
+    sort: z.enum(['opened_desc', 'opened_asc']).default('opened_desc'),
+  })
+  .strict();
+export type ComplianceCasesQuery = z.infer<typeof complianceCasesQuerySchema>;
+
+/** Clôture d'un dossier : décision et commentaire obligatoires (piste d'audit). */
+export const closeComplianceCaseSchema = z
+  .object({ outcome: z.enum(['CONFIRMED', 'DISMISSED']), comment: reasonSchema })
+  .strict();
+export type CloseComplianceCaseInput = z.infer<typeof closeComplianceCaseSchema>;

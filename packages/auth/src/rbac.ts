@@ -18,6 +18,7 @@ export const PERMISSIONS = [
   'platform.reconciliation.view',
   'platform.tontines.pause',
   'compliance.rules.manage',
+  'compliance.cases.manage',
   'compliance.validate',
   'kyc.review',
   'kyc.documents.read',
@@ -34,7 +35,13 @@ export const ROLE_PERMISSIONS: Record<PlatformRole, readonly Permission[]> = {
   SUPER_ADMIN: PERMISSIONS,
   TONTINE_ADMIN: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
   MEMBER: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
-  KYC_AGENT: ['member.self', 'platform.members.read', 'kyc.review', 'kyc.documents.read'],
+  KYC_AGENT: [
+    'member.self',
+    'platform.members.read',
+    'compliance.cases.manage',
+    'kyc.review',
+    'kyc.documents.read',
+  ],
 };
 
 export function can(role: PlatformRole, permission: Permission): boolean {

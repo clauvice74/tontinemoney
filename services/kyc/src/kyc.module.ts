@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DataCipher } from '@tontine/auth';
 import { type AppConfig } from '@tontine/config';
 import { APP_CONFIG } from '@tontine/platform';
+import { AmlScreeningService } from './aml-screening.service';
 import { KycMaintenanceService } from './expiry.service';
 import { KycConsumers } from './kyc.consumers';
 import { KycController } from './kyc.controller';
@@ -22,11 +23,12 @@ import {
   TamperDetectionProvider,
 } from './providers/providers';
 import { KycReviewService } from './review.service';
+import { ScreeningController } from './screening.controller';
 import { DocumentStorage, LocalDocumentStorage, S3DocumentStorage } from './storage';
 
 /** Domaine KYC (épique 3) — uniquement des adaptateurs simulés déterministes en V1. */
 @Module({
-  controllers: [KycController],
+  controllers: [KycController, ScreeningController],
   providers: [
     {
       provide: DocumentStorage,
@@ -49,6 +51,7 @@ import { DocumentStorage, LocalDocumentStorage, S3DocumentStorage } from './stor
     KycPipelineService,
     KycReviewService,
     KycMaintenanceService,
+    AmlScreeningService,
     KycConsumers,
   ],
   exports: [KycService, DocumentStorage, SimulatedAmlProvider],

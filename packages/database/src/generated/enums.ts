@@ -203,6 +203,47 @@ export const AlertStatus = {
 
 export type AlertStatus = (typeof AlertStatus)[keyof typeof AlertStatus];
 
+export const ComplianceCaseType = {
+  AML_SCREENING: 'AML_SCREENING',
+  DUPLICATE_IDENTITY: 'DUPLICATE_IDENTITY',
+  RULE_VIOLATION: 'RULE_VIOLATION',
+  FRAUD: 'FRAUD',
+} as const;
+
+export type ComplianceCaseType = (typeof ComplianceCaseType)[keyof typeof ComplianceCaseType];
+
+export const ComplianceCaseStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type ComplianceCaseStatus = (typeof ComplianceCaseStatus)[keyof typeof ComplianceCaseStatus];
+
+export const CaseSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+export type CaseSeverity = (typeof CaseSeverity)[keyof typeof CaseSeverity];
+
+export const CaseOutcome = {
+  CONFIRMED: 'CONFIRMED',
+  DISMISSED: 'DISMISSED',
+} as const;
+
+export type CaseOutcome = (typeof CaseOutcome)[keyof typeof CaseOutcome];
+
+export const ComplianceAlertType = {
+  AML_MATCH: 'AML_MATCH',
+  DUPLICATE_ALERT: 'DUPLICATE_ALERT',
+  VIOLATION: 'VIOLATION',
+  FRAUD_FLAG: 'FRAUD_FLAG',
+} as const;
+
+export type ComplianceAlertType = (typeof ComplianceAlertType)[keyof typeof ComplianceAlertType];
+
 export const TontineType = {
   SIMPLE_ROTATIVE: 'SIMPLE_ROTATIVE',
 } as const;

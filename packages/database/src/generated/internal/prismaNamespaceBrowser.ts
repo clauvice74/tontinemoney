@@ -94,6 +94,8 @@ export const ModelName = {
   ComplianceRule: 'ComplianceRule',
   ComplianceRuleHistory: 'ComplianceRuleHistory',
   ComplianceViolation: 'ComplianceViolation',
+  ComplianceCase: 'ComplianceCase',
+  ComplianceCaseAlert: 'ComplianceCaseAlert',
   TontineAccount: 'TontineAccount',
   GeneratedReport: 'GeneratedReport',
   AdminMessage: 'AdminMessage',
@@ -965,6 +967,38 @@ export const ComplianceViolationScalarFieldEnum = {
 
 export type ComplianceViolationScalarFieldEnum =
   (typeof ComplianceViolationScalarFieldEnum)[keyof typeof ComplianceViolationScalarFieldEnum];
+
+export const ComplianceCaseScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  type: 'type',
+  status: 'status',
+  severity: 'severity',
+  openedAt: 'openedAt',
+  updatedAt: 'updatedAt',
+  closedAt: 'closedAt',
+  closedBy: 'closedBy',
+  outcome: 'outcome',
+  closingComment: 'closingComment',
+  version: 'version',
+} as const;
+
+export type ComplianceCaseScalarFieldEnum =
+  (typeof ComplianceCaseScalarFieldEnum)[keyof typeof ComplianceCaseScalarFieldEnum];
+
+export const ComplianceCaseAlertScalarFieldEnum = {
+  id: 'id',
+  caseId: 'caseId',
+  alertType: 'alertType',
+  sourceId: 'sourceId',
+  summary: 'summary',
+  open: 'open',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt',
+} as const;
+
+export type ComplianceCaseAlertScalarFieldEnum =
+  (typeof ComplianceCaseAlertScalarFieldEnum)[keyof typeof ComplianceCaseAlertScalarFieldEnum];
 
 export const TontineAccountScalarFieldEnum = {
   id: 'id',

@@ -436,6 +436,8 @@ export const ModelName = {
   ComplianceRule: 'ComplianceRule',
   ComplianceRuleHistory: 'ComplianceRuleHistory',
   ComplianceViolation: 'ComplianceViolation',
+  ComplianceCase: 'ComplianceCase',
+  ComplianceCaseAlert: 'ComplianceCaseAlert',
   TontineAccount: 'TontineAccount',
   GeneratedReport: 'GeneratedReport',
   AdminMessage: 'AdminMessage',
@@ -505,6 +507,8 @@ export type TypeMap<
       | 'complianceRule'
       | 'complianceRuleHistory'
       | 'complianceViolation'
+      | 'complianceCase'
+      | 'complianceCaseAlert'
       | 'tontineAccount'
       | 'generatedReport'
       | 'adminMessage';
@@ -3953,6 +3957,157 @@ export type TypeMap<
         };
       };
     };
+    ComplianceCase: {
+      payload: Prisma.$ComplianceCasePayload<ExtArgs>;
+      fields: Prisma.ComplianceCaseFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ComplianceCaseFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ComplianceCaseFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        findFirst: {
+          args: Prisma.ComplianceCaseFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ComplianceCaseFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        findMany: {
+          args: Prisma.ComplianceCaseFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>[];
+        };
+        create: {
+          args: Prisma.ComplianceCaseCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        createMany: {
+          args: Prisma.ComplianceCaseCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ComplianceCaseCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>[];
+        };
+        delete: {
+          args: Prisma.ComplianceCaseDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        update: {
+          args: Prisma.ComplianceCaseUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ComplianceCaseDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ComplianceCaseUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ComplianceCaseUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>[];
+        };
+        upsert: {
+          args: Prisma.ComplianceCaseUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCasePayload>;
+        };
+        aggregate: {
+          args: Prisma.ComplianceCaseAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateComplianceCase>;
+        };
+        groupBy: {
+          args: Prisma.ComplianceCaseGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ComplianceCaseGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ComplianceCaseCountArgs<ExtArgs>;
+          result:
+            runtime.Types.Utils.Optional<Prisma.ComplianceCaseCountAggregateOutputType> | number;
+        };
+      };
+    };
+    ComplianceCaseAlert: {
+      payload: Prisma.$ComplianceCaseAlertPayload<ExtArgs>;
+      fields: Prisma.ComplianceCaseAlertFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ComplianceCaseAlertFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ComplianceCaseAlertFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        findFirst: {
+          args: Prisma.ComplianceCaseAlertFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ComplianceCaseAlertFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        findMany: {
+          args: Prisma.ComplianceCaseAlertFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>[];
+        };
+        create: {
+          args: Prisma.ComplianceCaseAlertCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        createMany: {
+          args: Prisma.ComplianceCaseAlertCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ComplianceCaseAlertCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>[];
+        };
+        delete: {
+          args: Prisma.ComplianceCaseAlertDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        update: {
+          args: Prisma.ComplianceCaseAlertUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ComplianceCaseAlertDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ComplianceCaseAlertUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ComplianceCaseAlertUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>[];
+        };
+        upsert: {
+          args: Prisma.ComplianceCaseAlertUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComplianceCaseAlertPayload>;
+        };
+        aggregate: {
+          args: Prisma.ComplianceCaseAlertAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateComplianceCaseAlert>;
+        };
+        groupBy: {
+          args: Prisma.ComplianceCaseAlertGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ComplianceCaseAlertGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ComplianceCaseAlertCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ComplianceCaseAlertCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     TontineAccount: {
       payload: Prisma.$TontineAccountPayload<ExtArgs>;
       fields: Prisma.TontineAccountFieldRefs;
@@ -5068,6 +5223,38 @@ export const ComplianceViolationScalarFieldEnum = {
 export type ComplianceViolationScalarFieldEnum =
   (typeof ComplianceViolationScalarFieldEnum)[keyof typeof ComplianceViolationScalarFieldEnum];
 
+export const ComplianceCaseScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  type: 'type',
+  status: 'status',
+  severity: 'severity',
+  openedAt: 'openedAt',
+  updatedAt: 'updatedAt',
+  closedAt: 'closedAt',
+  closedBy: 'closedBy',
+  outcome: 'outcome',
+  closingComment: 'closingComment',
+  version: 'version',
+} as const;
+
+export type ComplianceCaseScalarFieldEnum =
+  (typeof ComplianceCaseScalarFieldEnum)[keyof typeof ComplianceCaseScalarFieldEnum];
+
+export const ComplianceCaseAlertScalarFieldEnum = {
+  id: 'id',
+  caseId: 'caseId',
+  alertType: 'alertType',
+  sourceId: 'sourceId',
+  summary: 'summary',
+  open: 'open',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt',
+} as const;
+
+export type ComplianceCaseAlertScalarFieldEnum =
+  (typeof ComplianceCaseAlertScalarFieldEnum)[keyof typeof ComplianceCaseAlertScalarFieldEnum];
+
 export const TontineAccountScalarFieldEnum = {
   id: 'id',
   tontineId: 'tontineId',
@@ -6058,6 +6245,86 @@ export type ListEnumViolationActionFieldRefInput<$PrismaModel> = FieldRefInputTy
 >;
 
 /**
+ * Reference to a field of type 'ComplianceCaseType'
+ */
+export type EnumComplianceCaseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceCaseType'
+>;
+
+/**
+ * Reference to a field of type 'ComplianceCaseType[]'
+ */
+export type ListEnumComplianceCaseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceCaseType[]'
+>;
+
+/**
+ * Reference to a field of type 'ComplianceCaseStatus'
+ */
+export type EnumComplianceCaseStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceCaseStatus'
+>;
+
+/**
+ * Reference to a field of type 'ComplianceCaseStatus[]'
+ */
+export type ListEnumComplianceCaseStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceCaseStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'CaseSeverity'
+ */
+export type EnumCaseSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CaseSeverity'
+>;
+
+/**
+ * Reference to a field of type 'CaseSeverity[]'
+ */
+export type ListEnumCaseSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CaseSeverity[]'
+>;
+
+/**
+ * Reference to a field of type 'CaseOutcome'
+ */
+export type EnumCaseOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CaseOutcome'
+>;
+
+/**
+ * Reference to a field of type 'CaseOutcome[]'
+ */
+export type ListEnumCaseOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CaseOutcome[]'
+>;
+
+/**
+ * Reference to a field of type 'ComplianceAlertType'
+ */
+export type EnumComplianceAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceAlertType'
+>;
+
+/**
+ * Reference to a field of type 'ComplianceAlertType[]'
+ */
+export type ListEnumComplianceAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ComplianceAlertType[]'
+>;
+
+/**
  * Reference to a field of type 'TontineAccountType'
  */
 export type EnumTontineAccountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -6302,6 +6569,8 @@ export type GlobalOmitConfig = {
   complianceRule?: Prisma.ComplianceRuleOmit;
   complianceRuleHistory?: Prisma.ComplianceRuleHistoryOmit;
   complianceViolation?: Prisma.ComplianceViolationOmit;
+  complianceCase?: Prisma.ComplianceCaseOmit;
+  complianceCaseAlert?: Prisma.ComplianceCaseAlertOmit;
   tontineAccount?: Prisma.TontineAccountOmit;
   generatedReport?: Prisma.GeneratedReportOmit;
   adminMessage?: Prisma.AdminMessageOmit;
