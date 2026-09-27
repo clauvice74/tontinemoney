@@ -1,0 +1,45 @@
+{
+  "name": "@tontine/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "postinstall": "node scripts/prisma-generate.mjs",
+    "build": "node scripts/prisma-generate.mjs && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "db:generate": "node scripts/prisma-generate.mjs",
+    "db:migrate": "dotenv -e ../../.env -- node scripts/migrate.mjs deploy",
+    "db:migrate:test": "dotenv -e ../../.env -- node scripts/migrate.mjs deploy --test",
+    "db:migration:new": "dotenv -e ../../.env -- node scripts/migrate.mjs new",
+    "db:migrate:status": "dotenv -e ../../.env -- node scripts/migrate.mjs status",
+    "db:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "db:reset": "dotenv -e ../../.env -- node scripts/migrate.mjs reset",
+    "db:migrate:check": "dotenv -e ../../.env -- node scripts/migrate.mjs diff"
+  },
+  "dependencies": {
+    "@node-rs/bcrypt": "1.10.7",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "@tontine/auth": "workspace:*",
+    "@tontine/contracts": "workspace:*",
+    "pg": "8.16.3"
+  },
+  "devDependencies": {
+    "@tontine/eslint-config": "workspace:*",
+    "@tontine/typescript-config": "workspace:*",
+    "@types/node": "22.18.0",
+    "dotenv-cli": "8.0.0",
+    "eslint": "9.39.5",
+    "prisma": "7.10.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4",
+    "@prisma/schema-engine-wasm": "7.10.0-4.0edf323efd1d98336f3f0a68684b56f689b900d3",
+    "@prisma/driver-adapter-utils": "7.10.0",
+    "@types/pg": "8.15.5"
+  }
+}

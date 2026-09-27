@@ -1,0 +1,5173 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/admin/jobs": {
+      "get": {
+        "operationId": "OpsController_listJobs_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tâches planifiées disponibles",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/jobs/{name}/run": {
+      "post": {
+        "operationId": "OpsController_runJob_v1",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Exécuter une tâche planifiée à la demande (démonstration, rattrapage)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/outbox/dead": {
+      "get": {
+        "operationId": "OpsController_dead_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Événements en DLQ (échec définitif de publication)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/outbox/{eventId}/requeue": {
+      "post": {
+        "operationId": "OpsController_requeue_v1",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remettre un événement DLQ en file",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "operationId": "OpsController_audit_v1",
+        "parameters": [
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "resourceType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 50
+                }
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "result",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["SUCCESS", "DENIED", "FAILURE"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Journal d’audit (lecture seule)",
+        "tags": ["Exploitation"]
+      }
+    },
+    "/api/v1/me/notifications": {
+      "get": {
+        "operationId": "MyNotificationsController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "unread",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["true", "false"]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mes notifications in-app (historique)",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/me/notifications/{id}/read": {
+      "post": {
+        "operationId": "MyNotificationsController_read_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Marquer une notification comme lue",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/me/notifications/read-all": {
+      "post": {
+        "operationId": "MyNotificationsController_readAll_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Tout marquer comme lu",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/dev/messages": {
+      "get": {
+        "operationId": "DevMessagesController_list_v1",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 255
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "[DEV] Messages SMS/email simulés (404 en production)",
+        "tags": ["Développement"]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_doLogin_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": ["identifier", "password"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Connexion (US-1.4) — renvoie les jetons ou un défi MFA",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/login/mfa": {
+      "post": {
+        "operationId": "AuthController_loginMfa_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challengeToken": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["challengeToken", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Second facteur (TOTP, SMS ou code de récupération)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Rotation du refresh token (cookie tm_rt) et nouvel access token",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Déconnexion : révocation du refresh token et blacklist de l’access token",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon compte : rôle, statut, état d’accès, MFA",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "AuthController_sessions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes sessions actives (5 maximum)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "operationId": "AuthController_revokeSession_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Révoquer une de mes sessions",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/request-account": {
+      "post": {
+        "operationId": "AuthController_requestAccount_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL"]
+                  },
+                  "invitationCode": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "tontineName": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "captchaToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "preferredChannel",
+                  "captchaToken"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Demande de compte (US-1.3) — réponse générique, captcha, 5 / heure / IP",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/activate": {
+      "post": {
+        "operationId": "AuthController_activate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "otp": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["password"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Activation du compte par lien (48 h) ou OTP (15 min) et choix du mot de passe",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/activation/resend": {
+      "post": {
+        "operationId": "AuthController_resend_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  }
+                },
+                "required": ["identifier"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Renvoi du code d’activation (3 / heure)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgot_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  }
+                },
+                "required": ["identifier"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mot de passe oublié (US-1.5) — toujours 200, sans fuite d’information",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_reset_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "newPassword"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Nouveau mot de passe (jeton 1 h, usage unique, différent des 5 derniers)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa": {
+      "get": {
+        "operationId": "AuthController_mfaStatus_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "État de la double authentification",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/enable": {
+      "post": {
+        "operationId": "AuthController_mfaEnable_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["TOTP", "SMS"]
+                  }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activer le MFA (US-1.6) : TOTP → QR code ; SMS → code envoyé",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "operationId": "AuthController_mfaVerify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": ["code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmer le MFA ; renvoie 10 codes de récupération (affichés une seule fois)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/sms-code": {
+      "post": {
+        "operationId": "AuthController_mfaSmsCode_v1",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recevoir un code SMS (MFA SMS actif)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/disable": {
+      "post": {
+        "operationId": "AuthController_mfaDisable_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["password", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Désactiver le MFA : mot de passe + code valide (alerte envoyée)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_regenerate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Régénérer les codes de récupération",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/admin/tontine-admins": {
+      "post": {
+        "operationId": "AdminUsersController_createTontineAdmin_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string",
+                    "pattern": "^(fr|en)(-[A-Z]{2})?$"
+                  },
+                  "tontineName": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "country",
+                  "language",
+                  "tontineName"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Créer un administrateur de tontine (US-1.1)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/tontines/{tontineId}/members": {
+      "post": {
+        "operationId": "AdminUsersController_registerMember_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL"]
+                  },
+                  "dateOfBirth": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                },
+                "required": ["firstName", "lastName", "preferredChannel"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Inscrire un membre dans ma tontine (US-1.2) — admin de la tontine uniquement",
+        "tags": ["Administration — comptes"]
+      },
+      "get": {
+        "operationId": "MembersController_list_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "KYC_REQUIRED",
+                    "KYC_IN_REVIEW",
+                    "KYC_REJECTED",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING_REVIEW"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "kycLevel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["NONE", "TIER_1", "TIER_2", "TIER_3"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registeredTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name_asc", "name_desc", "registered_desc", "registered_asc", "status"],
+              "default": "name_asc"
+            }
+          },
+          {
+            "name": "membership",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "PENDING_APPROVAL", "ALL"],
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membres d’une tontine : filtres, recherche, tri, pagination par curseur (US-2.3)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/access-requests": {
+      "get": {
+        "operationId": "AdminUsersController_listAccessRequests_v1",
+        "parameters": [
+          {
+            "name": "tontineId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["PENDING", "APPROVED", "REJECTED", "EXPIRED"]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Demandes d’accès à traiter (US-10.1 super-admin ; US-2.4 admin de tontine)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/access-requests/{requestId}/decision": {
+      "post": {
+        "operationId": "AdminUsersController_decide_v1",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "enum": ["APPROVE"]
+                      },
+                      "tontineId": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    },
+                    "required": ["decision"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "enum": ["REJECT"]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": ["decision", "reason"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accepter / refuser une demande (motif obligatoire en cas de refus)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/admin/users/{userId}/unlock": {
+      "post": {
+        "operationId": "AdminUsersController_unlock_v1",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Déverrouiller un compte (R-AUTH-LOGIN-02)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "AdminUsersController_users_v1",
+        "parameters": [
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["SUPER_ADMIN", "TONTINE_ADMIN", "MEMBER", "KYC_AGENT"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING_APPROVAL",
+                    "PENDING_ACTIVATION",
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "REJECTED",
+                    "EXPIRED",
+                    "INACTIVE"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rechercher des comptes (super-admin)",
+        "tags": ["Administration — comptes"]
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "operationId": "JwksController_jwks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "JWKS (RS256)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "operationId": "MembersController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon profil membre",
+        "tags": ["Membres"]
+      },
+      "patch": {
+        "operationId": "MembersController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "dateOfBirth": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": ["M", "F", "OTHER", "UNDISCLOSED"]
+                  },
+                  "language": {
+                    "type": "string",
+                    "pattern": "^(fr|en)(-[A-Z]{2})?$"
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "maxLength": 50
+                  }
+                },
+                "required": ["version"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Compléter / modifier mon profil (US-2.2) — verrou optimiste par version",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/notification-preferences": {
+      "put": {
+        "operationId": "MembersController_prefs_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL", "PUSH", "IN_APP"]
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": ["IMMEDIATE", "DAILY_DIGEST"],
+                    "default": "IMMEDIATE"
+                  },
+                  "enabledTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "SECURITY",
+                        "ACCOUNT",
+                        "TONTINE",
+                        "PAYMENT",
+                        "WALLET",
+                        "KYC",
+                        "ADMIN",
+                        "MESSAGE"
+                      ]
+                    },
+                    "maxItems": 8
+                  },
+                  "quietHours": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      },
+                      "end": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      }
+                    },
+                    "required": ["start", "end"],
+                    "additionalProperties": false,
+                    "nullable": true
+                  }
+                },
+                "required": ["preferredChannel", "enabledTypes", "quietHours"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Préférences de notification (US-8.5) — la sécurité reste toujours active",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/profile/photo": {
+      "post": {
+        "operationId": "MembersController_uploadPhoto_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Photo de profil (JPEG/PNG, 5 Mo max)",
+        "tags": ["Membres"]
+      },
+      "get": {
+        "operationId": "MembersController_photo_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ma photo de profil",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/profile/history": {
+      "get": {
+        "operationId": "MembersController_history_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique versionné de mon profil (R-MBR-06)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/members/{memberId}": {
+      "get": {
+        "operationId": "MembersController_getMember_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Profil d’un membre (contrôle de propriété strict)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/suspend": {
+      "post": {
+        "operationId": "MembersController_suspend_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspendre un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/reactivate": {
+      "post": {
+        "operationId": "MembersController_reactivate_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lever la suspension d’un membre (super-admin)",
+        "tags": ["Membres"]
+      }
+    },
+    "/api/v1/me/wallet": {
+      "get": {
+        "operationId": "WalletsController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon portefeuille : solde total, disponible, bloqué",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/me/wallet/movements": {
+      "get": {
+        "operationId": "WalletsController_history_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["CREDIT", "DEBIT", "HOLD", "RELEASE"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "context",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "TONTINE_CONTRIBUTION",
+                    "TONTINE_PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "tontineId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique des mouvements (US-5.2) — filtré par le porteur du jeton",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/admin/wallets/{walletId}/status": {
+      "post": {
+        "operationId": "WalletsController_setStatus_v1",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACTIVE", "SUSPENDED", "LOCKED", "CLOSED"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["status", "reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Changer le statut d’un portefeuille (super-admin)",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/compliance/validate": {
+      "post": {
+        "operationId": "ComplianceController_validate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "operationType": {
+                    "type": "string",
+                    "enum": [
+                      "DEPOSIT",
+                      "WITHDRAWAL",
+                      "TRANSFER",
+                      "TONTINE_CONTRIBUTION",
+                      "TONTINE_PAYOUT",
+                      "TONTINE_CREATION",
+                      "TONTINE_JOIN"
+                    ]
+                  },
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "amountMinor": {
+                    "type": "string",
+                    "pattern": "^\\d+$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "context": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": ["operationType", "memberId", "amountMinor", "currency"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Valider une opération (US-9.2) — {compliant, appliedRules, violations}",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/admin/compliance/rules": {
+      "get": {
+        "operationId": "ComplianceController_rules_v1",
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Catalogue des règles par pays",
+        "tags": ["Conformité"]
+      },
+      "post": {
+        "operationId": "ComplianceController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}-[A-Z0-9-]{3,40}$"
+                  },
+                  "countryCode": {
+                    "type": "string"
+                  },
+                  "ruleType": {
+                    "type": "string",
+                    "enum": [
+                      "DAILY_LIMIT",
+                      "MONTHLY_LIMIT",
+                      "WALLET_LIMIT",
+                      "KYC_MIN_LEVEL",
+                      "TONTINE_ALLOWED",
+                      "OPERATION_FORBIDDEN"
+                    ]
+                  },
+                  "operationTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "DEPOSIT",
+                        "WITHDRAWAL",
+                        "TRANSFER",
+                        "TONTINE_CONTRIBUTION",
+                        "TONTINE_PAYOUT",
+                        "TONTINE_CREATION",
+                        "TONTINE_JOIN"
+                      ]
+                    },
+                    "minItems": 1
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": ["code", "countryCode", "ruleType", "operationTypes", "params"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Créer une règle (US-9.3)",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/admin/compliance/rules/{code}": {
+      "patch": {
+        "operationId": "ComplianceController_update_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ruleType": {
+                    "type": "string",
+                    "enum": [
+                      "DAILY_LIMIT",
+                      "MONTHLY_LIMIT",
+                      "WALLET_LIMIT",
+                      "KYC_MIN_LEVEL",
+                      "TONTINE_ALLOWED",
+                      "OPERATION_FORBIDDEN"
+                    ]
+                  },
+                  "operationTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "DEPOSIT",
+                        "WITHDRAWAL",
+                        "TRANSFER",
+                        "TONTINE_CONTRIBUTION",
+                        "TONTINE_PAYOUT",
+                        "TONTINE_CREATION",
+                        "TONTINE_JOIN"
+                      ]
+                    },
+                    "minItems": 1
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "changeReason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["changeReason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Modifier une règle — effet immédiat, sans redéploiement (US-9.3)",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/admin/compliance/rules/{code}/history": {
+      "get": {
+        "operationId": "ComplianceController_history_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique des modifications d’une règle",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/admin/compliance/violations": {
+      "get": {
+        "operationId": "ComplianceController_violations_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Violations détectées (US-9.4)",
+        "tags": ["Conformité"]
+      }
+    },
+    "/api/v1/me/wallet/transfers": {
+      "post": {
+        "operationId": "TransactionsController_transfer_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "toMemberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "toIdentifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 140
+                  }
+                },
+                "required": ["amount", "currency"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Transfert vers un autre membre (US-5.6) — Idempotency-Key obligatoire",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/me/transactions": {
+      "get": {
+        "operationId": "TransactionsController_mine_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "VALIDATED",
+                    "COMPLETED",
+                    "FAILED",
+                    "REJECTED",
+                    "REVERSED",
+                    "REFUNDED"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "CONTRIBUTION",
+                    "PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes transactions (initiées ou reçues)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/me/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_one_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’une de mes transactions",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/admin/transactions": {
+      "get": {
+        "operationId": "TransactionsController_all_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "VALIDATED",
+                    "COMPLETED",
+                    "FAILED",
+                    "REJECTED",
+                    "REVERSED",
+                    "REFUNDED"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "CONTRIBUTION",
+                    "PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toutes les transactions (super-admin)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/admin/transactions/{id}/audit": {
+      "get": {
+        "operationId": "TransactionsController_auditTrail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Journal d’audit immuable d’une transaction (US-6.5)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/admin/transactions/{id}/reverse": {
+      "post": {
+        "operationId": "TransactionsController_reverse_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Contre-passer une transaction (US-6.4)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/kyc/requirements": {
+      "get": {
+        "operationId": "KycController_requirements_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pièces acceptées selon mon pays et contraintes de fichier (US-3.1)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/liveness": {
+      "post": {
+        "operationId": "KycController_liveness_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Démarrer une session de capture caméra (liveness simulée, A-16)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/submit": {
+      "post": {
+        "operationId": "KycController_submit_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soumettre pièce d’identité (recto/verso) + selfie caméra (US-3.1)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/tier3": {
+      "post": {
+        "operationId": "KycController_tier3_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Demander le niveau 3 (justificatif de domicile, source de revenus, selfie) — revue manuelle",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/me": {
+      "get": {
+        "operationId": "KycController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon statut KYC et l’historique de mes soumissions",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/reviews": {
+      "get": {
+        "operationId": "KycController_queue_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dossiers à revoir, triés par ancienneté, avec SLA",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/requests/{id}": {
+      "get": {
+        "operationId": "KycController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un dossier (documents, scores, alertes, historique)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/documents/{id}": {
+      "get": {
+        "operationId": "KycController_document_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Image d’un document déchiffrée (accès journalisé)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/requests/{id}/decision": {
+      "post": {
+        "operationId": "KycController_decide_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": ["APPROVE"]
+                      },
+                      "annotation": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": ["action", "annotation"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": ["REJECT"]
+                      },
+                      "category": {
+                        "type": "string",
+                        "enum": [
+                          "DOCUMENT_ILLISIBLE",
+                          "DOCUMENT_EXPIRE",
+                          "DOCUMENT_FALSIFIE",
+                          "FACE_MATCH_ECHOUE",
+                          "DOUBLON_CONFIRME",
+                          "AML_MATCH_CONFIRME",
+                          "INFORMATION_INCOHERENTE",
+                          "TYPE_DOCUMENT_NON_ACCEPTE",
+                          "AUTRE"
+                        ]
+                      },
+                      "comment": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": ["action", "category", "comment"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": ["REQUEST_SUPPLEMENT"]
+                      },
+                      "comment": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": ["action", "comment"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Décision : accepter (annotation ≥ 10), rejeter (catégorie + commentaire), compléments",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/duplicates": {
+      "get": {
+        "operationId": "KycController_duplicates_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Alertes de doublons biométriques (US-3.4)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/duplicates/{id}/resolve": {
+      "post": {
+        "operationId": "KycController_resolveDuplicate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resolution": {
+                    "type": "string",
+                    "enum": ["CONFIRMED", "DISMISSED"]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": ["resolution", "comment"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/aml-matches": {
+      "get": {
+        "operationId": "KycController_aml_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Correspondances AML / PEP / sanctions (US-3.5)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/aml-matches/{id}/resolve": {
+      "post": {
+        "operationId": "KycController_resolveAml_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resolution": {
+                    "type": "string",
+                    "enum": ["CONFIRMED_MATCH", "FALSE_POSITIVE"]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": ["resolution", "comment"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/tontines": {
+      "post": {
+        "operationId": "TontinesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["SIMPLE_ROTATIVE"],
+                    "default": "SIMPLE_ROTATIVE"
+                  },
+                  "contributionAmount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": ["WEEKLY", "BIWEEKLY", "MONTHLY", "BIMONTHLY"]
+                  },
+                  "frequencyDetail": {
+                    "type": "object",
+                    "properties": {
+                      "day": {
+                        "type": "string",
+                        "enum": [
+                          "monday",
+                          "tuesday",
+                          "wednesday",
+                          "thursday",
+                          "friday",
+                          "saturday",
+                          "sunday"
+                        ]
+                      },
+                      "weekOfMonth": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "enum": [1]
+                          },
+                          {
+                            "type": "number",
+                            "enum": [2]
+                          },
+                          {
+                            "type": "number",
+                            "enum": [3]
+                          },
+                          {
+                            "type": "number",
+                            "enum": [4]
+                          },
+                          {
+                            "type": "number",
+                            "enum": [-1]
+                          }
+                        ]
+                      },
+                      "lastDayOfMonth": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  },
+                  "maxMembers": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 50
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "drawMode": {
+                    "type": "string",
+                    "enum": ["RANDOM", "FIXED_ORDER", "PRIORITY_NEED"]
+                  },
+                  "penaltyRules": {
+                    "type": "object",
+                    "properties": {
+                      "graceDays": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 30
+                      },
+                      "lateFeePercent": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "suspendAfter": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 12
+                      },
+                      "defaultAfterDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 60,
+                        "default": 7
+                      }
+                    },
+                    "required": ["graceDays", "lateFeePercent", "suspendAfter"],
+                    "additionalProperties": false
+                  },
+                  "entryFee": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "collation": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "incompletePolicy": {
+                    "type": "string",
+                    "enum": ["POSTPONE", "PARTIAL_PAYOUT"],
+                    "default": "POSTPONE"
+                  }
+                },
+                "required": [
+                  "name",
+                  "contributionAmount",
+                  "frequency",
+                  "maxMembers",
+                  "startDate",
+                  "drawMode",
+                  "penaltyRules"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Créer une tontine (US-4.1) — KYC TIER_3 ou délégation du super-admin",
+        "tags": ["Tontines"]
+      },
+      "get": {
+        "operationId": "TontinesController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes tontines (participant ou admin)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}": {
+      "get": {
+        "operationId": "TontinesController_one_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’une tontine (participants et super-admin)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/participants": {
+      "get": {
+        "operationId": "TontinesController_participants_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Participants (prénom, rôle, position — sans montants individuels)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/cancel": {
+      "post": {
+        "operationId": "TontinesController_cancel_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Annuler une tontine avant démarrage (admin)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/invitations": {
+      "post": {
+        "operationId": "TontinesController_invite_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "channel": {
+                        "type": "string",
+                        "enum": ["EMAIL"]
+                      },
+                      "email": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "format": "email"
+                      }
+                    },
+                    "required": ["channel", "email"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "channel": {
+                        "type": "string",
+                        "enum": ["PHONE"]
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["channel", "phone"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "channel": {
+                        "type": "string",
+                        "enum": ["LINK"]
+                      }
+                    },
+                    "required": ["channel"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Inviter par email, téléphone ou lien partageable (US-4.2)",
+        "tags": ["Tontines"]
+      },
+      "get": {
+        "operationId": "TontinesController_invitationsOf_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invitations de la tontine (admin)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "TontinesController_revoke_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Révoquer une invitation non acceptée (US-4.2 §7)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/me/invitations": {
+      "get": {
+        "operationId": "TontinesController_myInvitations_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invitations reçues en attente",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/invitations/{id}/respond": {
+      "post": {
+        "operationId": "TontinesController_respond_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accept": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["accept"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accepter ou refuser une invitation (éligibilité vérifiée à l’acceptation)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/invitations/code/{code}": {
+      "get": {
+        "operationId": "TontinesController_preview_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aperçu public d’une invitation (nom, montant, fréquence, date de début)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/invitations/code/{code}/accept": {
+      "post": {
+        "operationId": "TontinesController_acceptCode_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rejoindre via un lien d’invitation",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/start": {
+      "post": {
+        "operationId": "CyclesController_start_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Démarrer maintenant si la date est atteinte et les conditions remplies (admin) — US-4.3",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/start-check": {
+      "get": {
+        "operationId": "CyclesController_startCheck_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Conditions de démarrage non remplies (admin)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/draw-order": {
+      "put": {
+        "operationId": "CyclesController_drawOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 50
+                  }
+                },
+                "required": ["memberIds"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ordre de passage (mode ordre fixe ; après démarrage : cycles futurs uniquement)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/draw-proof": {
+      "get": {
+        "operationId": "CyclesController_drawProof_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preuve du tirage (graine, hash SHA-256, horodatage, vérification)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/priority-requests": {
+      "post": {
+        "operationId": "CyclesController_priority_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Demande prioritaire motivée (mode besoin prioritaire, A-15)",
+        "tags": ["Tontines — cycles et contributions"]
+      },
+      "get": {
+        "operationId": "CyclesController_priorities_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Demandes prioritaires (admin : toutes ; membre : les siennes)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/cycles/{cycleId}/beneficiary": {
+      "post": {
+        "operationId": "CyclesController_designate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cycleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": ["memberId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Désigner le bénéficiaire d’un cycle (admin, mode besoin prioritaire)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/cycles": {
+      "get": {
+        "operationId": "CyclesController_list_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cycles de la tontine",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/cycles/{cycleId}": {
+      "get": {
+        "operationId": "CyclesController_one_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cycleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un cycle (admin : toutes les contributions ; membre : la sienne)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/contributions/{contributionId}/pay": {
+      "post": {
+        "operationId": "CyclesController_pay_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "contributionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Payer sa contribution depuis le wallet (hold + capture, pénalité incluse) — US-5.4",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/entry-fee/pay": {
+      "post": {
+        "operationId": "CyclesController_entryFee_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Payer le droit d’entrée (avant démarrage)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/me/contributions": {
+      "get": {
+        "operationId": "CyclesController_mine_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes échéances (toutes tontines)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/accounts": {
+      "get": {
+        "operationId": "CyclesController_accountsList_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Comptes de la tontine (US-10.2)",
+        "tags": ["Tontines — cycles et contributions"]
+      },
+      "post": {
+        "operationId": "CyclesController_accountsCreate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["MAIN", "SOLIDARITY", "SAVINGS", "LOAN"]
+                  },
+                  "rules": {
+                    "type": "object",
+                    "properties": {
+                      "interestRatePercent": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "exitConditions": {
+                        "type": "string",
+                        "maxLength": 1000
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  }
+                },
+                "required": ["name", "type"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Créer un compte (solidarité, épargne, prêt) — configuration uniquement en V1",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/tontines/{id}/dashboard": {
+      "get": {
+        "operationId": "TontineOpsController_dashboard_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tableau de bord (US-4.10) : vue admin ou vue membre, rafraîchissement 30 s",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/tontines/{id}/cycles/{cycleId}/force-payout": {
+      "post": {
+        "operationId": "TontineOpsController_forcePayout_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cycleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Paiement partiel explicite du pot (admin, journalisé) — A-10",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/tontines/{id}/closure-check": {
+      "get": {
+        "operationId": "TontineOpsController_closureCheck_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Conditions de clôture non remplies (admin)",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/tontines/{id}/messages": {
+      "post": {
+        "operationId": "TontineOpsController_send_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template": {
+                    "type": "string",
+                    "enum": ["REMINDER", "ANNOUNCEMENT", "INFORMATION", "CUSTOM"]
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 150
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "filter": {
+                    "type": "object",
+                    "properties": {
+                      "memberStatuses": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "PENDING",
+                            "KYC_REQUIRED",
+                            "KYC_IN_REVIEW",
+                            "KYC_REJECTED",
+                            "ACTIVE",
+                            "SUSPENDED",
+                            "PENDING_REVIEW"
+                          ]
+                        }
+                      },
+                      "contributionStatus": {
+                        "type": "string",
+                        "enum": ["LATE", "PAID", "PENDING"]
+                      },
+                      "memberIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "maxItems": 50
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  }
+                },
+                "required": ["template", "subject", "body"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Message ciblé aux membres (US-10.3)",
+        "tags": ["Tontines — pilotage"]
+      },
+      "get": {
+        "operationId": "TontineOpsController_list_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historique des messages envoyés (admin)",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/admin/tontines": {
+      "get": {
+        "operationId": "TontineOpsController_all_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toutes les tontines (super-admin)",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/admin/tontines/{id}/pause": {
+      "post": {
+        "operationId": "TontineOpsController_pause_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mettre une tontine en pause (paiements et pénalités suspendus)",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/admin/tontines/{id}/resume": {
+      "post": {
+        "operationId": "TontineOpsController_resume_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reprendre une tontine en pause",
+        "tags": ["Tontines — pilotage"]
+      }
+    },
+    "/api/v1/me/wallet/deposits": {
+      "post": {
+        "operationId": "PaymentsController_deposit_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["MOBILE_MONEY", "CARD"]
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": ["amount", "currency", "method"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dépôt Mobile Money (USSD simulé) ou carte (3-D Secure simulé) — US-7.1 / US-7.2",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/me/wallet/withdrawals": {
+      "post": {
+        "operationId": "PaymentsController_withdraw_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["MOBILE_MONEY"]
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": ["amount", "currency", "method", "phone"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retrait Mobile Money : blocage des fonds puis versement PSP (US-7.3)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/me/payments": {
+      "get": {
+        "operationId": "PaymentsController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes paiements",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/me/payments/{id}": {
+      "get": {
+        "operationId": "PaymentsController_one_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un paiement (historique des statuts)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/admin/payments": {
+      "get": {
+        "operationId": "PaymentsController_all_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "PROCESSING",
+                    "COMPLETED",
+                    "FAILED",
+                    "EXPIRED",
+                    "CANCELLED",
+                    "REFUNDED"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tous les paiements (super-admin)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/admin/payments/{id}/refund": {
+      "post": {
+        "operationId": "PaymentsController_refund_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rembourser un dépôt (API refund du PSP + reversement interne) — US-7.5",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/webhooks/{provider}": {
+      "post": {
+        "operationId": "WebhooksController_webhook_v1",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Webhook PSP signé (x-psp-signature, x-psp-timestamp)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/psp-sim/checkout/{reference}": {
+      "post": {
+        "operationId": "PspSimulatorController_checkoutOutcome_v1",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Simulateur : issue de la page 3-D Secure",
+        "tags": ["Simulateur PSP (dev)"]
+      }
+    },
+    "/api/v1/psp-sim/mobile-money/{reference}/confirm": {
+      "post": {
+        "operationId": "PspSimulatorController_confirm_v1",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Simulateur : validation / refus de la demande USSD sur le téléphone",
+        "tags": ["Simulateur PSP (dev)"]
+      }
+    },
+    "/api/v1/psp-sim/payouts/{reference}/settle": {
+      "post": {
+        "operationId": "PspSimulatorController_settlePayout_v1",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Simulateur : règlement d’un versement (retrait)",
+        "tags": ["Simulateur PSP (dev)"]
+      }
+    },
+    "/api/v1/tontines/{id}/reports": {
+      "get": {
+        "operationId": "ReportsController_report_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["CYCLE", "MONTHLY", "ANNUAL", "CONTRIBUTIONS", "PENALTIES", "FINAL"]
+            }
+          },
+          {
+            "name": "format",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["pdf", "csv", "json"],
+              "default": "json"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cycleNumber",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              ]
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              ]
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rapports financiers de la tontine (US-10.4) — JSON, CSV ou PDF ; rapport final archivé (US-4.9)",
+        "tags": ["Rapports"]
+      }
+    },
+    "/api/v1/admin/reconciliation": {
+      "get": {
+        "operationId": "AdministrationController_list_v1",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["INTERNAL", "PSP"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rapports de réconciliation (interne US-6.6, PSP US-7.6)",
+        "tags": ["Administration"]
+      }
+    },
+    "/api/v1/admin/reconciliation/run": {
+      "post": {
+        "operationId": "AdministrationController_run_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["INTERNAL", "PSP"]
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lancer une réconciliation (interne ou PSP)",
+        "tags": ["Administration"]
+      }
+    },
+    "/api/v1/admin/reconciliation/{id}": {
+      "get": {
+        "operationId": "AdministrationController_one_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "csv", "pdf"],
+              "default": "json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un rapport de réconciliation (JSON, CSV ou PDF des lignes discordantes)",
+        "tags": ["Administration"]
+      }
+    },
+    "/api/v1/admin/fraud/flag": {
+      "post": {
+        "operationId": "AdministrationController_flag_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memberId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["memberId", "reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Signaler une fraude (suspension + gel du portefeuille)",
+        "tags": ["Administration"]
+      }
+    }
+  },
+  "info": {
+    "title": "TontineMoney API",
+    "description": "API REST versionnée du MVP TontineMoney (monolithe modulaire). Erreurs au format Problem Details (RFC 9457). Montants en chaînes décimales (unités majeures) + devise ISO 4217. En-tête Idempotency-Key obligatoire sur les POST financiers.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tm_rt"
+      }
+    },
+    "schemas": {}
+  }
+}

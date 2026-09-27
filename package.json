@@ -1,0 +1,60 @@
+{
+  "name": "tontinemoney",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plateforme SaaS de gestion de tontines avec wallet, KYC, paiements et conformit\u00e9",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --filter=@tontine/api --filter=@tontine/web",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:int": "turbo run test:int --concurrency=1",
+    "test:e2e": "pnpm --filter @tontine/web test:e2e",
+    "test:coverage": "turbo run test:coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "db:generate": "pnpm --filter @tontine/database db:generate",
+    "db:migrate": "pnpm --filter @tontine/database db:migrate",
+    "db:migrate:test": "pnpm --filter @tontine/database db:migrate:test",
+    "db:migration:new": "pnpm --filter @tontine/database db:migration:new",
+    "db:seed": "pnpm --filter @tontine/database db:seed",
+    "db:reset": "pnpm --filter @tontine/database db:reset",
+    "secrets:scan": "node infrastructure/scripts/scan-secrets.mjs",
+    "keys:generate": "node infrastructure/scripts/generate-dev-keys.mjs",
+    "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check",
+    "test:e2e:local": "bash infrastructure/scripts/e2e-local.sh",
+    "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9",
+    "turbo": "2.11.4",
+    "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "@swc/core",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ],
+    "overrides": {
+      "path-to-regexp@>=8 <8.4.0": "8.4.2",
+      "lodash@<4.18.0": "4.18.1",
+      "js-yaml@>=4 <4.3.2": "4.3.2",
+      "postcss@<8.5.18": "8.5.28",
+      "fast-xml-parser@<5.5.6": "5.11.1",
+      "mysql2@<3.22.0": "3.24.4",
+      "deepmerge-ts@<8.0.0": "8.0.2",
+      "multer@<2.3.0": "2.4.0"
+    }
+  }
+}

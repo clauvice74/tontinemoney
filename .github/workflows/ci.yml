@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  # Valeurs de TEST uniquement (aucun secret réel)
+  DATABASE_URL: postgresql://tontine:tontine@localhost:5432/tontinemoney?schema=public
+  DATABASE_URL_TEST: postgresql://tontine:tontine@localhost:5432/tontinemoney_test?schema=public
+  REDIS_URL: redis://localhost:6379
+
+jobs:
+  quality:
+    name: Format, lint, types, tests unitaires, sécurité
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: cp .env.example .env
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Détection de secrets (script du dépôt)
+        run: pnpm secrets:scan
+      - name: Audit des dépendances (vulnérabilités hautes et critiques)
+        run: pnpm audit --prod --audit-level high
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration:
+    name: Migrations et tests d'intégration (PostgreSQL, Redis)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tontine
+          POSTGRES_PASSWORD: tontine
+          POSTGRES_DB: tontinemoney
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tontine" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: cp .env.example .env
+      - run: pnpm install --frozen-lockfile
+      - name: Base de test + extensions
+        run: |
+          PGPASSWORD=tontine psql -h localhost -U tontine -d tontinemoney -f infrastructure/docker/postgres/init.sql || true
+          PGPASSWORD=tontine psql -h localhost -U tontine -d tontinemoney -c "CREATE DATABASE tontinemoney_test" || true
+      - run: pnpm build
+      - name: Dérive schéma ⇄ migrations
+        run: pnpm db:migrate:check
+      - run: pnpm db:migrate
+      - name: Tests d'intégration (API + Postgres)
+        run: pnpm --filter @tontine/api test:coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-integration
+          path: apps/api/coverage
+
+  e2e:
+    name: E2E Playwright
+    needs: [integration]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tontine
+          POSTGRES_PASSWORD: tontine
+          POSTGRES_DB: tontinemoney
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tontine" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: cp .env.example .env
+      - run: pnpm install --frozen-lockfile
+      - run: PGPASSWORD=tontine psql -h localhost -U tontine -d tontinemoney -f infrastructure/docker/postgres/init.sql || true
+      - run: pnpm build:demo
+      - run: pnpm db:migrate && pnpm db:seed
+      - run: pnpm --filter @tontine/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e:local
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report

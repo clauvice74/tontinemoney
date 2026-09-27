@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import '@tontine/ui/theme.css';
+
+/* Les composants partagés sont consommés en source : Tailwind doit y détecter les classes. */
+@source '../../../../packages/ui/src';
