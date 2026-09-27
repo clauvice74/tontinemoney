@@ -453,4 +453,69 @@ export class LoginService {
       );
     });
   }
+
+  /**
+   * Suspension / réactivation d'un compte par le super-admin. La suspension révoque toutes les
+   * sessions ; l'access token en cours est refusé dès la requête suivante (statut vérifié à
+   * chaque appel). Garde-fous : jamais son propre compte, jamais le dernier super-admin actif.
+   */
+  async setStatus(
+    actor: Actor,
+    userId: string,
+    status: 'ACTIVE' | 'SUSPENDED',
+    reason: string,
+  ): Promise<{ id: string; status: string; revokedSessions: number }> {
+    if (userId === actor.userId)
+      throw new DomainError('FORBIDDEN', 'Impossible de modifier le statut de son propre compte');
+    return this.uow.run(
+      async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user) throw new DomainError('NOT_FOUND', 'Utilisateur introuvable');
+        const from = status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
+        if (user.status !== from)
+          throw new DomainError(
+            'INVALID_STATE_TRANSITION',
+            status === 'SUSPENDED'
+              ? 'Seul un compte actif peut être suspendu'
+              : 'Seul un compte suspendu peut être réactivé',
+          );
+        if (status === 'SUSPENDED' && user.role === 'SUPER_ADMIN') {
+          const others = await tx.user.count({
+            where: { role: 'SUPER_ADMIN', status: 'ACTIVE', id: { not: userId } },
+          });
+          if (others === 0)
+            throw new DomainError(
+              'BUSINESS_RULE_VIOLATION',
+              'Impossible de suspendre le dernier super-administrateur actif',
+            );
+        }
+        const res = await tx.user.updateMany({
+          where: { id: userId, status: from },
+          data: { status },
+        });
+        if (res.count !== 1)
+          throw new DomainError('VERSION_CONFLICT', 'Compte modifié entre-temps');
+        const revokedSessions =
+          status === 'SUSPENDED' ? await this.tokens.revokeAll(userId, 'SUSPENDED', tx) : 0;
+        await this.outbox.add(tx, {
+          type: 'user.status.changed',
+          aggregateType: 'user',
+          aggregateId: userId,
+          payload: { userId, oldStatus: from, newStatus: status, reason, changedBy: actor.userId },
+        });
+        await this.audit.record(
+          {
+            action: status === 'SUSPENDED' ? 'user.suspended' : 'user.reactivated',
+            resourceType: 'user',
+            resourceId: userId,
+            result: 'SUCCESS',
+            metadata: { reason, revokedSessions },
+          },
+          tx,
+        );
+        return { id: userId, status, revokedSessions };
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  }
 }

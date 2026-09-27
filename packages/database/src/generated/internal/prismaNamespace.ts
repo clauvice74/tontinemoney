@@ -441,6 +441,8 @@ export const ModelName = {
   ComplianceCaseAlert: 'ComplianceCaseAlert',
   TontineAccount: 'TontineAccount',
   GeneratedReport: 'GeneratedReport',
+  Configuration: 'Configuration',
+  ConfigurationHistory: 'ConfigurationHistory',
   AdminMessage: 'AdminMessage',
 } as const;
 
@@ -513,6 +515,8 @@ export type TypeMap<
       | 'complianceCaseAlert'
       | 'tontineAccount'
       | 'generatedReport'
+      | 'configuration'
+      | 'configurationHistory'
       | 'adminMessage';
     txIsolationLevel: TransactionIsolationLevel;
   };
@@ -4336,6 +4340,157 @@ export type TypeMap<
         };
       };
     };
+    Configuration: {
+      payload: Prisma.$ConfigurationPayload<ExtArgs>;
+      fields: Prisma.ConfigurationFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ConfigurationFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ConfigurationFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        findFirst: {
+          args: Prisma.ConfigurationFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ConfigurationFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        findMany: {
+          args: Prisma.ConfigurationFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>[];
+        };
+        create: {
+          args: Prisma.ConfigurationCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        createMany: {
+          args: Prisma.ConfigurationCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ConfigurationCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>[];
+        };
+        delete: {
+          args: Prisma.ConfigurationDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        update: {
+          args: Prisma.ConfigurationUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ConfigurationDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ConfigurationUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ConfigurationUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>[];
+        };
+        upsert: {
+          args: Prisma.ConfigurationUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationPayload>;
+        };
+        aggregate: {
+          args: Prisma.ConfigurationAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConfiguration>;
+        };
+        groupBy: {
+          args: Prisma.ConfigurationGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ConfigurationGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ConfigurationCountArgs<ExtArgs>;
+          result:
+            runtime.Types.Utils.Optional<Prisma.ConfigurationCountAggregateOutputType> | number;
+        };
+      };
+    };
+    ConfigurationHistory: {
+      payload: Prisma.$ConfigurationHistoryPayload<ExtArgs>;
+      fields: Prisma.ConfigurationHistoryFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ConfigurationHistoryFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ConfigurationHistoryFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        findFirst: {
+          args: Prisma.ConfigurationHistoryFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ConfigurationHistoryFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        findMany: {
+          args: Prisma.ConfigurationHistoryFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>[];
+        };
+        create: {
+          args: Prisma.ConfigurationHistoryCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        createMany: {
+          args: Prisma.ConfigurationHistoryCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ConfigurationHistoryCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>[];
+        };
+        delete: {
+          args: Prisma.ConfigurationHistoryDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        update: {
+          args: Prisma.ConfigurationHistoryUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ConfigurationHistoryDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ConfigurationHistoryUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ConfigurationHistoryUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>[];
+        };
+        upsert: {
+          args: Prisma.ConfigurationHistoryUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConfigurationHistoryPayload>;
+        };
+        aggregate: {
+          args: Prisma.ConfigurationHistoryAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConfigurationHistory>;
+        };
+        groupBy: {
+          args: Prisma.ConfigurationHistoryGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ConfigurationHistoryGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ConfigurationHistoryCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ConfigurationHistoryCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     AdminMessage: {
       payload: Prisma.$AdminMessagePayload<ExtArgs>;
       fields: Prisma.AdminMessageFieldRefs;
@@ -5387,6 +5542,31 @@ export const GeneratedReportScalarFieldEnum = {
 
 export type GeneratedReportScalarFieldEnum =
   (typeof GeneratedReportScalarFieldEnum)[keyof typeof GeneratedReportScalarFieldEnum];
+
+export const ConfigurationScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  version: 'version',
+  updatedBy: 'updatedBy',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ConfigurationScalarFieldEnum =
+  (typeof ConfigurationScalarFieldEnum)[keyof typeof ConfigurationScalarFieldEnum];
+
+export const ConfigurationHistoryScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  version: 'version',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  reason: 'reason',
+  changedBy: 'changedBy',
+  createdAt: 'createdAt',
+} as const;
+
+export type ConfigurationHistoryScalarFieldEnum =
+  (typeof ConfigurationHistoryScalarFieldEnum)[keyof typeof ConfigurationHistoryScalarFieldEnum];
 
 export const AdminMessageScalarFieldEnum = {
   id: 'id',
@@ -6691,6 +6871,8 @@ export type GlobalOmitConfig = {
   complianceCaseAlert?: Prisma.ComplianceCaseAlertOmit;
   tontineAccount?: Prisma.TontineAccountOmit;
   generatedReport?: Prisma.GeneratedReportOmit;
+  configuration?: Prisma.ConfigurationOmit;
+  configurationHistory?: Prisma.ConfigurationHistoryOmit;
   adminMessage?: Prisma.AdminMessageOmit;
 };
 

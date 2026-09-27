@@ -65,6 +65,10 @@ Point d'entrée unique des clients (`apps/api-gateway`, :8080). Il ne remplace a
 
 Webhooks PSP reçus uniquement par `apps/payment-gateway` (:8090) : signature, horodatage, prestataire activé, taille, non-rejeu et idempotence (journal propre), refus d'un identifiant réutilisé avec un autre contenu, transmission unique (bail atomique). Appel au Payment Service signé par HMAC (`packages/auth/src/internal-signature.ts` : appelant autorisé, horodatage ± 60 s, comparaison à temps constant) ; tout refus est journalisé (`internal.request.rejected`). Détails : A-47.
 
+### Suspension de compte
+
+`PATCH /admin/users/:id/status` : révocation de toutes les sessions, refus du jeton en cours à la requête suivante (statut vérifié à chaque appel), interdit sur son propre compte et sur le dernier super-admin actif, motif audité (A-50).
+
 ## 6. Protections HTTP
 
 Helmet (CSP, HSTS, frameguard, noSniff), CORS limité à `WEB_ORIGIN`, cookies `HttpOnly Secure SameSite=Strict`, rate limiting Redis (login 10/min/IP et 5/10 min/compte, demande de compte 5/h/IP, inscriptions 50/h/admin), taille de corps limitée, validation zod stricte (champs inconnus rejetés), ProblemDetails sans pile d'appels en production.

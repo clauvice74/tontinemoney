@@ -4,6 +4,8 @@ import { Prisma, isUniqueViolation } from '@tontine/database';
 import {
   type Actor,
   Clock,
+  CONFIGURATION,
+  type ConfigurationPort,
   DomainError,
   KvStore,
   MEMBER_QUERY,
@@ -41,8 +43,6 @@ const OPERATION_TO_TX: Record<OperationType, string[]> = {
 };
 
 const CACHE_TTL_SECONDS = 300; // US-9.2 : cache des règles, TTL 5 min
-/** US-9.4 : suspension automatique après 5 violations en 24 h. */
-export const VIOLATIONS_BEFORE_SUSPENSION = 5;
 
 /** Conformité : validation synchrone des opérations, règles dynamiques, violations (épique 9). */
 @Injectable()
@@ -56,6 +56,7 @@ export class ComplianceService {
     private readonly kv: KvStore,
     private readonly clock: Clock,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
+    @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
   ) {}
 
   private cacheKey(country: string): string {
@@ -183,7 +184,7 @@ export class ComplianceService {
           createdAt: { gte: new Date(this.clock.now().getTime() - 86_400_000) },
         },
       });
-      if (suspend || recent >= VIOLATIONS_BEFORE_SUSPENSION) {
+      if (suspend || recent >= (await this.settings.get('compliance.violations.suspendAfter'))) {
         await this.outbox.add(tx, {
           type: 'compliance.user.suspended',
           aggregateType: 'member',

@@ -11,11 +11,14 @@ import {
 import { type Tontine, type TontineInvitation, type TxClient } from '@tontine/database';
 import { NotificationService } from '@tontine/notifications';
 import {
-  APP_CONFIG,
   type Actor,
+  APP_CONFIG,
   AuditService,
   Clock,
+  CONFIGURATION,
+  type ConfigurationPort,
   DomainError,
+  kycAtLeast,
   MEMBER_QUERY,
   type MemberQueryPort,
   type MemberSnapshot,
@@ -23,14 +26,11 @@ import {
   PrismaService,
   ScheduledJob,
   UnitOfWork,
-  kycAtLeast,
 } from '@tontine/platform';
 import { randomBytes } from 'node:crypto';
 import { type Frequency, type FrequencyDetail, frequencyLabel } from './domain/calendar';
 import { SEATED_STATUSES, TontinesService } from './tontines.service';
 
-/** US-4.2 §6 : une invitation (lien compris) expire après 7 jours. */
-export const INVITATION_TTL_MS = 7 * 86_400_000;
 const OPEN_STATUSES = ['DRAFT', 'READY'] as const;
 
 export function invitationView(
@@ -84,6 +84,7 @@ export class InvitationsService {
     private readonly notifications: NotificationService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
   ) {}
 
   private url(code: string): string {
@@ -146,7 +147,8 @@ export class InvitationsService {
 
     const code = randomBytes(18).toString('base64url');
     const now = this.clock.now();
-    const expiresAt = new Date(now.getTime() + INVITATION_TTL_MS);
+    const ttlDays = await this.settings.get('tontines.invitations.ttlDays');
+    const expiresAt = new Date(now.getTime() + ttlDays * 86_400_000);
     const invitation = await this.uow.run(async (tx) => {
       if (input.channel === 'LINK') {
         // Un seul lien actif par tontine : le précédent est révoqué

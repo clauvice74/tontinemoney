@@ -5,6 +5,7 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Res,
   StreamableFile,
@@ -15,10 +16,12 @@ import {
   type PlatformReportExport,
   type PlatformReportQuery,
   type ReportQuery,
+  type UpdateConfigurationInput,
   flagFraudSchema,
   platformReportExportSchema,
   platformReportQuerySchema,
   reportQuerySchema,
+  updateConfigurationSchema,
 } from '@tontine/contracts';
 import {
   type Discrepancy,
@@ -45,6 +48,8 @@ import {
 } from '@tontine/platform';
 import { type Response } from 'express';
 import { z } from 'zod';
+import { ConfigurationService } from './configuration.service';
+import { AdminDashboardService } from './dashboard.service';
 import { PlatformReportsService } from './platform-reports.service';
 import { toPdf } from './render';
 import { ReportsService } from './reports.service';
@@ -184,8 +189,46 @@ export class AdministrationController {
     private readonly audit: AuditService,
     private readonly internal: InternalReconciliationService,
     private readonly psp: PspReconciliationService,
+    private readonly dashboardService: AdminDashboardService,
+    private readonly configuration: ConfigurationService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
+
+  @Get('dashboard')
+  @ApiOperation({
+    summary: 'Tableau de bord : comptes, files KYC et conformité, paiements, exploitation',
+  })
+  async dashboard() {
+    return this.dashboardService.overview();
+  }
+
+  @Get('configurations')
+  @ApiOperation({
+    summary: 'Paramètres modifiables à chaud : valeur, défaut, description, version',
+  })
+  async configurations() {
+    return { data: await this.configuration.list() };
+  }
+
+  @Patch('configurations/:key')
+  @ApiOperation({
+    summary:
+      'Modifier un paramètre (valeur bornée, motif obligatoire, verrou optimiste par version)',
+  })
+  @ApiZodBody(updateConfigurationSchema)
+  async updateConfiguration(
+    @CurrentUser() actor: Actor,
+    @Param('key') key: string,
+    @ZodBody(updateConfigurationSchema) body: UpdateConfigurationInput,
+  ) {
+    return this.configuration.update(actor, key, body);
+  }
+
+  @Get('configurations/:key/history')
+  @ApiOperation({ summary: 'Historique des modifications d’un paramètre (ajout seul)' })
+  async configurationHistory(@Param('key') key: string) {
+    return { data: await this.configuration.history(key) };
+  }
 
   @Get('reconciliation')
   @ApiOperation({ summary: 'Rapports de réconciliation (interne US-6.6, PSP US-7.6)' })

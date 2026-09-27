@@ -301,6 +301,16 @@ export type TontineAccount = Prisma.TontineAccountModel;
  */
 export type GeneratedReport = Prisma.GeneratedReportModel;
 /**
+ * Model Configuration
+ * Paramètres modifiables à chaud (A-50) : valeur courante, verrou optimiste par version.
+ */
+export type Configuration = Prisma.ConfigurationModel;
+/**
+ * Model ConfigurationHistory
+ * Historique des modifications de paramètres — ajout seul (trigger).
+ */
+export type ConfigurationHistory = Prisma.ConfigurationHistoryModel;
+/**
  * Model AdminMessage
  *
  */

@@ -128,6 +128,8 @@ export const ALL_TABLES = [
   'pay_webhook_events',
   'pay_sim_operations',
   'adm_reports',
+  'adm_configurations',
+  'adm_configuration_history',
   'ntf_templates',
   'ntf_notifications',
   'ntf_outbound_messages',

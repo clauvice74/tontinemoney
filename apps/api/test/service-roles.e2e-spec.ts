@@ -73,7 +73,7 @@ describe('schémas par service', () => {
       transactions: 3,
       payments: 4,
       notifications: 3,
-      administration: 1,
+      administration: 3,
       payment_gateway: 1,
     });
     // seule la table de suivi des migrations reste dans public

@@ -99,6 +99,8 @@ export const ModelName = {
   ComplianceCaseAlert: 'ComplianceCaseAlert',
   TontineAccount: 'TontineAccount',
   GeneratedReport: 'GeneratedReport',
+  Configuration: 'Configuration',
+  ConfigurationHistory: 'ConfigurationHistory',
   AdminMessage: 'AdminMessage',
 } as const;
 
@@ -1055,6 +1057,31 @@ export const GeneratedReportScalarFieldEnum = {
 
 export type GeneratedReportScalarFieldEnum =
   (typeof GeneratedReportScalarFieldEnum)[keyof typeof GeneratedReportScalarFieldEnum];
+
+export const ConfigurationScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  version: 'version',
+  updatedBy: 'updatedBy',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ConfigurationScalarFieldEnum =
+  (typeof ConfigurationScalarFieldEnum)[keyof typeof ConfigurationScalarFieldEnum];
+
+export const ConfigurationHistoryScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  version: 'version',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  reason: 'reason',
+  changedBy: 'changedBy',
+  createdAt: 'createdAt',
+} as const;
+
+export type ConfigurationHistoryScalarFieldEnum =
+  (typeof ConfigurationHistoryScalarFieldEnum)[keyof typeof ConfigurationHistoryScalarFieldEnum];
 
 export const AdminMessageScalarFieldEnum = {
   id: 'id',

@@ -58,5 +58,7 @@ export type * from './models/ComplianceCase';
 export type * from './models/ComplianceCaseAlert';
 export type * from './models/TontineAccount';
 export type * from './models/GeneratedReport';
+export type * from './models/Configuration';
+export type * from './models/ConfigurationHistory';
 export type * from './models/AdminMessage';
 export type * from './commonInputTypes';

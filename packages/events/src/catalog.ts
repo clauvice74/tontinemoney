@@ -54,6 +54,16 @@ export const EVENT_CATALOG = {
     z.object({ userId: id, reason: z.string(), attemptCount: z.number().int() }),
   ),
   'user.unlocked': def('auth', z.object({ userId: id, unlockedBy: id })),
+  'user.status.changed': def(
+    'auth',
+    z.object({
+      userId: id,
+      oldStatus: z.string(),
+      newStatus: z.string(),
+      reason: z.string(),
+      changedBy: id,
+    }),
+  ),
   'user.password.reset': def('auth', z.object({ userId: id })),
   'user.mfa.enabled': def('auth', z.object({ userId: id, mfaType: z.enum(['TOTP', 'SMS']) })),
   'user.mfa.disabled': def('auth', z.object({ userId: id, mfaType: z.enum(['TOTP', 'SMS']) })),
@@ -517,6 +527,18 @@ export const EVENT_CATALOG = {
       type: z.string(),
       outcome: z.enum(['CONFIRMED', 'DISMISSED']),
       closedBy: id,
+    }),
+  ),
+
+  // --- administration (A-50) ---
+  'admin.configuration.updated': def(
+    'administration',
+    z.object({
+      key: z.string(),
+      oldValue: z.unknown(),
+      newValue: z.unknown(),
+      version: z.number().int(),
+      changedBy: id,
     }),
   ),
 

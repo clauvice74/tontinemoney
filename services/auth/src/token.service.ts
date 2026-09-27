@@ -9,10 +9,12 @@ import { type AppConfig } from '@tontine/config';
 import { type PlatformRole } from '@tontine/contracts';
 import { type TxClient, type User } from '@tontine/database';
 import {
-  APP_CONFIG,
   type AccessTokenVerifier,
   type Actor,
+  APP_CONFIG,
   Clock,
+  CONFIGURATION,
+  type ConfigurationPort,
   DomainError,
   KvStore,
   OutboxService,
@@ -25,7 +27,6 @@ import {
 import { JWT_KEYSTORE } from './keys.provider';
 
 /** R-AUTH-LOGIN-03 */
-export const MAX_ACTIVE_SESSIONS = 5;
 
 export interface IssuedTokens {
   accessToken: string;
@@ -55,6 +56,7 @@ export class TokenService implements AccessTokenVerifier {
     @Inject(JWT_KEYSTORE) private readonly keys: JwtKeyStore,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(TONTINE_ACCESS) private readonly tontines: TontineAccessPort,
+    @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
   ) {}
 
   get jwks(): { keys: Array<Record<string, unknown>> } {
@@ -104,13 +106,14 @@ export class TokenService implements AccessTokenVerifier {
         expiresAt,
       },
     });
-    // Au-delà de 5 sessions actives, la plus ancienne est révoquée.
+    // Au-delà du nombre de sessions autorisé (paramètre auth.sessions.max), les plus anciennes
+    // sont révoquées.
     const active = await tx.refreshSession.findMany({
       where: { userId: user.id, revokedAt: null, rotatedAt: null, expiresAt: { gt: now } },
       orderBy: { createdAt: 'asc' },
       select: { id: true },
     });
-    const excess = active.length - MAX_ACTIVE_SESSIONS;
+    const excess = active.length - (await this.settings.get('auth.sessions.max'));
     if (excess > 0) {
       await tx.refreshSession.updateMany({
         where: { id: { in: active.slice(0, excess).map((s) => s.id) } },

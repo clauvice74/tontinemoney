@@ -57,6 +57,12 @@ export const flagFraudSchema = z.object({ memberId: uuidSchema, reason: reasonSc
 export const liftSuspensionSchema = z.object({ reason: reasonSchema });
 export const unlockUserSchema = z.object({ reason: reasonSchema });
 
+/** Suspension / réactivation d'un compte par le super-admin (sessions révoquées à la suspension). */
+export const userStatusSchema = z
+  .object({ status: z.enum(['ACTIVE', 'SUSPENDED']), reason: reasonSchema })
+  .strict();
+export type UserStatusInput = z.infer<typeof userStatusSchema>;
+
 /** Rapports consolidés de la plateforme (super-admin). */
 export const PLATFORM_REPORTS = [
   'financial',
@@ -107,3 +113,55 @@ export const platformReportExportSchema = z
   .strict()
   .superRefine(periodCheck);
 export type PlatformReportExport = z.infer<typeof platformReportExportSchema>;
+
+/**
+ * Paramètres modifiables à chaud par le super-admin (admin-service, A-50). Chaque clé est lue
+ * par un seul service via le port CONFIGURATION ; les seuils de sécurité (OTP, verrouillage)
+ * restent volontairement figés dans le code.
+ */
+export const CONFIGURATION_DEFINITIONS = {
+  'notifications.sms.dailyLimit': {
+    schema: z.number().int().min(1).max(100),
+    default: 10,
+    description: 'SMS non urgents par membre et par jour (au-delà : report au lendemain)',
+    owner: 'notifications',
+  },
+  'compliance.violations.suspendAfter': {
+    schema: z.number().int().min(2).max(50),
+    default: 5,
+    description: 'Violations de règles en 24 h avant suspension automatique (US-9.4)',
+    owner: 'compliance',
+  },
+  'auth.sessions.max': {
+    schema: z.number().int().min(1).max(20),
+    default: 5,
+    description: 'Sessions actives simultanées par compte (la plus ancienne est révoquée)',
+    owner: 'auth',
+  },
+  'tontines.invitations.ttlDays': {
+    schema: z.number().int().min(1).max(30),
+    default: 7,
+    description: 'Durée de validité d’une invitation à une tontine, en jours (US-4.2)',
+    owner: 'tontines',
+  },
+} as const;
+
+export type ConfigurationKey = keyof typeof CONFIGURATION_DEFINITIONS;
+export type ConfigurationValues = {
+  [K in ConfigurationKey]: z.infer<(typeof CONFIGURATION_DEFINITIONS)[K]['schema']>;
+};
+export const CONFIGURATION_KEYS = Object.keys(CONFIGURATION_DEFINITIONS) as ConfigurationKey[];
+
+export function isConfigurationKey(key: string): key is ConfigurationKey {
+  return Object.prototype.hasOwnProperty.call(CONFIGURATION_DEFINITIONS, key);
+}
+
+/** Modification d'un paramètre : valeur validée par la définition, motif, verrou optimiste. */
+export const updateConfigurationSchema = z
+  .object({
+    value: z.unknown(),
+    reason: reasonSchema,
+    version: z.number().int().min(0),
+  })
+  .strict();
+export type UpdateConfigurationInput = z.infer<typeof updateConfigurationSchema>;

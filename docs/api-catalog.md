@@ -28,15 +28,19 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 
 ## Administration des comptes
 
-| Méthode | Route                                                                   | Rôle                               | Corps / réponse                                                                                                            |
-| ------- | ----------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| POST 🔒 | `/admin/tontine-admins`                                                 | SUPER_ADMIN                        | `{firstName, lastName, email, phone, country, language, tontineName}` → `{id, status, activation:{delivered[], failed[]}}` |
-| GET 🔒  | `/access-requests?tontineId&status`                                     | SUPER_ADMIN ou admin de la tontine | `{data:[{id, status, createdAt, expiresAt, requestedTontineName, targetTontine, user:{…}}]}`                               |
-| POST 🔒 | `/access-requests/{id}/decision`                                        | idem                               | `{decision:'APPROVE', tontineId?}` ou `{decision:'REJECT', reason}`                                                        |
-| POST 🔒 | `/tontines/{tontineId}/members`                                         | admin de la tontine                | `{firstName, lastName, email?, phone?, preferredChannel, dateOfBirth?, address?, country?}` → `{id, status, channel}`      |
-| GET 🔒  | `/admin/users?role&status&search`                                       | SUPER_ADMIN                        | liste des comptes                                                                                                          |
-| POST 🔒 | `/admin/users/{id}/unlock`                                              | SUPER_ADMIN                        | `{reason}` → 204                                                                                                           |
-| POST 🔒 | `/admin/members/{id}/suspend` · `/reactivate` (alias `/members/{id}/…`) | SUPER_ADMIN                        | `{reason}`                                                                                                                 |
+| Méthode  | Route                                                                   | Rôle                               | Corps / réponse                                                                                                            |
+| -------- | ----------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| POST 🔒  | `/admin/tontine-admins`                                                 | SUPER_ADMIN                        | `{firstName, lastName, email, phone, country, language, tontineName}` → `{id, status, activation:{delivered[], failed[]}}` |
+| GET 🔒   | `/access-requests?tontineId&status`                                     | SUPER_ADMIN ou admin de la tontine | `{data:[{id, status, createdAt, expiresAt, requestedTontineName, targetTontine, user:{…}}]}`                               |
+| POST 🔒  | `/access-requests/{id}/decision`                                        | idem                               | `{decision:'APPROVE', tontineId?}` ou `{decision:'REJECT', reason}`                                                        |
+| POST 🔒  | `/tontines/{tontineId}/members`                                         | admin de la tontine                | `{firstName, lastName, email?, phone?, preferredChannel, dateOfBirth?, address?, country?}` → `{id, status, channel}`      |
+| GET 🔒   | `/admin/users?role&status&search`                                       | SUPER_ADMIN                        | liste des comptes                                                                                                          |
+| POST 🔒  | `/admin/users/{id}/unlock`                                              | SUPER_ADMIN                        | `{reason}` → 204                                                                                                           |
+| PATCH 🔒 | `/admin/users/{id}/status`                                              | SUPER_ADMIN                        | `{status: ACTIVE                                                                                                           | SUSPENDED, reason}`→`{id, status, revokedSessions}` ; pas son propre compte ni le dernier super-admin (A-50) |
+| GET 🔒   | `/admin/dashboard`                                                      | SUPER_ADMIN                        | comptes, files KYC et conformité, paiements en cours, transactions du jour, exploitation (A-50)                            |
+| GET 🔒   | `/admin/configurations` · `/admin/configurations/{key}/history`         | SUPER_ADMIN                        | paramètres (valeur, défaut, description, version) et historique                                                            |
+| PATCH 🔒 | `/admin/configurations/{key}`                                           | SUPER_ADMIN                        | `{value, reason, version}` ; 400 hors bornes, 404 clé inconnue, 409 version périmée                                        |
+| POST 🔒  | `/admin/members/{id}/suspend` · `/reactivate` (alias `/members/{id}/…`) | SUPER_ADMIN                        | `{reason}`                                                                                                                 |
 
 ## Membres (épique 2)
 

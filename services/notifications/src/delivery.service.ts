@@ -1,12 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Clock, OutboxService, PrismaService, ScheduledJob, UnitOfWork } from '@tontine/platform';
+import {
+  Clock,
+  CONFIGURATION,
+  type ConfigurationPort,
+  OutboxService,
+  PrismaService,
+  ScheduledJob,
+  UnitOfWork,
+} from '@tontine/platform';
 import { RECIPIENT_DIRECTORY, type RecipientDirectory } from './ports';
 import { EmailProvider, ProviderError, SmsProvider } from './providers';
 import { emailHtml } from './render';
 
 export const MAX_DELIVERY_ATTEMPTS = 3;
-/** R-COM-03 : 10 SMS / jour / utilisateur hors urgences. */
-export const SMS_DAILY_LIMIT = 10;
 const BACKOFF_SECONDS = [30, 120, 600];
 
 interface ClaimedNotification {
@@ -36,6 +42,7 @@ export class DeliveryService {
     private readonly sms: SmsProvider,
     private readonly email: EmailProvider,
     @Inject(RECIPIENT_DIRECTORY) private readonly directory: RecipientDirectory,
+    @Inject(CONFIGURATION) private readonly settings: ConfigurationPort,
   ) {}
 
   @ScheduledJob({
@@ -80,7 +87,8 @@ export class DeliveryService {
         if (!contact.phone) throw new ProviderError('Aucun numéro', false);
         if (
           n.priority !== 'URGENT' &&
-          (await this.smsSentToday(n.recipientId)) >= SMS_DAILY_LIMIT
+          (await this.smsSentToday(n.recipientId)) >=
+            (await this.settings.get('notifications.sms.dailyLimit'))
         ) {
           await this.prisma.notification.update({
             where: { id: n.id },

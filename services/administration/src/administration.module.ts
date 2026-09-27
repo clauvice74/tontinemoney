@@ -8,6 +8,7 @@ import {
   PlatformReportsController,
   ReportsController,
 } from './administration.controller';
+import { AdminDashboardService } from './dashboard.service';
 import { PlatformReportsService } from './platform-reports.service';
 import { ReportsService } from './reports.service';
 
@@ -15,7 +16,12 @@ import { ReportsService } from './reports.service';
 @Module({
   imports: [TransactionsModule, PaymentsModule, TontinesModule],
   controllers: [ReportsController, PlatformReportsController, AdministrationController],
-  providers: [ReportsService, PlatformReportsService, AdministrationConsumers],
+  providers: [
+    ReportsService,
+    PlatformReportsService,
+    AdminDashboardService,
+    AdministrationConsumers,
+  ],
   exports: [ReportsService],
 })
 export class AdministrationModule {}

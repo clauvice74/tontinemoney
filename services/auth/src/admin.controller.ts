@@ -4,6 +4,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
@@ -15,7 +16,9 @@ import {
   accessDecisionSchema,
   createTontineAdminSchema,
   registerMemberSchema,
+  type UserStatusInput,
   unlockUserSchema,
+  userStatusSchema,
   PLATFORM_ROLES,
   USER_STATUSES,
 } from '@tontine/contracts';
@@ -116,6 +119,20 @@ export class AdminUsersController {
     @ZodBody(unlockUserSchema) body: { reason: string },
   ): Promise<void> {
     await this.login.unlock(actor, userId, body.reason);
+  }
+
+  @Patch('admin/users/:userId/status')
+  @Roles('SUPER_ADMIN')
+  @ApiOperation({
+    summary: 'Suspendre ou réactiver un compte (sessions révoquées, dernier super-admin protégé)',
+  })
+  @ApiZodBody(userStatusSchema)
+  async setStatus(
+    @CurrentUser() actor: Actor,
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @ZodBody(userStatusSchema) body: UserStatusInput,
+  ) {
+    return this.login.setStatus(actor, userId, body.status, body.reason);
   }
 
   @Get('admin/users')

@@ -1,3 +1,4 @@
+import { type ConfigurationKey, type ConfigurationValues } from '@tontine/contracts';
 import { type TxClient } from '@tontine/database';
 
 /**
@@ -81,6 +82,18 @@ export interface AccountSnapshot {
 /** Lecture courte des comptes pour les autres domaines (ex. assignation d'un dossier). */
 export interface AccountDirectoryPort {
   account(userId: string): Promise<AccountSnapshot | null>;
+  /** Comptes par statut et demandes d'accès en attente (tableau de bord administrateur). */
+  statistics(): Promise<{ byStatus: Record<string, number>; pendingAccessRequests: number }>;
 }
 
 export const ACCOUNT_DIRECTORY = Symbol('ACCOUNT_DIRECTORY');
+
+/**
+ * Paramètres modifiables à chaud (propriété d'admin-service, A-50). Valeur en cache court,
+ * invalidée par l'événement `admin.configuration.updated` ; défaut de la définition si absent.
+ */
+export interface ConfigurationPort {
+  get<K extends ConfigurationKey>(key: K): Promise<ConfigurationValues[K]>;
+}
+
+export const CONFIGURATION = Symbol('CONFIGURATION');

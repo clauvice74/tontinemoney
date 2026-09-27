@@ -22,4 +22,15 @@ export class UserRoleDirectory implements RoleDirectory, AccountDirectoryPort {
       select: { id: true, role: true, status: true },
     });
   }
+
+  async statistics(): Promise<{ byStatus: Record<string, number>; pendingAccessRequests: number }> {
+    const [groups, pendingAccessRequests] = await Promise.all([
+      this.prisma.user.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.accessRequest.count({ where: { status: 'PENDING' } }),
+    ]);
+    return {
+      byStatus: Object.fromEntries(groups.map((g) => [g.status, g._count._all])),
+      pendingAccessRequests,
+    };
+  }
 }
