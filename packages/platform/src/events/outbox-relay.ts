@@ -60,6 +60,7 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
               clientId: config.KAFKA_CLIENT_ID,
               groupId: config.KAFKA_GROUP_ID,
               partitions: config.KAFKA_TOPIC_PARTITIONS,
+              idempotentProducer: config.KAFKA_IDEMPOTENT_PRODUCER,
               maxAttempts: config.EVENT_CONSUMER_MAX_ATTEMPTS,
             },
             dispatcher,

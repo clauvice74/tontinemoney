@@ -37,7 +37,13 @@ export interface KafkaTransportOptions {
   /** Tentatives de traitement avant rejet (InboxProcessor). */
   maxAttempts: number;
   replicationFactor?: number;
-  /** Réessais du client (connexion, attribution du producer id au démarrage du broker). */
+  /**
+   * Producteur idempotent Kafka (désactivé par défaut, A-52) : refusé par Redpanda avec
+   * kafkajs (InitProducerId → NOT_COORDINATOR). Les doublons d'un réessai réseau sont
+   * neutralisés par l'inbox des consommateurs (identifiant d'événement).
+   */
+  idempotentProducer?: boolean;
+  /** Réessais du client (connexion au démarrage du broker). */
   retry?: { retries: number; initialRetryTime: number; maxRetryTime: number };
 }
 
@@ -93,6 +99,7 @@ export class KafkaTransport implements EventTransport {
         record: async (entry) => {
           await deadLetters.record(entry);
           await this.producer?.send({
+            acks: -1,
             topic: DEAD_LETTER_TOPIC,
             messages: [
               {
@@ -115,7 +122,11 @@ export class KafkaTransport implements EventTransport {
   }
 
   async start(): Promise<void> {
-    this.producer = this.kafka.producer({ idempotent: true, maxInFlightRequests: 1 });
+    // Une seule requête en vol : un réessai ne réordonne jamais les messages d'un agrégat.
+    this.producer = this.kafka.producer({
+      idempotent: this.options.idempotentProducer ?? false,
+      maxInFlightRequests: 1,
+    });
     await this.producer.connect();
     const topics = subscribedTopics(this.dispatcher.subscribedTypes());
     const admin = this.kafka.admin();
@@ -161,6 +172,7 @@ export class KafkaTransport implements EventTransport {
   async publish(event: EventEnvelope): Promise<void> {
     if (!this.producer) throw new Error('Producteur Kafka non démarré');
     await this.producer.send({
+      acks: -1,
       topic: topicFor(event.eventType, event.eventVersion),
       messages: [
         { key: event.aggregateId, value: JSON.stringify(event), headers: kafkaHeaders(event) },
