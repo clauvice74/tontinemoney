@@ -47,6 +47,8 @@ export type ComplianceCaseMinAggregateOutputType = {
   outcome: $Enums.CaseOutcome | null;
   closingComment: string | null;
   version: number | null;
+  assigneeId: string | null;
+  assignedAt: Date | null;
 };
 
 export type ComplianceCaseMaxAggregateOutputType = {
@@ -62,6 +64,8 @@ export type ComplianceCaseMaxAggregateOutputType = {
   outcome: $Enums.CaseOutcome | null;
   closingComment: string | null;
   version: number | null;
+  assigneeId: string | null;
+  assignedAt: Date | null;
 };
 
 export type ComplianceCaseCountAggregateOutputType = {
@@ -77,6 +81,8 @@ export type ComplianceCaseCountAggregateOutputType = {
   outcome: number;
   closingComment: number;
   version: number;
+  assigneeId: number;
+  assignedAt: number;
   _all: number;
 };
 
@@ -101,6 +107,8 @@ export type ComplianceCaseMinAggregateInputType = {
   outcome?: true;
   closingComment?: true;
   version?: true;
+  assigneeId?: true;
+  assignedAt?: true;
 };
 
 export type ComplianceCaseMaxAggregateInputType = {
@@ -116,6 +124,8 @@ export type ComplianceCaseMaxAggregateInputType = {
   outcome?: true;
   closingComment?: true;
   version?: true;
+  assigneeId?: true;
+  assignedAt?: true;
 };
 
 export type ComplianceCaseCountAggregateInputType = {
@@ -131,6 +141,8 @@ export type ComplianceCaseCountAggregateInputType = {
   outcome?: true;
   closingComment?: true;
   version?: true;
+  assigneeId?: true;
+  assignedAt?: true;
   _all?: true;
 };
 
@@ -237,6 +249,8 @@ export type ComplianceCaseGroupByOutputType = {
   outcome: $Enums.CaseOutcome | null;
   closingComment: string | null;
   version: number;
+  assigneeId: string | null;
+  assignedAt: Date | null;
   _count: ComplianceCaseCountAggregateOutputType | null;
   _avg: ComplianceCaseAvgAggregateOutputType | null;
   _sum: ComplianceCaseSumAggregateOutputType | null;
@@ -273,6 +287,8 @@ export type ComplianceCaseWhereInput = {
   outcome?: Prisma.EnumCaseOutcomeNullableFilter<'ComplianceCase'> | $Enums.CaseOutcome | null;
   closingComment?: Prisma.StringNullableFilter<'ComplianceCase'> | string | null;
   version?: Prisma.IntFilter<'ComplianceCase'> | number;
+  assigneeId?: Prisma.UuidNullableFilter<'ComplianceCase'> | string | null;
+  assignedAt?: Prisma.DateTimeNullableFilter<'ComplianceCase'> | Date | string | null;
   alerts?: Prisma.ComplianceCaseAlertListRelationFilter;
 };
 
@@ -289,6 +305,8 @@ export type ComplianceCaseOrderByWithRelationInput = {
   outcome?: Prisma.SortOrderInput | Prisma.SortOrder;
   closingComment?: Prisma.SortOrderInput | Prisma.SortOrder;
   version?: Prisma.SortOrder;
+  assigneeId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  assignedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   alerts?: Prisma.ComplianceCaseAlertOrderByRelationAggregateInput;
 };
 
@@ -309,6 +327,8 @@ export type ComplianceCaseWhereUniqueInput = Prisma.AtLeast<
     outcome?: Prisma.EnumCaseOutcomeNullableFilter<'ComplianceCase'> | $Enums.CaseOutcome | null;
     closingComment?: Prisma.StringNullableFilter<'ComplianceCase'> | string | null;
     version?: Prisma.IntFilter<'ComplianceCase'> | number;
+    assigneeId?: Prisma.UuidNullableFilter<'ComplianceCase'> | string | null;
+    assignedAt?: Prisma.DateTimeNullableFilter<'ComplianceCase'> | Date | string | null;
     alerts?: Prisma.ComplianceCaseAlertListRelationFilter;
   },
   'id'
@@ -327,6 +347,8 @@ export type ComplianceCaseOrderByWithAggregationInput = {
   outcome?: Prisma.SortOrderInput | Prisma.SortOrder;
   closingComment?: Prisma.SortOrderInput | Prisma.SortOrder;
   version?: Prisma.SortOrder;
+  assigneeId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  assignedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.ComplianceCaseCountOrderByAggregateInput;
   _avg?: Prisma.ComplianceCaseAvgOrderByAggregateInput;
   _max?: Prisma.ComplianceCaseMaxOrderByAggregateInput;
@@ -360,6 +382,8 @@ export type ComplianceCaseScalarWhereWithAggregatesInput = {
     | null;
   closingComment?: Prisma.StringNullableWithAggregatesFilter<'ComplianceCase'> | string | null;
   version?: Prisma.IntWithAggregatesFilter<'ComplianceCase'> | number;
+  assigneeId?: Prisma.UuidNullableWithAggregatesFilter<'ComplianceCase'> | string | null;
+  assignedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'ComplianceCase'> | Date | string | null;
 };
 
 export type ComplianceCaseCreateInput = {
@@ -375,6 +399,8 @@ export type ComplianceCaseCreateInput = {
   outcome?: $Enums.CaseOutcome | null;
   closingComment?: string | null;
   version?: number;
+  assigneeId?: string | null;
+  assignedAt?: Date | string | null;
   alerts?: Prisma.ComplianceCaseAlertCreateNestedManyWithoutCaseInput;
 };
 
@@ -391,6 +417,8 @@ export type ComplianceCaseUncheckedCreateInput = {
   outcome?: $Enums.CaseOutcome | null;
   closingComment?: string | null;
   version?: number;
+  assigneeId?: string | null;
+  assignedAt?: Date | string | null;
   alerts?: Prisma.ComplianceCaseAlertUncheckedCreateNestedManyWithoutCaseInput;
 };
 
@@ -407,6 +435,8 @@ export type ComplianceCaseUpdateInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   alerts?: Prisma.ComplianceCaseAlertUpdateManyWithoutCaseNestedInput;
 };
 
@@ -423,6 +453,8 @@ export type ComplianceCaseUncheckedUpdateInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   alerts?: Prisma.ComplianceCaseAlertUncheckedUpdateManyWithoutCaseNestedInput;
 };
 
@@ -439,6 +471,8 @@ export type ComplianceCaseCreateManyInput = {
   outcome?: $Enums.CaseOutcome | null;
   closingComment?: string | null;
   version?: number;
+  assigneeId?: string | null;
+  assignedAt?: Date | string | null;
 };
 
 export type ComplianceCaseUpdateManyMutationInput = {
@@ -454,6 +488,8 @@ export type ComplianceCaseUpdateManyMutationInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 
 export type ComplianceCaseUncheckedUpdateManyInput = {
@@ -469,6 +505,8 @@ export type ComplianceCaseUncheckedUpdateManyInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 
 export type ComplianceCaseCountOrderByAggregateInput = {
@@ -484,6 +522,8 @@ export type ComplianceCaseCountOrderByAggregateInput = {
   outcome?: Prisma.SortOrder;
   closingComment?: Prisma.SortOrder;
   version?: Prisma.SortOrder;
+  assigneeId?: Prisma.SortOrder;
+  assignedAt?: Prisma.SortOrder;
 };
 
 export type ComplianceCaseAvgOrderByAggregateInput = {
@@ -503,6 +543,8 @@ export type ComplianceCaseMaxOrderByAggregateInput = {
   outcome?: Prisma.SortOrder;
   closingComment?: Prisma.SortOrder;
   version?: Prisma.SortOrder;
+  assigneeId?: Prisma.SortOrder;
+  assignedAt?: Prisma.SortOrder;
 };
 
 export type ComplianceCaseMinOrderByAggregateInput = {
@@ -518,6 +560,8 @@ export type ComplianceCaseMinOrderByAggregateInput = {
   outcome?: Prisma.SortOrder;
   closingComment?: Prisma.SortOrder;
   version?: Prisma.SortOrder;
+  assigneeId?: Prisma.SortOrder;
+  assignedAt?: Prisma.SortOrder;
 };
 
 export type ComplianceCaseSumOrderByAggregateInput = {
@@ -584,6 +628,8 @@ export type ComplianceCaseCreateWithoutAlertsInput = {
   outcome?: $Enums.CaseOutcome | null;
   closingComment?: string | null;
   version?: number;
+  assigneeId?: string | null;
+  assignedAt?: Date | string | null;
 };
 
 export type ComplianceCaseUncheckedCreateWithoutAlertsInput = {
@@ -599,6 +645,8 @@ export type ComplianceCaseUncheckedCreateWithoutAlertsInput = {
   outcome?: $Enums.CaseOutcome | null;
   closingComment?: string | null;
   version?: number;
+  assigneeId?: string | null;
+  assignedAt?: Date | string | null;
 };
 
 export type ComplianceCaseCreateOrConnectWithoutAlertsInput = {
@@ -642,6 +690,8 @@ export type ComplianceCaseUpdateWithoutAlertsInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 
 export type ComplianceCaseUncheckedUpdateWithoutAlertsInput = {
@@ -657,6 +707,8 @@ export type ComplianceCaseUncheckedUpdateWithoutAlertsInput = {
   outcome?: Prisma.NullableEnumCaseOutcomeFieldUpdateOperationsInput | $Enums.CaseOutcome | null;
   closingComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   version?: Prisma.IntFieldUpdateOperationsInput | number;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 
 /**
@@ -710,6 +762,8 @@ export type ComplianceCaseSelect<
     outcome?: boolean;
     closingComment?: boolean;
     version?: boolean;
+    assigneeId?: boolean;
+    assignedAt?: boolean;
     alerts?: boolean | Prisma.ComplianceCase$alertsArgs<ExtArgs>;
     _count?: boolean | Prisma.ComplianceCaseCountOutputTypeDefaultArgs<ExtArgs>;
   },
@@ -732,6 +786,8 @@ export type ComplianceCaseSelectCreateManyAndReturn<
     outcome?: boolean;
     closingComment?: boolean;
     version?: boolean;
+    assigneeId?: boolean;
+    assignedAt?: boolean;
   },
   ExtArgs['result']['complianceCase']
 >;
@@ -752,6 +808,8 @@ export type ComplianceCaseSelectUpdateManyAndReturn<
     outcome?: boolean;
     closingComment?: boolean;
     version?: boolean;
+    assigneeId?: boolean;
+    assignedAt?: boolean;
   },
   ExtArgs['result']['complianceCase']
 >;
@@ -769,6 +827,8 @@ export type ComplianceCaseSelectScalar = {
   outcome?: boolean;
   closingComment?: boolean;
   version?: boolean;
+  assigneeId?: boolean;
+  assignedAt?: boolean;
 };
 
 export type ComplianceCaseOmit<
@@ -785,7 +845,9 @@ export type ComplianceCaseOmit<
   | 'closedBy'
   | 'outcome'
   | 'closingComment'
-  | 'version',
+  | 'version'
+  | 'assigneeId'
+  | 'assignedAt',
   ExtArgs['result']['complianceCase']
 >;
 export type ComplianceCaseInclude<
@@ -822,6 +884,11 @@ export type $ComplianceCasePayload<
       outcome: $Enums.CaseOutcome | null;
       closingComment: string | null;
       version: number;
+      /**
+       * Agent assigné (COMPLIANCE_AGENT ou SUPER_ADMIN) ; seul lui ou le super-admin peut clore
+       */
+      assigneeId: string | null;
+      assignedAt: Date | null;
     },
     ExtArgs['result']['complianceCase']
   >;
@@ -1417,6 +1484,8 @@ export interface ComplianceCaseFieldRefs {
   readonly outcome: Prisma.FieldRef<'ComplianceCase', 'CaseOutcome'>;
   readonly closingComment: Prisma.FieldRef<'ComplianceCase', 'String'>;
   readonly version: Prisma.FieldRef<'ComplianceCase', 'Int'>;
+  readonly assigneeId: Prisma.FieldRef<'ComplianceCase', 'String'>;
+  readonly assignedAt: Prisma.FieldRef<'ComplianceCase', 'DateTime'>;
 }
 
 // Custom InputTypes

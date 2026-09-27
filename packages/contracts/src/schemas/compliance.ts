@@ -58,6 +58,8 @@ export const complianceCasesQuerySchema = z
     type: z.enum(COMPLIANCE_CASE_TYPES).optional(),
     severity: z.enum(CASE_SEVERITIES).optional(),
     memberId: uuidSchema.optional(),
+    /** `me` : mes dossiers ; `none` : non assignés ; sinon identifiant d'un agent. */
+    assignee: z.union([z.enum(['me', 'none']), uuidSchema]).optional(),
     sort: z.enum(['opened_desc', 'opened_asc']).default('opened_desc'),
   })
   .strict();
@@ -68,3 +70,10 @@ export const closeComplianceCaseSchema = z
   .object({ outcome: z.enum(['CONFIRMED', 'DISMISSED']), comment: reasonSchema })
   .strict();
 export type CloseComplianceCaseInput = z.infer<typeof closeComplianceCaseSchema>;
+
+/** Assignation d'un dossier : `null` libère le dossier. */
+export const assignComplianceCaseSchema = z.object({ assigneeId: uuidSchema.nullable() }).strict();
+export type AssignComplianceCaseInput = z.infer<typeof assignComplianceCaseSchema>;
+
+/** Rôles pouvant se voir assigner un dossier de conformité (A-49). */
+export const CASE_ASSIGNABLE_ROLES = ['COMPLIANCE_AGENT', 'SUPER_ADMIN'] as const;

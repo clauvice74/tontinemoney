@@ -7,6 +7,7 @@ export const ROLE_LABELS: Record<string, string> = {
   TONTINE_ADMIN: 'Administrateur de tontine',
   MEMBER: 'Membre',
   KYC_AGENT: 'Agent KYC',
+  COMPLIANCE_AGENT: 'Agent conformité',
   ADMIN: 'Administrateur',
 };
 

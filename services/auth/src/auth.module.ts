@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { NotificationsModule, ROLE_DIRECTORY } from '@tontine/notifications';
-import { ACCESS_TOKEN_VERIFIER, ADMIN_DELEGATION } from '@tontine/platform';
+import { ACCESS_TOKEN_VERIFIER, ACCOUNT_DIRECTORY, ADMIN_DELEGATION } from '@tontine/platform';
 import { AdminUsersController, JwksController } from './admin.controller';
 import { AuthConsumers } from './auth.consumers';
 import { AuthController } from './auth.controller';
@@ -31,10 +31,12 @@ import { TokenService } from './token.service';
     { provide: CaptchaVerifier, useClass: SimulatedCaptchaVerifier },
     { provide: ACCESS_TOKEN_VERIFIER, useExisting: TokenService },
     { provide: ROLE_DIRECTORY, useExisting: UserRoleDirectory },
+    { provide: ACCOUNT_DIRECTORY, useExisting: UserRoleDirectory },
   ],
   exports: [
     ACCESS_TOKEN_VERIFIER,
     ADMIN_DELEGATION,
+    ACCOUNT_DIRECTORY,
     ROLE_DIRECTORY,
     TokenService,
     RegistrationService,

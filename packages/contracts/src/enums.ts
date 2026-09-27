@@ -8,7 +8,13 @@ function values<const T extends readonly string[]>(...v: T): T {
   return v;
 }
 
-export const PLATFORM_ROLES = values('SUPER_ADMIN', 'TONTINE_ADMIN', 'MEMBER', 'KYC_AGENT');
+export const PLATFORM_ROLES = values(
+  'SUPER_ADMIN',
+  'TONTINE_ADMIN',
+  'MEMBER',
+  'KYC_AGENT',
+  'COMPLIANCE_AGENT',
+);
 export type PlatformRole = (typeof PLATFORM_ROLES)[number];
 
 export const USER_STATUSES = values(

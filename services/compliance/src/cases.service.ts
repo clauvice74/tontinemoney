@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  CASE_ASSIGNABLE_ROLES,
   type CloseComplianceCaseInput,
   type ComplianceCasesQuery,
   buildPage,
@@ -13,6 +14,8 @@ import {
   isUniqueViolation,
 } from '@tontine/database';
 import {
+  ACCOUNT_DIRECTORY,
+  type AccountDirectoryPort,
   type Actor,
   AuditService,
   Clock,
@@ -54,6 +57,8 @@ function toCaseView(c: ComplianceCase, alerts?: ComplianceCaseAlert[]) {
     closedBy: c.closedBy,
     outcome: c.outcome,
     closingComment: c.closingComment,
+    assigneeId: c.assigneeId,
+    assignedAt: c.assignedAt?.toISOString() ?? null,
     version: c.version,
     ...(alerts
       ? {
@@ -85,6 +90,7 @@ export class ComplianceCasesService {
     private readonly clock: Clock,
     private readonly audit: AuditService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
+    @Inject(ACCOUNT_DIRECTORY) private readonly accounts: AccountDirectoryPort,
   ) {}
 
   /** Idempotent : une alerte déjà rattachée (même type, même source) est ignorée. */
@@ -165,7 +171,7 @@ export class ComplianceCasesService {
     });
   }
 
-  async list(q: ComplianceCasesQuery) {
+  async list(actor: Actor, q: ComplianceCasesQuery) {
     const cursor = decodeCursor(q.cursor);
     const at = cursor && typeof cursor.k === 'string' ? new Date(cursor.k) : null;
     const desc = q.sort === 'opened_desc';
@@ -182,6 +188,13 @@ export class ComplianceCasesService {
         ...(q.type ? { type: q.type } : {}),
         ...(q.severity ? { severity: q.severity } : {}),
         ...(q.memberId ? { memberId: q.memberId } : {}),
+        ...(q.assignee === 'me'
+          ? { assigneeId: actor.userId }
+          : q.assignee === 'none'
+            ? { assigneeId: null }
+            : q.assignee
+              ? { assigneeId: q.assignee }
+              : {}),
         ...after,
       },
       include: { _count: { select: { alerts: true } } },
@@ -209,6 +222,65 @@ export class ComplianceCasesService {
     return c;
   }
 
+  /**
+   * Assignation (A-49) : dossier ouvert ; agent actif de rôle COMPLIANCE_AGENT ou SUPER_ADMIN.
+   * Un agent conformité ne peut que se l'attribuer ou le libérer ; le super-admin répartit.
+   */
+  async assign(actor: Actor, id: string, assigneeId: string | null) {
+    if (actor.role !== 'SUPER_ADMIN') {
+      if (assigneeId !== null && assigneeId !== actor.userId)
+        throw new DomainError('FORBIDDEN', 'Un agent ne peut s’attribuer que ses propres dossiers');
+    }
+    if (assigneeId) {
+      const account = await this.accounts.account(assigneeId);
+      if (
+        !account ||
+        account.status !== 'ACTIVE' ||
+        !(CASE_ASSIGNABLE_ROLES as readonly string[]).includes(account.role)
+      )
+        throw new DomainError(
+          'BUSINESS_RULE_VIOLATION',
+          'Le dossier ne peut être assigné qu’à un agent conformité ou un super-admin actif',
+        );
+    }
+    const updated = await this.uow.run(async (tx) => {
+      const c = await tx.complianceCase.findUnique({ where: { id } });
+      if (!c) throw new DomainError('NOT_FOUND', 'Dossier introuvable');
+      if (c.status !== 'OPEN')
+        throw new DomainError('INVALID_STATE_TRANSITION', 'Dossier déjà clos');
+      if (actor.role !== 'SUPER_ADMIN' && c.assigneeId && c.assigneeId !== actor.userId)
+        throw new DomainError('FORBIDDEN', 'Dossier déjà assigné à un autre agent');
+      if (c.assigneeId === assigneeId) return c;
+      const res = await tx.complianceCase.updateMany({
+        where: { id, status: 'OPEN', version: c.version },
+        data: {
+          assigneeId,
+          assignedAt: assigneeId ? this.clock.now() : null,
+          version: { increment: 1 },
+        },
+      });
+      if (res.count !== 1) throw new DomainError('VERSION_CONFLICT', 'Dossier modifié entre-temps');
+      await this.outbox.add(tx, {
+        type: 'compliance.case.assigned',
+        aggregateType: 'compliance_case',
+        aggregateId: id,
+        payload: { caseId: id, memberId: c.memberId, assigneeId, assignedBy: actor.userId },
+      });
+      await this.audit.record(
+        {
+          action: assigneeId ? 'compliance.case.assigned' : 'compliance.case.unassigned',
+          resourceType: 'compliance_case',
+          resourceId: id,
+          result: 'SUCCESS',
+          metadata: { assigneeId },
+        },
+        tx,
+      );
+      return tx.complianceCase.findUniqueOrThrow({ where: { id } });
+    });
+    return toCaseView(updated);
+  }
+
   async close(actor: Actor, id: string, input: CloseComplianceCaseInput) {
     const closed = await this.uow.run(async (tx) => {
       const c = await tx.complianceCase.findUnique({
@@ -218,6 +290,9 @@ export class ComplianceCasesService {
       if (!c) throw new DomainError('NOT_FOUND', 'Dossier introuvable');
       if (c.status === 'CLOSED')
         throw new DomainError('INVALID_STATE_TRANSITION', 'Dossier déjà clos');
+      // Seul l'agent assigné (ou le super-admin) clôt un dossier assigné
+      if (c.assigneeId && c.assigneeId !== actor.userId && actor.role !== 'SUPER_ADMIN')
+        throw new DomainError('FORBIDDEN', 'Dossier assigné à un autre agent');
       if (c.alerts.length > 0)
         throw new DomainError(
           'BUSINESS_RULE_VIOLATION',

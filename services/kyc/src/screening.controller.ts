@@ -29,7 +29,7 @@ export class ScreeningController {
 
   @Post('aml/check')
   @HttpCode(200)
-  @RequirePermission('kyc.review')
+  @RequirePermission('compliance.screening.run')
   @ApiOperation({ summary: 'Screening AML complet d’un membre (sanctions + PEP)' })
   @ApiZodBody(screeningRequestSchema)
   async aml(@ZodBody(screeningRequestSchema) body: ScreeningRequest) {
@@ -38,7 +38,7 @@ export class ScreeningController {
 
   @Post('sanctions/check')
   @HttpCode(200)
-  @RequirePermission('kyc.review')
+  @RequirePermission('compliance.screening.run')
   @ApiOperation({ summary: 'Screening sanctions d’un membre (OFAC, ONU, UE, Interpol)' })
   @ApiZodBody(screeningRequestSchema)
   async sanctions(@ZodBody(screeningRequestSchema) body: ScreeningRequest) {
@@ -47,7 +47,7 @@ export class ScreeningController {
 
   @Post('pep/check')
   @HttpCode(200)
-  @RequirePermission('kyc.review')
+  @RequirePermission('compliance.screening.run')
   @ApiOperation({ summary: 'Screening PEP (personne politiquement exposée) d’un membre' })
   @ApiZodBody(screeningRequestSchema)
   async pep(@ZodBody(screeningRequestSchema) body: ScreeningRequest) {

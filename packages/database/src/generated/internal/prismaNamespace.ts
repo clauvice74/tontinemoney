@@ -5335,6 +5335,8 @@ export const ComplianceCaseScalarFieldEnum = {
   outcome: 'outcome',
   closingComment: 'closingComment',
   version: 'version',
+  assigneeId: 'assigneeId',
+  assignedAt: 'assignedAt',
 } as const;
 
 export type ComplianceCaseScalarFieldEnum =

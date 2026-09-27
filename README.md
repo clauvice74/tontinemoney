@@ -35,14 +35,15 @@ Les clés JWT de développement sont générées automatiquement dans `.keys/` a
 
 Mot de passe commun : **`Demo#Tontine2026`**
 
-| Rôle          | Email                                                    | Particularités                                                            |
-| ------------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| SUPER_ADMIN   | `superadmin@tontinemoney.local`                          | MFA SMS obligatoire : code lisible dans « Messages simulés »              |
-| KYC_AGENT     | `agent.kyc@tontinemoney.local`                           | File de revue KYC, doublons, correspondances AML                          |
-| TONTINE_ADMIN | `admin.tontine@tontinemoney.local`                       | Admin de « Tontine Solidarité Douala » (prête, démarre à la date du seed) |
-| MEMBER        | `awa@`, `bello@`, `chantal@`, `david@tontinemoney.local` | KYC niveau 2, portefeuilles alimentés (XAF)                               |
-| MEMBER        | `emma@tontinemoney.local`                                | KYC niveau 1 : vérification d'identité requise                            |
-| MEMBER        | `felix@tontinemoney.local`                               | Côte d'Ivoire (XOF) : illustre l'incompatibilité de devise                |
+| Rôle             | Email                                                    | Particularités                                                            |
+| ---------------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| SUPER_ADMIN      | `superadmin@tontinemoney.local`                          | MFA SMS obligatoire : code lisible dans « Messages simulés »              |
+| KYC_AGENT        | `agent.kyc@tontinemoney.local`                           | File de revue KYC, doublons, correspondances AML                          |
+| COMPLIANCE_AGENT | `agent.conformite@tontinemoney.local`                    | Dossiers de conformité, assignation, score de risque, correspondances AML |
+| TONTINE_ADMIN    | `admin.tontine@tontinemoney.local`                       | Admin de « Tontine Solidarité Douala » (prête, démarre à la date du seed) |
+| MEMBER           | `awa@`, `bello@`, `chantal@`, `david@tontinemoney.local` | KYC niveau 2, portefeuilles alimentés (XAF)                               |
+| MEMBER           | `emma@tontinemoney.local`                                | KYC niveau 1 : vérification d'identité requise                            |
+| MEMBER           | `felix@tontinemoney.local`                               | Côte d'Ivoire (XOF) : illustre l'incompatibilité de devise                |
 
 Scénarios du simulateur PSP : numéro finissant par `0003` → prestataire indisponible ; `0001` → retrait refusé. Les documents KYC acceptent des marqueurs de simulation (voir `services/kyc/src/providers/providers.ts`).
 

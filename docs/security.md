@@ -19,14 +19,14 @@
 
 Double contrôle systématique :
 
-1. **Rôle** (`@Roles(...)` + `RolesGuard`) : `SUPER_ADMIN`, `TONTINE_ADMIN`, `MEMBER`, `KYC_AGENT`.
+1. **Rôle** (`@Roles(...)` + `RolesGuard`) : `SUPER_ADMIN`, `TONTINE_ADMIN`, `MEMBER`, `KYC_AGENT`, `COMPLIANCE_AGENT`.
 2. **Propriété de la ressource** :
    - `/me/*` et `/members/{memberId}/*` : `memberId === token.sub` sauf rôle administrateur habilité ;
    - ressources de tontine : `TontineAccessService.assertAdmin(tontineId, userId)` ou `assertParticipant(...)` ;
    - listes financières : filtrage forcé par `token.sub` côté requête, jamais par un paramètre client ;
    - documents KYC : `KYC_AGENT`, `SUPER_ADMIN` (lecture journalisée) et le système uniquement ;
    - annuaire et historique des membres (`GET /members`, `/members/{id}/history`) : permission `platform.members.read` (`SUPER_ADMIN`, `KYC_AGENT`), coordonnées masquées dans les listes, lecture journalisée ;
-   - dossiers de conformité et score de risque : permission `compliance.cases.manage` (`SUPER_ADMIN`, `KYC_AGENT`) ; screening à la demande : `kyc.review` ;
+   - dossiers de conformité, assignation et score de risque : `compliance.cases.manage` (`SUPER_ADMIN`, `COMPLIANCE_AGENT`) ; screening à la demande : `compliance.screening.run` (`KYC_AGENT`, `COMPLIANCE_AGENT`) ; correspondances AML : `kyc.aml.review` (idem) ; séparation des fonctions KYC / conformité (A-49) ;
    - rapports plateforme (`/reports/*`) : permission `platform.reports.view` (`SUPER_ADMIN`), agrégats sans donnée personnelle.
 
 Tout refus produit un `audit_logs.result = DENIED` ; un compteur Redis déclenche une alerte si > 20 refus / 10 min pour un même utilisateur (US-2.5).

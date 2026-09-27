@@ -112,6 +112,19 @@ describe('RBAC', () => {
   it('KYC_AGENT ne peut pas créer de tontine ; SUPER_ADMIN peut tout', () => {
     expect(can('KYC_AGENT', 'tontine.create')).toBe(false);
     expect(can('KYC_AGENT', 'kyc.review')).toBe(true);
+  });
+
+  it('séparation des fonctions KYC / conformité (A-49)', () => {
+    expect(can('KYC_AGENT', 'compliance.cases.manage')).toBe(false);
+    expect(can('COMPLIANCE_AGENT', 'compliance.cases.manage')).toBe(true);
+    expect(can('COMPLIANCE_AGENT', 'kyc.review')).toBe(false);
+    expect(can('COMPLIANCE_AGENT', 'kyc.documents.read')).toBe(false);
+    for (const role of ['KYC_AGENT', 'COMPLIANCE_AGENT'] as const) {
+      expect(can(role, 'kyc.aml.review')).toBe(true);
+      expect(can(role, 'compliance.screening.run')).toBe(true);
+      expect(can(role, 'tontine.create')).toBe(false);
+    }
+    expect(can('MEMBER', 'kyc.aml.review')).toBe(false);
     expect(can('MEMBER', 'platform.jobs.run')).toBe(false);
     expect(can('SUPER_ADMIN', 'platform.jobs.run')).toBe(true);
   });

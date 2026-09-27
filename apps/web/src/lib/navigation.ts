@@ -56,6 +56,7 @@ export function hasMemberSpace(role: PlatformRole): boolean {
 export function homeFor(role: PlatformRole): string {
   if (role === 'SUPER_ADMIN') return '/admin';
   if (role === 'KYC_AGENT') return '/kyc-review';
+  if (role === 'COMPLIANCE_AGENT') return '/kyc-review/aml';
   return '/dashboard';
 }
 
@@ -97,6 +98,12 @@ export function buildNavigation(
         { href: '/kyc-review/duplicates', label: 'Doublons', icon: 'copy' },
         { href: '/kyc-review/aml', label: 'Correspondances AML', icon: 'search' },
       ],
+    });
+  }
+  if (role === 'COMPLIANCE_AGENT') {
+    sections.push({
+      title: 'Conformité',
+      items: [{ href: '/kyc-review/aml', label: 'Correspondances AML', icon: 'search' }],
     });
   }
   if (role === 'SUPER_ADMIN') {

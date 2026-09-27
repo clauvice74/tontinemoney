@@ -1,11 +1,13 @@
 import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  type AssignComplianceCaseInput,
   type CloseComplianceCaseInput,
   type ComplianceCasesQuery,
   type ComplianceRuleInput,
   type OperationType,
   type RiskScoreRequest,
+  assignComplianceCaseSchema,
   closeComplianceCaseSchema,
   complianceCasesQuerySchema,
   complianceRuleSchema,
@@ -117,8 +119,26 @@ export class ComplianceController {
   @RequirePermission('compliance.cases.manage')
   @ApiOperation({ summary: 'Dossiers de conformité : filtres, tri, pagination par curseur' })
   @ApiZodQuery(complianceCasesQuerySchema)
-  async listCases(@ZodQuery(complianceCasesQuerySchema) q: ComplianceCasesQuery) {
-    return this.cases.list(q);
+  async listCases(
+    @CurrentUser() actor: Actor,
+    @ZodQuery(complianceCasesQuerySchema) q: ComplianceCasesQuery,
+  ) {
+    return this.cases.list(actor, q);
+  }
+
+  @Post('compliance/cases/:id/assign')
+  @HttpCode(200)
+  @RequirePermission('compliance.cases.manage')
+  @ApiOperation({
+    summary: 'Assigner un dossier (agent conformité : à soi-même ; super-admin : à tout agent)',
+  })
+  @ApiZodBody(assignComplianceCaseSchema)
+  async assignCase(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZodBody(assignComplianceCaseSchema) body: AssignComplianceCaseInput,
+  ) {
+    return this.cases.assign(actor, id, body.assigneeId);
   }
 
   @Get('compliance/cases/:id')

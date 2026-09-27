@@ -57,6 +57,7 @@ describe('navigation', () => {
   it('page d’accueil par rôle', () => {
     expect(homeFor('SUPER_ADMIN')).toBe('/admin');
     expect(homeFor('KYC_AGENT')).toBe('/kyc-review');
+    expect(homeFor('COMPLIANCE_AGENT')).toBe('/kyc-review/aml');
     expect(homeFor('MEMBER')).toBe('/dashboard');
   });
   it('un membre ne voit pas les sections plateforme ni KYC', () => {
@@ -69,6 +70,14 @@ describe('navigation', () => {
     const titles = buildNavigation('KYC_AGENT', []).map((s) => s.title);
     expect(titles).toContain('Revue KYC');
     expect(titles).not.toContain('Mon espace');
+  });
+  it('un agent conformité voit la conformité, ni la revue KYC ni l’espace membre', () => {
+    const titles = buildNavigation('COMPLIANCE_AGENT', []).map((s) => s.title);
+    expect(titles).toContain('Conformité');
+    expect(titles).toContain('Mon compte');
+    expect(titles).not.toContain('Revue KYC');
+    expect(titles).not.toContain('Mon espace');
+    expect(titles).not.toContain('Plateforme');
   });
   it('liens des tontines administrées', () => {
     const admin = buildNavigation('TONTINE_ADMIN', [{ id: 't1', name: 'Solidarité' }]);

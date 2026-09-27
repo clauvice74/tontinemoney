@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { type PlatformRole } from '@tontine/contracts';
 import { type RoleDirectory } from '@tontine/notifications';
-import { PrismaService } from '@tontine/platform';
+import { type AccountDirectoryPort, type AccountSnapshot, PrismaService } from '@tontine/platform';
 
-/** Implémentation du port RoleDirectory (destinataires par rôle plateforme). */
+/** Implémentation des ports RoleDirectory (destinataires par rôle) et AccountDirectoryPort. */
 @Injectable()
-export class UserRoleDirectory implements RoleDirectory {
+export class UserRoleDirectory implements RoleDirectory, AccountDirectoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async userIdsWithRole(role: PlatformRole): Promise<string[]> {
@@ -14,5 +14,12 @@ export class UserRoleDirectory implements RoleDirectory {
       select: { id: true },
     });
     return rows.map((r) => r.id);
+  }
+
+  async account(userId: string): Promise<AccountSnapshot | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, status: true },
+    });
   }
 }

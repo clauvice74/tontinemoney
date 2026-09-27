@@ -15,8 +15,9 @@ beforeEach(async () => {
   await ctx.reset();
 });
 
+/** Agent conformité : dossiers, score de risque, screening, revue des correspondances AML. */
 async function agentToken() {
-  return ctx.token(await ctx.createUser({ role: 'KYC_AGENT' }));
+  return ctx.token(await ctx.createUser({ role: 'COMPLIANCE_AGENT' }));
 }
 
 /** Publie une violation comme le ferait ComplianceService.validate. */
@@ -335,5 +336,128 @@ describe('Score de risque — /risk-score et /fraud/analyze', () => {
       .set(bearer(await ctx.token(m)))
       .send({ memberId: m.id })
       .expect(403);
+  });
+});
+
+describe('Séparation des fonctions KYC / conformité (A-49)', () => {
+  it('l’agent KYC n’accède ni aux dossiers ni au score de risque ; il garde screening et revue AML', async () => {
+    const kyc = await ctx.token(await ctx.createUser({ role: 'KYC_AGENT' }));
+    const m = await ctx.createUser();
+    await ctx.http.get('/api/v1/compliance/cases').set(bearer(kyc)).expect(403);
+    await ctx.http.post('/api/v1/risk-score').set(bearer(kyc)).send({ memberId: m.id }).expect(403);
+    await ctx.http.post('/api/v1/aml/check').set(bearer(kyc)).send({ memberId: m.id }).expect(200);
+    await ctx.http.get('/api/v1/kyc/aml-matches').set(bearer(kyc)).expect(200);
+  });
+
+  it('l’agent conformité n’accède pas aux dossiers d’identité ni aux documents KYC', async () => {
+    const token = await agentToken();
+    await ctx.http.get('/api/v1/kyc/reviews').set(bearer(token)).expect(403);
+    await ctx.http.get(`/api/v1/kyc/documents/${randomUUID()}`).set(bearer(token)).expect(403);
+    await ctx.http.get('/api/v1/kyc/aml-matches').set(bearer(token)).expect(200);
+  });
+});
+
+describe('Assignation des dossiers — POST /compliance/cases/:id/assign', () => {
+  async function openCase() {
+    const m = await ctx.createUser();
+    await emitViolation(m.id);
+    await ctx.drain();
+    return ctx.prisma.complianceCase.findFirstOrThrow({ where: { memberId: m.id } });
+  }
+
+  it('un agent s’attribue un dossier, le libère ; filtre « me » / « none » ; événement et audit', async () => {
+    const agent = await ctx.createUser({ role: 'COMPLIANCE_AGENT' });
+    const token = await ctx.token(agent);
+    const c = await openCase();
+    const res = await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(token))
+      .send({ assigneeId: agent.id });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ assigneeId: agent.id, assignedAt: expect.any(String) });
+    const mine = await ctx.http.get('/api/v1/compliance/cases?assignee=me').set(bearer(token));
+    expect(mine.body.data.map((r: { id: string }) => r.id)).toEqual([c.id]);
+    expect(
+      (await ctx.http.get('/api/v1/compliance/cases?assignee=none').set(bearer(token))).body.data,
+    ).toHaveLength(0);
+    expect(
+      await ctx.prisma.outboxEvent.count({
+        where: { eventType: 'compliance.case.assigned', aggregateId: c.id },
+      }),
+    ).toBe(1);
+    const released = await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(token))
+      .send({ assigneeId: null });
+    expect(released.body.assigneeId).toBeNull();
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: { action: { in: ['compliance.case.assigned', 'compliance.case.unassigned'] } },
+      }),
+    ).toBe(2);
+  });
+
+  it('un agent ne peut ni attribuer à un autre, ni reprendre, ni clore le dossier d’un collègue', async () => {
+    const a = await ctx.createUser({ role: 'COMPLIANCE_AGENT' });
+    const b = await ctx.createUser({ role: 'COMPLIANCE_AGENT' });
+    const [ta, tb] = [await ctx.token(a), await ctx.token(b)];
+    const c = await openCase();
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(ta))
+      .send({ assigneeId: b.id })
+      .expect(403);
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(ta))
+      .send({ assigneeId: a.id })
+      .expect(200);
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(tb))
+      .send({ assigneeId: b.id })
+      .expect(403);
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/close`)
+      .set(bearer(tb))
+      .send({ outcome: 'DISMISSED', comment: 'Pas le mien' })
+      .expect(403);
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/close`)
+      .set(bearer(ta))
+      .send({ outcome: 'CONFIRMED', comment: 'Plafond dépassé' })
+      .expect(200);
+    // dossier clos : plus d'assignation
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(ta))
+      .send({ assigneeId: null })
+      .expect(422);
+  });
+
+  it('le super-admin répartit, uniquement vers un agent conformité ou un super-admin actif', async () => {
+    const sa = await ctx.token(await ctx.createUser({ role: 'SUPER_ADMIN' }));
+    const agent = await ctx.createUser({ role: 'COMPLIANCE_AGENT' });
+    const kyc = await ctx.createUser({ role: 'KYC_AGENT' });
+    const member = await ctx.createUser();
+    const suspended = await ctx.createUser({ role: 'COMPLIANCE_AGENT', status: 'SUSPENDED' });
+    const c = await openCase();
+    for (const u of [kyc, member, suspended]) {
+      await ctx.http
+        .post(`/api/v1/compliance/cases/${c.id}/assign`)
+        .set(bearer(sa))
+        .send({ assigneeId: u.id })
+        .expect(422);
+    }
+    await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(sa))
+      .send({ assigneeId: randomUUID() })
+      .expect(422);
+    const ok = await ctx.http
+      .post(`/api/v1/compliance/cases/${c.id}/assign`)
+      .set(bearer(sa))
+      .send({ assigneeId: agent.id });
+    expect(ok.body.assigneeId).toBe(agent.id);
   });
 });

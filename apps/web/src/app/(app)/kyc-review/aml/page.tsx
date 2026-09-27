@@ -36,7 +36,7 @@ export default function KycAmlPage() {
       await queryClient.invalidateQueries({ queryKey: ['kyc'] });
     };
   return (
-    <RequireRole roles={['KYC_AGENT', 'SUPER_ADMIN']}>
+    <RequireRole roles={['KYC_AGENT', 'COMPLIANCE_AGENT', 'SUPER_ADMIN']}>
       <div className="space-y-4">
         <PageHeader
           title="Correspondances AML"

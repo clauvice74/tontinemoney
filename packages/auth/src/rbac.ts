@@ -20,8 +20,10 @@ export const PERMISSIONS = [
   'platform.tontines.pause',
   'compliance.rules.manage',
   'compliance.cases.manage',
+  'compliance.screening.run',
   'compliance.validate',
   'kyc.review',
+  'kyc.aml.review',
   'kyc.documents.read',
   'tontine.create',
   'tontine.manage',
@@ -36,12 +38,24 @@ export const ROLE_PERMISSIONS: Record<PlatformRole, readonly Permission[]> = {
   SUPER_ADMIN: PERMISSIONS,
   TONTINE_ADMIN: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
   MEMBER: [...MEMBER_PERMS, 'tontine.manage', 'tontine.members.register'],
+  // Séparation des fonctions (A-49) : l'agent KYC vérifie les identités (y compris les
+  // correspondances AML qui bloquent un dossier) ; l'agent conformité traite les dossiers de
+  // conformité et le score de risque.
   KYC_AGENT: [
     'member.self',
     'platform.members.read',
-    'compliance.cases.manage',
+    'compliance.screening.run',
     'kyc.review',
+    'kyc.aml.review',
     'kyc.documents.read',
+  ],
+  COMPLIANCE_AGENT: [
+    'member.self',
+    'platform.members.read',
+    'compliance.cases.manage',
+    'compliance.screening.run',
+    'compliance.validate',
+    'kyc.aml.review',
   ],
 };
 
@@ -51,5 +65,5 @@ export function can(role: PlatformRole, permission: Permission): boolean {
 
 /** Rôles considérés comme administrateurs plateforme pour l'accès aux données d'autrui. */
 export function isPlatformStaff(role: PlatformRole): boolean {
-  return role === 'SUPER_ADMIN' || role === 'KYC_AGENT';
+  return role === 'SUPER_ADMIN' || role === 'KYC_AGENT' || role === 'COMPLIANCE_AGENT';
 }

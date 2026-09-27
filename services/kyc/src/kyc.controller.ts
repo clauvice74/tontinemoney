@@ -184,7 +184,7 @@ export class KycController {
   }
 
   @Get('aml-matches')
-  @RequirePermission('kyc.review')
+  @RequirePermission('kyc.aml.review')
   @ApiOperation({ summary: 'Correspondances AML / PEP / sanctions (US-3.5)' })
   async aml(@Query(new ZodValidationPipe(statusQuery)) q: z.infer<typeof statusQuery>) {
     return this.review.amlMatches(q.status);
@@ -192,7 +192,7 @@ export class KycController {
 
   @Post('aml-matches/:id/resolve')
   @HttpCode(204)
-  @RequirePermission('kyc.review')
+  @RequirePermission('kyc.aml.review')
   @ApiZodBody(amlResolutionSchema)
   async resolveAml(
     @CurrentUser() actor: Actor,

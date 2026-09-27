@@ -505,6 +505,10 @@ export const EVENT_CATALOG = {
     'compliance',
     z.object({ caseId: id, memberId: id, type: z.string(), severity: z.string() }),
   ),
+  'compliance.case.assigned': def(
+    'compliance',
+    z.object({ caseId: id, memberId: id, assigneeId: nullableId, assignedBy: id }),
+  ),
   'compliance.case.closed': def(
     'compliance',
     z.object({

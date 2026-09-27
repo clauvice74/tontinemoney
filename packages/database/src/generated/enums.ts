@@ -13,6 +13,7 @@ export const PlatformRole = {
   TONTINE_ADMIN: 'TONTINE_ADMIN',
   MEMBER: 'MEMBER',
   KYC_AGENT: 'KYC_AGENT',
+  COMPLIANCE_AGENT: 'COMPLIANCE_AGENT',
 } as const;
 
 export type PlatformRole = (typeof PlatformRole)[keyof typeof PlatformRole];

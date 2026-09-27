@@ -70,3 +70,17 @@ export interface AdminDelegationPort {
 }
 
 export const ADMIN_DELEGATION = Symbol('ADMIN_DELEGATION');
+
+/** Compte plateforme : rôle et statut (implémenté par le domaine Auth). */
+export interface AccountSnapshot {
+  id: string;
+  role: string;
+  status: string;
+}
+
+/** Lecture courte des comptes pour les autres domaines (ex. assignation d'un dossier). */
+export interface AccountDirectoryPort {
+  account(userId: string): Promise<AccountSnapshot | null>;
+}
+
+export const ACCOUNT_DIRECTORY = Symbol('ACCOUNT_DIRECTORY');

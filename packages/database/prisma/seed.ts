@@ -11,7 +11,7 @@ import { createPrismaClient, type PrismaClient } from '../src';
 
 export const DEMO_PASSWORD = 'Demo#Tontine2026';
 
-type Role = 'SUPER_ADMIN' | 'TONTINE_ADMIN' | 'MEMBER' | 'KYC_AGENT';
+type Role = 'SUPER_ADMIN' | 'TONTINE_ADMIN' | 'MEMBER' | 'KYC_AGENT' | 'COMPLIANCE_AGENT';
 type Kyc = 'NONE' | 'TIER_1' | 'TIER_2' | 'TIER_3';
 
 interface DemoUser {
@@ -48,6 +48,17 @@ export const DEMO_USERS: DemoUser[] = [
     firstName: 'Karim',
     lastName: 'Verif',
     role: 'KYC_AGENT',
+    country: 'CM',
+    kycLevel: 'TIER_3',
+    memberStatus: 'ACTIVE',
+  },
+  {
+    key: 'compliance',
+    email: 'agent.conformite@tontinemoney.local',
+    phone: '+237600000009',
+    firstName: 'Clarisse',
+    lastName: 'Conforme',
+    role: 'COMPLIANCE_AGENT',
     country: 'CM',
     kycLevel: 'TIER_3',
     memberStatus: 'ACTIVE',
