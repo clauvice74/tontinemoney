@@ -3,6 +3,8 @@ import { sha256Hex } from '@tontine/auth';
 import { Clock, PrismaService, type TontineAccessPort } from '@tontine/platform';
 
 const LIVE_MEMBERSHIP = ['ACTIVE', 'SUSPENDED'] as const;
+/** Adhésions qui rendent une tontine visible (identique à `VISIBLE_STATUSES`). */
+const VISIBLE = ['ACTIVE', 'SUSPENDED', 'PENDING_ACTIVATION'] as const;
 
 /** Implémentation du port TontineAccessPort (lecture seule, contrôles de propriété). */
 @Injectable()
@@ -11,6 +13,27 @@ export class TontineAccessService implements TontineAccessPort {
     private readonly prisma: PrismaService,
     private readonly clock: Clock,
   ) {}
+
+  async administrationAccess(
+    userId: string,
+    role: string,
+    tontineId: string,
+  ): Promise<'ADMIN' | 'FORBIDDEN' | 'NOT_FOUND'> {
+    const t = await this.prisma.tontine.findUnique({
+      where: { id: tontineId },
+      select: { id: true },
+    });
+    if (!t) return 'NOT_FOUND';
+    const m = await this.prisma.tontineMember.findUnique({
+      where: { tontineId_memberId: { tontineId, memberId: userId } },
+      select: { role: true, status: true },
+    });
+    const visible = !!m && (VISIBLE as readonly string[]).includes(m.status);
+    if (!visible && role !== 'SUPER_ADMIN') return 'NOT_FOUND';
+    const admin =
+      m?.role === 'ADMIN' && (m.status === 'ACTIVE' || m.status === 'PENDING_ACTIVATION');
+    return admin || role === 'SUPER_ADMIN' ? 'ADMIN' : 'FORBIDDEN';
+  }
 
   async describe(tontineId: string) {
     const t = await this.prisma.tontine.findUnique({

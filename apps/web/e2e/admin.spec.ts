@@ -10,6 +10,28 @@ test.describe('Administration', () => {
     await expect(page).toHaveURL(/\/tontines\/[0-9a-f-]{36}/);
   });
 
+  test('admin de tontine : rapport CSV servi par le reporting-service (via le gateway)', async ({
+    page,
+  }) => {
+    await login(page, 'admin.tontine@tontinemoney.local');
+    await expect(page).toHaveURL(/\/dashboard/);
+    await page.goto('/tontines');
+    await page.getByText('Tontine Solidarité Douala').first().click();
+    await expect(page).toHaveURL(/\/tontines\/[0-9a-f-]{36}/);
+    const tontineId = /\/tontines\/([0-9a-f-]{36})/.exec(page.url())?.[1];
+    await page.goto(`/tontines/${tontineId}/admin/reports`);
+    await expect(page.getByRole('button', { name: 'Télécharger en CSV' })).toBeVisible();
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Télécharger en CSV' }).click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^rapport-contributions-.*\.csv$/);
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const c of stream) chunks.push(Buffer.from(c as Buffer));
+    expect(Buffer.concat(chunks).toString('utf8')).toContain('Membre');
+  });
+
   test('super-admin : double authentification SMS (code lu dans le simulateur) puis journal d’audit', async ({
     page,
     request,

@@ -63,7 +63,7 @@ describe('schémas par service', () => {
     );
     const by = Object.fromEntries(rows.map((r) => [r.table_schema, Number(r.n)]));
     expect(by).toMatchObject({
-      platform: 6,
+      platform: 7,
       auth: 8,
       members: 3,
       kyc: 8,

@@ -9,7 +9,7 @@ import { createGateway } from './bootstrap';
 import { CircuitBreaker } from './circuit-breaker';
 import { loadGatewayConfig } from './config';
 import { FixedWindowRateLimiter } from './rate-limiter';
-import { clientIp } from './routes';
+import { RouteTable, clientIp } from './routes';
 
 type Handler = (req: IncomingMessage, res: ServerResponse, body: Buffer) => void;
 
@@ -348,11 +348,37 @@ describe('composants', () => {
     expect(b.tryAcquire()).toBe(true);
   });
 
+  it('routes des services extraits : joker d’un segment, préfixe le plus long, défaut sinon', () => {
+    const t = new RouteTable(
+      [
+        { prefix: '/api/v1/reports/', upstream: 'http://reporting' },
+        { prefix: '/api/v1/tontines/*/reports', upstream: 'http://reporting' },
+        { prefix: '/api/v1/admin/dashboard', upstream: 'http://reporting' },
+      ],
+      'http://api',
+      false,
+    );
+    const up = (p: string) => t.resolve(p)?.upstream;
+    expect(up('/api/v1/reports/financial')).toBe('http://reporting');
+    expect(up('/api/v1/tontines/7b2c/reports?kind=CYCLE')).toBe('http://reporting');
+    expect(up('/api/v1/tontines/7b2c/cycles')).toBe('http://api');
+    expect(up('/api/v1/tontines//reports')).toBe('http://api');
+    expect(up('/api/v1/tontines/a/b/reports')).toBe('http://api');
+    expect(up('/api/v1/admin/dashboard')).toBe('http://reporting');
+    expect(up('/api/v1/admin/users')).toBe('http://api');
+    expect(t.upstreams()).toEqual(['http://api', 'http://reporting']);
+  });
+
   it('configuration : JSON invalide ou préfixe hors /api/v1 refusés', () => {
     expect(() => loadGatewayConfig({ GATEWAY_ROUTES: '[' })).toThrow(/invalide/);
     expect(() =>
       loadGatewayConfig({
         GATEWAY_ROUTES: JSON.stringify([{ prefix: '/internal/', upstream: 'http://x' }]),
+      }),
+    ).toThrow(/invalide/);
+    expect(() =>
+      loadGatewayConfig({
+        GATEWAY_ROUTES: JSON.stringify([{ prefix: '/api/v1/a*b/', upstream: 'http://x' }]),
       }),
     ).toThrow(/invalide/);
     expect(loadGatewayConfig({ NODE_ENV: 'production' }).exposeDocs).toBe(false);

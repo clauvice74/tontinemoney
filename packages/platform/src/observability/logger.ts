@@ -30,10 +30,10 @@ export const REDACT_PATHS = [
   '*.recoveryCodes',
 ];
 
-export function createPino(level: string): PinoLogger {
+export function createPino(level: string, service = 'tontinemoney-api'): PinoLogger {
   return pino({
     level,
-    base: { service: 'tontinemoney-api' },
+    base: { service },
     redact: { paths: REDACT_PATHS, censor: '[MASQUÉ]' },
     timestamp: pino.stdTimeFunctions.isoTime,
     formatters: { level: (label) => ({ level: label }) },

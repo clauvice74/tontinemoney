@@ -1,8 +1,13 @@
 import { z } from 'zod';
 
-/** Route vers un service : le premier préfixe correspondant (le plus long) l'emporte. */
+/**
+ * Route vers un service : le préfixe correspondant le plus long l'emporte. Un segment `*`
+ * remplace exactement un segment de chemin (identifiant), ex. tontines → `*` → reports.
+ */
 const routeSchema = z.object({
-  prefix: z.string().regex(/^\/api\/v1\/[a-z0-9\-/]*$/, 'Préfixe attendu : /api/v1/…'),
+  prefix: z
+    .string()
+    .regex(/^\/api\/v1\/([a-z0-9-]+\/|\*\/)*([a-z0-9-]+\/?)?$/, 'Préfixe attendu : /api/v1/…'),
   upstream: z.string().url(),
 });
 export type RouteDefinition = z.infer<typeof routeSchema>;

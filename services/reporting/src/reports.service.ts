@@ -9,8 +9,9 @@ import {
   MEMBER_QUERY,
   type MemberQueryPort,
   PrismaService,
+  TONTINE_ACCESS,
+  type TontineAccessPort,
 } from '@tontine/platform';
-import { TontinesService } from '@tontine/tontines';
 import { createHash } from 'node:crypto';
 import { type ReportDocument, type ReportTable, toCsv, toPdf } from './render';
 
@@ -47,7 +48,7 @@ type CycleWithContribs = RptCycle & { contributions: Contribution[] };
  * bilan par tour, mensuel, annuel, historique des contributions et des pénalités, rapport final
  * de clôture (US-4.9). Formats JSON, CSV et PDF. Calculés sur les projections du reporting
  * (étape 6, A-54) : aucune lecture des tables du domaine Tontine ; l'autorisation reste un
- * contrôle synchrone exact auprès du domaine (`getAdministered`).
+ * contrôle synchrone exact auprès du domaine (port `TONTINE_ACCESS`).
  */
 @Injectable()
 export class ReportsService {
@@ -55,7 +56,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly clock: Clock,
     private readonly audit: AuditService,
-    private readonly tontines: TontinesService,
+    @Inject(TONTINE_ACCESS) private readonly tontines: TontineAccessPort,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
   ) {}
 
@@ -343,7 +344,11 @@ export class ReportsService {
   }
 
   async generate(actor: Actor, tontineId: string, q: ReportQuery): Promise<ReportOutput> {
-    await this.tontines.getAdministered(actor, tontineId);
+    // Contrôle synchrone exact auprès du domaine Tontine (port, appel interne une fois extrait)
+    const access = await this.tontines.administrationAccess(actor.userId, actor.role, tontineId);
+    if (access === 'NOT_FOUND') throw new DomainError('NOT_FOUND', 'Tontine introuvable');
+    if (access === 'FORBIDDEN')
+      throw new DomainError('FORBIDDEN', 'Action réservée à l’administrateur de la tontine');
     // Rapport final archivé : restitué tel qu'il a été figé à la clôture
     if (q.kind === 'FINAL' && q.format === 'pdf') {
       const stored = await this.prisma.generatedReport.findFirst({

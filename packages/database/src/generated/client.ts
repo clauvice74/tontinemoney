@@ -28,8 +28,8 @@ export * from './enums';
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more OutboxEvents
- * const outboxEvents = await prisma.outboxEvent.findMany()
+ * // Fetch zero or more EventSubscriptions
+ * const eventSubscriptions = await prisma.eventSubscription.findMany()
  * ```
  *
  * Read more in our [docs](https://pris.ly/d/client).
@@ -42,6 +42,12 @@ export type PrismaClient<
 > = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>;
 export { Prisma };
 
+/**
+ * Model EventSubscription
+ * Groupe de consommateurs du transport PostgreSQL (étape 7, A-55) : un par service, position
+ * dans le journal publié, bail d'une instance à la fois.
+ */
+export type EventSubscription = Prisma.EventSubscriptionModel;
 /**
  * Model OutboxEvent
  *

@@ -13,13 +13,23 @@ export const envSchema = z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
     API_PORT: z.coerce.number().int().default(4000),
+    /** Port HTTP du reporting-service extrait (étape 7). */
+    REPORTING_SERVICE_PORT: z.coerce.number().int().default(4100),
     API_PUBLIC_URL: z.string().url().default('http://localhost:4000'),
     WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
     APP_PUBLIC_URL: z.string().url().default('http://localhost:3000'),
     DATABASE_URL: z.string().min(1),
     REDIS_URL: z.string().default('redis://localhost:6379'),
     KV_DRIVER: z.enum(['redis', 'memory']).default('redis'),
-    EVENT_TRANSPORT: z.enum(['inprocess', 'kafka']).default('inprocess'),
+    EVENT_TRANSPORT: z.enum(['inprocess', 'postgres', 'kafka']).default('inprocess'),
+    /**
+     * Groupe de consommateurs du transport PostgreSQL (étape 7, A-55) : un par service extrait
+     * (`api` pour le monolithe, `reporting`, …) ; chacun lit le journal depuis sa position.
+     */
+    EVENT_GROUP: z
+      .string()
+      .regex(/^[a-z][a-z0-9-]{1,40}$/)
+      .default('api'),
     KAFKA_BROKERS: z.string().default('localhost:19092'),
     KAFKA_CLIENT_ID: z.string().min(1).default('tontinemoney-api'),
     KAFKA_GROUP_ID: z.string().min(1).default('tontinemoney-api'),
@@ -65,6 +75,37 @@ export const envSchema = z
     PAYMENT_GATEWAY_URL: z.string().url().default('http://localhost:8090'),
     /** Secret HMAC des appels internes de service à service (jamais exposés par l'API Gateway). */
     INTERNAL_SERVICE_SECRET: z.string().min(32),
+    /** Services extraits autorisés à appeler les ports de ce processus (étape 7, A-55). */
+    INTERNAL_PORT_CALLERS: z
+      .string()
+      .default('reporting')
+      .transform((v) =>
+        v
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      ),
+    /** Nom de ce service (appelant signé des appels internes). */
+    SERVICE_NAME: z
+      .string()
+      .regex(/^[a-z][a-z0-9-]{1,40}$/)
+      .default('api'),
+    /**
+     * Domaines servis par leur propre processus (étape 7, A-55), retirés du monolithe :
+     * ex. `reporting`. Exige un transport d'événements inter-processus (postgres ou kafka).
+     */
+    EXTRACTED_SERVICES: z
+      .string()
+      .default('')
+      .transform((v) =>
+        v
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.enum(['reporting']))),
+    /** Processus propriétaire des ports, pour un service extrait (monolithe par défaut). */
+    PORTS_UPSTREAM_URL: z.string().url().default('http://localhost:4000'),
     /** Squelettes réels (désactivés) : utilisés uniquement pour vérifier des webhooks de test. */
     FLUTTERWAVE_WEBHOOK_HASH: z.string().default(''),
     PAYSTACK_SECRET_KEY: z.string().default(''),
@@ -75,6 +116,14 @@ export const envSchema = z
     METRICS_ENABLED: bool.default('true'),
   })
   .superRefine((env, ctx) => {
+    // Un service extrait ne reçoit pas les événements d'un transport limité au processus
+    if (env.EXTRACTED_SERVICES.length > 0 && env.EVENT_TRANSPORT === 'inprocess') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['EVENT_TRANSPORT'],
+        message: 'Services extraits : transport postgres ou kafka requis (A-55)',
+      });
+    }
     if (env.NODE_ENV === 'production') {
       if (!env.JWT_PRIVATE_KEY_PEM || !env.JWT_PUBLIC_KEY_PEM) {
         ctx.addIssue({

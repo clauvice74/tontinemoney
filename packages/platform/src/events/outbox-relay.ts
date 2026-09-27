@@ -11,6 +11,7 @@ import { PrismaService } from '../context/prisma.service';
 import { APP_CONFIG } from '../context/tokens';
 import { MetricsService } from '../observability/metrics.service';
 import { DeadLetterStore } from './dead-letters';
+import { PostgresTransport } from './postgres-transport';
 import { EventDispatcher } from './event-dispatcher';
 import { type EventTransport, InProcessTransport, KafkaTransport } from './event-transport';
 
@@ -66,7 +67,13 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
             dispatcher,
             deadLetters,
           )
-        : new InProcessTransport(dispatcher);
+        : config.EVENT_TRANSPORT === 'postgres'
+          ? new PostgresTransport(prisma, dispatcher, deadLetters, {
+              group: config.EVENT_GROUP,
+              maxAttempts: config.EVENT_CONSUMER_MAX_ATTEMPTS,
+              pollIntervalMs: config.OUTBOX_POLL_INTERVAL_MS,
+            })
+          : new InProcessTransport(dispatcher);
   }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -98,7 +105,9 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
   async drain(maxRounds = 50): Promise<number> {
     let total = 0;
     for (let i = 0; i < maxRounds; i++) {
-      const n = await this.processBatch();
+      let n = await this.processBatch();
+      // Transport PostgreSQL : consommation du journal par le groupe de ce processus
+      if (this.transport instanceof PostgresTransport) n += await this.transport.consumeOnce();
       total += n;
       if (n === 0) break;
     }
@@ -106,6 +115,7 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   async processBatch(): Promise<number> {
+    if (this.transport instanceof PostgresTransport) return this.transport.publishPending();
     const rows = await this.prisma.$queryRaw<ClaimedRow[]>`
       UPDATE "outbox_events" SET "nextAttemptAt" = now() + make_interval(secs => ${LEASE_SECONDS}),
              "attempts" = "attempts" + 1

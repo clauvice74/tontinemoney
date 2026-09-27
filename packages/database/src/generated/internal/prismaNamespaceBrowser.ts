@@ -48,6 +48,7 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
+  EventSubscription: 'EventSubscription',
   OutboxEvent: 'OutboxEvent',
   EventDeadLetter: 'EventDeadLetter',
   ProcessedEvent: 'ProcessedEvent',
@@ -139,6 +140,17 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
 
+export const EventSubscriptionScalarFieldEnum = {
+  group: 'group',
+  position: 'position',
+  owner: 'owner',
+  leaseUntil: 'leaseUntil',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type EventSubscriptionScalarFieldEnum =
+  (typeof EventSubscriptionScalarFieldEnum)[keyof typeof EventSubscriptionScalarFieldEnum];
+
 export const OutboxEventScalarFieldEnum = {
   id: 'id',
   eventType: 'eventType',
@@ -158,6 +170,7 @@ export const OutboxEventScalarFieldEnum = {
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   seq: 'seq',
+  deliverySeq: 'deliverySeq',
 } as const;
 
 export type OutboxEventScalarFieldEnum =
@@ -1426,6 +1439,13 @@ export const QueryMode = {
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last',
+} as const;
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
 export const JsonNullValueFilter = {
   DbNull: DbNull,
   JsonNull: JsonNull,
@@ -1433,10 +1453,3 @@ export const JsonNullValueFilter = {
 } as const;
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last',
-} as const;
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];

@@ -32,7 +32,7 @@ pnpm db:migration:new <nom>   # nouvelle migration (dev)
 
 ## Architecture du dépôt
 
-- `apps/api-gateway` point d'entrée unique (routage, JWT, rate limiting — aucune règle métier) ; `apps/api` hôte NestJS ; `apps/web` Next.js App Router (appelle le gateway).
+- `apps/api-gateway` point d'entrée unique (routage, JWT, rate limiting — aucune règle métier) ; `apps/api` hôte NestJS (monolithe) ; `apps/reporting-service` premier service extrait (:4100, A-55) ; `apps/web` Next.js App Router (appelle le gateway).
 - `services/<domaine>` : un module NestJS par domaine (auth, members, kyc, tontines, wallets, transactions, payments, notifications, compliance, administration). Chaque package n'exporte que `src/index.ts`.
 - `packages/platform` : outbox, bus d'événements, idempotence, audit, gardes, erreurs, horloge.
 - `packages/contracts` (zod partagé web/api), `packages/events` (catalogue versionné), `packages/auth` (crypto + RBAC), `packages/database` (Prisma).
@@ -63,7 +63,7 @@ pnpm db:migration:new <nom>   # nouvelle migration (dev)
 
 ## Extraction en microservices
 
-En cours, étape par étape : `docs/extraction-plan.md` (état, étapes, prérequis), `docs/service-map.md`, `docs/data-ownership.md`, `docs/sagas.md`. Un domaine non extrait reste un module de `apps/api`. Un schéma PostgreSQL par service (A-48) : lire ou écrire les tables d'un autre schéma est interdit — passer par un port, un événement ou une projection. `pnpm arch:check` (inclus dans `pnpm check`) échoue sur tout accès non déclaré dans `infrastructure/data-ownership.allowlist.json` ; après ajout d'une table, relancer `pnpm db:roles`. Reporting : projections alimentées par les instantanés `*.snapshot` publiés par déclencheurs (A-54) ; pour publier une nouvelle colonne, modifier `packages/database/scripts/cdc-snapshots.mjs` et ajouter sa sortie `--print` dans une migration. Montants : toujours `bigint` en unités mineures (A-43).
+En cours, étape par étape : `docs/extraction-plan.md` (état, étapes, prérequis), `docs/service-map.md`, `docs/data-ownership.md`, `docs/sagas.md`. Un domaine non extrait reste un module de `apps/api`. Un schéma PostgreSQL par service (A-48) : lire ou écrire les tables d'un autre schéma est interdit — passer par un port, un événement ou une projection. `pnpm arch:check` (inclus dans `pnpm check`) échoue sur tout accès non déclaré dans `infrastructure/data-ownership.allowlist.json` ; après ajout d'une table, relancer `pnpm db:roles`. Processus séparés (A-55) : `EXTRACTED_SERVICES` retire un domaine du monolithe ; événements par le journal PostgreSQL (`EVENT_TRANSPORT=postgres`, un `EVENT_GROUP` par processus) ; un service extrait n'appelle ses dépendances que par des ports listés dans `REMOTE_PORTS` (`packages/platform/src/remote/port-rpc.ts`). Reporting : projections alimentées par les instantanés `*.snapshot` publiés par déclencheurs (A-54) ; pour publier une nouvelle colonne, modifier `packages/database/scripts/cdc-snapshots.mjs` et ajouter sa sortie `--print` dans une migration. Montants : toujours `bigint` en unités mineures (A-43).
 
 ## Pièges locaux
 

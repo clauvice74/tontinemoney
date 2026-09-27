@@ -280,10 +280,12 @@ export function extractCookie(setCookie: string[] | string | undefined): string 
   return c ? c.split(';')[0]! : '';
 }
 
-export async function createTestContext(): Promise<TestContext> {
+export async function createTestContext(
+  overrides: Parameters<typeof testConfig>[0] = {},
+): Promise<TestContext> {
   const clock = new FixedClock(START);
   const kv = new MemoryKvStore(clock);
-  const config = testConfig();
+  const config = testConfig(overrides);
   const app = await createApp({ config, clock, kv });
   await app.init();
   return new TestContext(app, clock, kv, config);

@@ -29,12 +29,14 @@ export type OutboxEventAvgAggregateOutputType = {
   eventVersion: number | null;
   attempts: number | null;
   seq: number | null;
+  deliverySeq: number | null;
 };
 
 export type OutboxEventSumAggregateOutputType = {
   eventVersion: number | null;
   attempts: number | null;
   seq: bigint | null;
+  deliverySeq: bigint | null;
 };
 
 export type OutboxEventMinAggregateOutputType = {
@@ -55,6 +57,7 @@ export type OutboxEventMinAggregateOutputType = {
   publishedAt: Date | null;
   createdAt: Date | null;
   seq: bigint | null;
+  deliverySeq: bigint | null;
 };
 
 export type OutboxEventMaxAggregateOutputType = {
@@ -75,6 +78,7 @@ export type OutboxEventMaxAggregateOutputType = {
   publishedAt: Date | null;
   createdAt: Date | null;
   seq: bigint | null;
+  deliverySeq: bigint | null;
 };
 
 export type OutboxEventCountAggregateOutputType = {
@@ -96,6 +100,7 @@ export type OutboxEventCountAggregateOutputType = {
   publishedAt: number;
   createdAt: number;
   seq: number;
+  deliverySeq: number;
   _all: number;
 };
 
@@ -103,12 +108,14 @@ export type OutboxEventAvgAggregateInputType = {
   eventVersion?: true;
   attempts?: true;
   seq?: true;
+  deliverySeq?: true;
 };
 
 export type OutboxEventSumAggregateInputType = {
   eventVersion?: true;
   attempts?: true;
   seq?: true;
+  deliverySeq?: true;
 };
 
 export type OutboxEventMinAggregateInputType = {
@@ -129,6 +136,7 @@ export type OutboxEventMinAggregateInputType = {
   publishedAt?: true;
   createdAt?: true;
   seq?: true;
+  deliverySeq?: true;
 };
 
 export type OutboxEventMaxAggregateInputType = {
@@ -149,6 +157,7 @@ export type OutboxEventMaxAggregateInputType = {
   publishedAt?: true;
   createdAt?: true;
   seq?: true;
+  deliverySeq?: true;
 };
 
 export type OutboxEventCountAggregateInputType = {
@@ -170,6 +179,7 @@ export type OutboxEventCountAggregateInputType = {
   publishedAt?: true;
   createdAt?: true;
   seq?: true;
+  deliverySeq?: true;
   _all?: true;
 };
 
@@ -281,6 +291,7 @@ export type OutboxEventGroupByOutputType = {
   publishedAt: Date | null;
   createdAt: Date;
   seq: bigint;
+  deliverySeq: bigint | null;
   _count: OutboxEventCountAggregateOutputType | null;
   _avg: OutboxEventAvgAggregateOutputType | null;
   _sum: OutboxEventSumAggregateOutputType | null;
@@ -322,6 +333,7 @@ export type OutboxEventWhereInput = {
   publishedAt?: Prisma.DateTimeNullableFilter<'OutboxEvent'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'OutboxEvent'> | Date | string;
   seq?: Prisma.BigIntFilter<'OutboxEvent'> | bigint | number;
+  deliverySeq?: Prisma.BigIntNullableFilter<'OutboxEvent'> | bigint | number | null;
 };
 
 export type OutboxEventOrderByWithRelationInput = {
@@ -343,11 +355,13 @@ export type OutboxEventOrderByWithRelationInput = {
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrderInput | Prisma.SortOrder;
 };
 
 export type OutboxEventWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string;
+    deliverySeq?: bigint | number;
     AND?: Prisma.OutboxEventWhereInput | Prisma.OutboxEventWhereInput[];
     OR?: Prisma.OutboxEventWhereInput[];
     NOT?: Prisma.OutboxEventWhereInput | Prisma.OutboxEventWhereInput[];
@@ -369,7 +383,7 @@ export type OutboxEventWhereUniqueInput = Prisma.AtLeast<
     createdAt?: Prisma.DateTimeFilter<'OutboxEvent'> | Date | string;
     seq?: Prisma.BigIntFilter<'OutboxEvent'> | bigint | number;
   },
-  'id'
+  'id' | 'deliverySeq'
 >;
 
 export type OutboxEventOrderByWithAggregationInput = {
@@ -391,6 +405,7 @@ export type OutboxEventOrderByWithAggregationInput = {
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.OutboxEventCountOrderByAggregateInput;
   _avg?: Prisma.OutboxEventAvgOrderByAggregateInput;
   _max?: Prisma.OutboxEventMaxOrderByAggregateInput;
@@ -424,6 +439,7 @@ export type OutboxEventScalarWhereWithAggregatesInput = {
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'OutboxEvent'> | Date | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'OutboxEvent'> | Date | string;
   seq?: Prisma.BigIntWithAggregatesFilter<'OutboxEvent'> | bigint | number;
+  deliverySeq?: Prisma.BigIntNullableWithAggregatesFilter<'OutboxEvent'> | bigint | number | null;
 };
 
 export type OutboxEventCreateInput = {
@@ -445,6 +461,7 @@ export type OutboxEventCreateInput = {
   publishedAt?: Date | string | null;
   createdAt?: Date | string;
   seq?: bigint | number;
+  deliverySeq?: bigint | number | null;
 };
 
 export type OutboxEventUncheckedCreateInput = {
@@ -466,6 +483,7 @@ export type OutboxEventUncheckedCreateInput = {
   publishedAt?: Date | string | null;
   createdAt?: Date | string;
   seq?: bigint | number;
+  deliverySeq?: bigint | number | null;
 };
 
 export type OutboxEventUpdateInput = {
@@ -487,6 +505,7 @@ export type OutboxEventUpdateInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+  deliverySeq?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
 };
 
 export type OutboxEventUncheckedUpdateInput = {
@@ -508,6 +527,7 @@ export type OutboxEventUncheckedUpdateInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+  deliverySeq?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
 };
 
 export type OutboxEventCreateManyInput = {
@@ -529,6 +549,7 @@ export type OutboxEventCreateManyInput = {
   publishedAt?: Date | string | null;
   createdAt?: Date | string;
   seq?: bigint | number;
+  deliverySeq?: bigint | number | null;
 };
 
 export type OutboxEventUpdateManyMutationInput = {
@@ -550,6 +571,7 @@ export type OutboxEventUpdateManyMutationInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+  deliverySeq?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
 };
 
 export type OutboxEventUncheckedUpdateManyInput = {
@@ -571,6 +593,7 @@ export type OutboxEventUncheckedUpdateManyInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+  deliverySeq?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
 };
 
 export type OutboxEventCountOrderByAggregateInput = {
@@ -592,12 +615,14 @@ export type OutboxEventCountOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrder;
 };
 
 export type OutboxEventAvgOrderByAggregateInput = {
   eventVersion?: Prisma.SortOrder;
   attempts?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrder;
 };
 
 export type OutboxEventMaxOrderByAggregateInput = {
@@ -618,6 +643,7 @@ export type OutboxEventMaxOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrder;
 };
 
 export type OutboxEventMinOrderByAggregateInput = {
@@ -638,16 +664,14 @@ export type OutboxEventMinOrderByAggregateInput = {
   publishedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
+  deliverySeq?: Prisma.SortOrder;
 };
 
 export type OutboxEventSumOrderByAggregateInput = {
   eventVersion?: Prisma.SortOrder;
   attempts?: Prisma.SortOrder;
   seq?: Prisma.SortOrder;
-};
-
-export type StringFieldUpdateOperationsInput = {
-  set?: string;
+  deliverySeq?: Prisma.SortOrder;
 };
 
 export type IntFieldUpdateOperationsInput = {
@@ -658,24 +682,12 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number;
 };
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null;
-};
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string;
-};
-
 export type EnumOutboxStatusFieldUpdateOperationsInput = {
   set?: $Enums.OutboxStatus;
 };
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null;
-};
-
-export type BigIntFieldUpdateOperationsInput = {
-  set?: bigint | number;
+export type NullableBigIntFieldUpdateOperationsInput = {
+  set?: bigint | number | null;
   increment?: bigint | number;
   decrement?: bigint | number;
   multiply?: bigint | number;
@@ -704,6 +716,7 @@ export type OutboxEventSelect<
     publishedAt?: boolean;
     createdAt?: boolean;
     seq?: boolean;
+    deliverySeq?: boolean;
   },
   ExtArgs['result']['outboxEvent']
 >;
@@ -730,6 +743,7 @@ export type OutboxEventSelectCreateManyAndReturn<
     publishedAt?: boolean;
     createdAt?: boolean;
     seq?: boolean;
+    deliverySeq?: boolean;
   },
   ExtArgs['result']['outboxEvent']
 >;
@@ -756,6 +770,7 @@ export type OutboxEventSelectUpdateManyAndReturn<
     publishedAt?: boolean;
     createdAt?: boolean;
     seq?: boolean;
+    deliverySeq?: boolean;
   },
   ExtArgs['result']['outboxEvent']
 >;
@@ -779,6 +794,7 @@ export type OutboxEventSelectScalar = {
   publishedAt?: boolean;
   createdAt?: boolean;
   seq?: boolean;
+  deliverySeq?: boolean;
 };
 
 export type OutboxEventOmit<
@@ -801,7 +817,8 @@ export type OutboxEventOmit<
   | 'lastError'
   | 'publishedAt'
   | 'createdAt'
-  | 'seq',
+  | 'seq'
+  | 'deliverySeq',
   ExtArgs['result']['outboxEvent']
 >;
 
@@ -830,6 +847,11 @@ export type $OutboxEventPayload<
       publishedAt: Date | null;
       createdAt: Date;
       seq: bigint;
+      /**
+       * Transport PostgreSQL (étape 7, A-55) : position dans le journal publié, attribuée sous
+       * verrou par le relais (ordre de publication = ordre de validation).
+       */
+      deliverySeq: bigint | null;
     },
     ExtArgs['result']['outboxEvent']
   >;
@@ -1417,6 +1439,7 @@ export interface OutboxEventFieldRefs {
   readonly publishedAt: Prisma.FieldRef<'OutboxEvent', 'DateTime'>;
   readonly createdAt: Prisma.FieldRef<'OutboxEvent', 'DateTime'>;
   readonly seq: Prisma.FieldRef<'OutboxEvent', 'BigInt'>;
+  readonly deliverySeq: Prisma.FieldRef<'OutboxEvent', 'BigInt'>;
 }
 
 // Custom InputTypes

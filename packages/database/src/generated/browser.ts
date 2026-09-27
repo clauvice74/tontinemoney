@@ -17,6 +17,12 @@ export { Prisma };
 export * as $Enums from './enums';
 export * from './enums';
 /**
+ * Model EventSubscription
+ * Groupe de consommateurs du transport PostgreSQL (étape 7, A-55) : un par service, position
+ * dans le journal publié, bail d'une instance à la fois.
+ */
+export type EventSubscription = Prisma.EventSubscriptionModel;
+/**
  * Model OutboxEvent
  *
  */

@@ -37,7 +37,13 @@ PostgreSQL 16 peut être installé sans droits administrateur à partir des bina
 
 Rôle `tontine` / mot de passe `tontine`, bases `tontinemoney` et `tontinemoney_test` (voir `infrastructure/docker/postgres/init.sql`). Non disponibles dans ce mode : Kafka (donc aucun service extrait ne peut tourner dans un processus séparé, A-46), Mailpit, MinIO, Prometheus, Grafana.
 
-## 3. Rôles PostgreSQL par service
+## 3. Services extraits (étape 7, A-55)
+
+Par défaut, `pnpm dev` démarre le monolithe (`apps/api`, :4000) **et** le reporting-service (`apps/reporting-service`, :4100) ; le gateway (:8080) route `/api/v1/reports/*`, `/api/v1/tontines/*/reports` et `/api/v1/admin/dashboard` vers le reporting-service. Les deux processus partagent la base et échangent les événements par le journal PostgreSQL (`EVENT_TRANSPORT=postgres`, un groupe par processus : `api`, `reporting`) ; le reporting-service interroge les ports du monolithe (jetons, comptes, membres, tontines) par appels internes signés.
+
+Revenir au monolithe seul : `EXTRACTED_SERVICES=` et `GATEWAY_ROUTES=[]` dans `.env` (le reporting-service reste alors inactif). Avec Kafka : `EVENT_TRANSPORT=kafka` et un `KAFKA_GROUP_ID` distinct par processus.
+
+## 4. Rôles PostgreSQL par service
 
 `pnpm db:roles` (idempotent) crée les rôles `tm_<schéma>` et leurs droits. Il faut un rôle disposant de `CREATEROLE` : superutilisateur en Docker ; sans Docker, l'accorder une fois au rôle `tontine` avec le compte administrateur local :
 
@@ -45,7 +51,7 @@ Rôle `tontine` / mot de passe `tontine`, bases `tontinemoney` et `tontinemoney_
 ~/.local/opt/pgsql16/bin/psql -U postgres -d postgres -c "ALTER ROLE tontine CREATEROLE"
 ```
 
-## 4. Vérifications
+## 5. Vérifications
 
 ```bash
 pnpm check                  # format, propriété des données, lint, typecheck, tests unitaires
@@ -60,7 +66,7 @@ Pièges :
 - Playwright peut utiliser un Chrome installé : `PLAYWRIGHT_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`.
 - En mode `pnpm dev`, l'API redémarre à chaque changement de `dist/` ; pour des tests navigateur fiables, préférer `pnpm test:e2e:local`.
 
-## 5. Adresses
+## 6. Adresses
 
 | Service                                         | URL                                                      |
 | ----------------------------------------------- | -------------------------------------------------------- |

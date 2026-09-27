@@ -12,18 +12,6 @@ import type * as runtime from '@prisma/client/runtime/client';
 import * as $Enums from './enums';
 import type * as Prisma from './internal/prismaNamespace';
 
-export type UuidFilter<$PrismaModel = never> = {
-  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  mode?: Prisma.QueryMode;
-  not?: Prisma.NestedUuidFilter<$PrismaModel> | string;
-};
-
 export type StringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
@@ -39,15 +27,15 @@ export type StringFilter<$PrismaModel = never> = {
   not?: Prisma.NestedStringFilter<$PrismaModel> | string;
 };
 
-export type IntFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
-  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
-  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedIntFilter<$PrismaModel> | number;
+export type BigIntFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedBigIntFilter<$PrismaModel> | bigint | number;
 };
 
 export type StringNullableFilter<$PrismaModel = never> = {
@@ -63,6 +51,136 @@ export type StringNullableFilter<$PrismaModel = never> = {
   endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
   mode?: Prisma.QueryMode;
   not?: Prisma.NestedStringNullableFilter<$PrismaModel> | string | null;
+};
+
+export type DateTimeNullableFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
+};
+
+export type DateTimeFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string;
+};
+
+export type SortOrderInput = {
+  sort: Prisma.SortOrder;
+  nulls?: Prisma.NullsOrder;
+};
+
+export type StringWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  contains?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  startsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  mode?: Prisma.QueryMode;
+  not?: Prisma.NestedStringWithAggregatesFilter<$PrismaModel> | string;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedStringFilter<$PrismaModel>;
+  _max?: Prisma.NestedStringFilter<$PrismaModel>;
+};
+
+export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _sum?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  _max?: Prisma.NestedBigIntFilter<$PrismaModel>;
+};
+
+export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null;
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null;
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null;
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  contains?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  startsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  mode?: Prisma.QueryMode;
+  not?: Prisma.NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedStringNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedStringNullableFilter<$PrismaModel>;
+};
+
+export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+};
+
+export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedDateTimeFilter<$PrismaModel>;
+  _max?: Prisma.NestedDateTimeFilter<$PrismaModel>;
+};
+
+export type UuidFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  mode?: Prisma.QueryMode;
+  not?: Prisma.NestedUuidFilter<$PrismaModel> | string;
+};
+
+export type IntFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedIntFilter<$PrismaModel> | number;
 };
 
 export type JsonFilter<$PrismaModel = never> =
@@ -94,17 +212,6 @@ export type JsonFilterBase<$PrismaModel = never> = {
     runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter;
 };
 
-export type DateTimeFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string;
-};
-
 export type EnumOutboxStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.OutboxStatus | Prisma.EnumOutboxStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
@@ -112,31 +219,15 @@ export type EnumOutboxStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumOutboxStatusFilter<$PrismaModel> | $Enums.OutboxStatus;
 };
 
-export type DateTimeNullableFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
-};
-
-export type BigIntFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+export type BigIntNullableFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
   lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntFilter<$PrismaModel> | bigint | number;
-};
-
-export type SortOrderInput = {
-  sort: Prisma.SortOrder;
-  nulls?: Prisma.NullsOrder;
+  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null;
 };
 
 export type UuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -149,24 +240,6 @@ export type UuidWithAggregatesFilter<$PrismaModel = never> = {
   gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
   mode?: Prisma.QueryMode;
   not?: Prisma.NestedUuidWithAggregatesFilter<$PrismaModel> | string;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedStringFilter<$PrismaModel>;
-  _max?: Prisma.NestedStringFilter<$PrismaModel>;
-};
-
-export type StringWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  contains?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  startsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  mode?: Prisma.QueryMode;
-  not?: Prisma.NestedStringWithAggregatesFilter<$PrismaModel> | string;
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedStringFilter<$PrismaModel>;
   _max?: Prisma.NestedStringFilter<$PrismaModel>;
@@ -186,24 +259,6 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedIntFilter<$PrismaModel>;
   _max?: Prisma.NestedIntFilter<$PrismaModel>;
-};
-
-export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null;
-  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null;
-  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null;
-  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  contains?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  startsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  mode?: Prisma.QueryMode;
-  not?: Prisma.NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null;
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-  _min?: Prisma.NestedStringNullableFilter<$PrismaModel>;
-  _max?: Prisma.NestedStringNullableFilter<$PrismaModel>;
 };
 
 export type JsonWithAggregatesFilter<$PrismaModel = never> =
@@ -238,20 +293,6 @@ export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonFilter<$PrismaModel>;
 };
 
-export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedDateTimeFilter<$PrismaModel>;
-  _max?: Prisma.NestedDateTimeFilter<$PrismaModel>;
-};
-
 export type EnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OutboxStatus | Prisma.EnumOutboxStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
@@ -262,34 +303,20 @@ export type EnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumOutboxStatusFilter<$PrismaModel>;
 };
 
-export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-  _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-  _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-};
-
-export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+export type BigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
   lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
-  _sum?: Prisma.NestedBigIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedBigIntFilter<$PrismaModel>;
-  _max?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
+  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
 };
 
 export type IntNullableFilter<$PrismaModel = never> = {
@@ -1057,17 +1084,6 @@ export type EnumCycleStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel> | $Enums.CycleStatus;
 };
 
-export type BigIntNullableFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null;
-};
-
 export type EnumCycleStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.CycleStatus | Prisma.EnumCycleStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.CycleStatus[] | Prisma.ListEnumCycleStatusFieldRefInput<$PrismaModel>;
@@ -1076,22 +1092,6 @@ export type EnumCycleStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel>;
-};
-
-export type BigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null;
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
-  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
-  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
-  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
 };
 
 export type EnumContributionStatusFilter<$PrismaModel = never> = {
@@ -1719,17 +1719,6 @@ export type EnumMessageTemplateWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumMessageTemplateFilter<$PrismaModel>;
 };
 
-export type NestedUuidFilter<$PrismaModel = never> = {
-  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedUuidFilter<$PrismaModel> | string;
-};
-
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
@@ -1744,15 +1733,15 @@ export type NestedStringFilter<$PrismaModel = never> = {
   not?: Prisma.NestedStringFilter<$PrismaModel> | string;
 };
 
-export type NestedIntFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
-  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
-  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedIntFilter<$PrismaModel> | number;
+export type NestedBigIntFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedBigIntFilter<$PrismaModel> | bigint | number;
 };
 
 export type NestedStringNullableFilter<$PrismaModel = never> = {
@@ -1769,24 +1758,6 @@ export type NestedStringNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedStringNullableFilter<$PrismaModel> | string | null;
 };
 
-export type NestedDateTimeFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string;
-};
-
-export type NestedEnumOutboxStatusFilter<$PrismaModel = never> = {
-  equals?: $Enums.OutboxStatus | Prisma.EnumOutboxStatusFieldRefInput<$PrismaModel>;
-  in?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
-  notIn?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedEnumOutboxStatusFilter<$PrismaModel> | $Enums.OutboxStatus;
-};
-
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
@@ -1798,29 +1769,15 @@ export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
 };
 
-export type NestedBigIntFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
-  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntFilter<$PrismaModel> | bigint | number;
-};
-
-export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedUuidWithAggregatesFilter<$PrismaModel> | string;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedStringFilter<$PrismaModel>;
-  _max?: Prisma.NestedStringFilter<$PrismaModel>;
+export type NestedDateTimeFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string;
 };
 
 export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -1840,7 +1797,7 @@ export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedStringFilter<$PrismaModel>;
 };
 
-export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
   notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
@@ -1848,12 +1805,23 @@ export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
   lte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedIntWithAggregatesFilter<$PrismaModel> | number;
+  not?: Prisma.NestedIntFilter<$PrismaModel> | number;
+};
+
+export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number;
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
-  _sum?: Prisma.NestedIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedIntFilter<$PrismaModel>;
-  _max?: Prisma.NestedIntFilter<$PrismaModel>;
+  _sum?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  _max?: Prisma.NestedBigIntFilter<$PrismaModel>;
 };
 
 export type NestedFloatFilter<$PrismaModel = never> = {
@@ -1895,6 +1863,93 @@ export type NestedIntNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null;
 };
 
+export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+};
+
+export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
+  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedDateTimeFilter<$PrismaModel>;
+  _max?: Prisma.NestedDateTimeFilter<$PrismaModel>;
+};
+
+export type NestedUuidFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedUuidFilter<$PrismaModel> | string;
+};
+
+export type NestedEnumOutboxStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.OutboxStatus | Prisma.EnumOutboxStatusFieldRefInput<$PrismaModel>;
+  in?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumOutboxStatusFilter<$PrismaModel> | $Enums.OutboxStatus;
+};
+
+export type NestedBigIntNullableFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null;
+};
+
+export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedUuidWithAggregatesFilter<$PrismaModel> | string;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedStringFilter<$PrismaModel>;
+  _max?: Prisma.NestedStringFilter<$PrismaModel>;
+};
+
+export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedIntWithAggregatesFilter<$PrismaModel> | number;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _sum?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedIntFilter<$PrismaModel>;
+  _max?: Prisma.NestedIntFilter<$PrismaModel>;
+};
+
 export type NestedJsonFilter<$PrismaModel = never> =
   | Prisma.PatchUndefined<
       Prisma.Either<
@@ -1924,20 +1979,6 @@ export type NestedJsonFilterBase<$PrismaModel = never> = {
     runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter;
 };
 
-export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedDateTimeFilter<$PrismaModel>;
-  _max?: Prisma.NestedDateTimeFilter<$PrismaModel>;
-};
-
 export type NestedEnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OutboxStatus | Prisma.EnumOutboxStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.OutboxStatus[] | Prisma.ListEnumOutboxStatusFieldRefInput<$PrismaModel>;
@@ -1948,34 +1989,31 @@ export type NestedEnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumOutboxStatusFilter<$PrismaModel>;
 };
 
-export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-  in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-  lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-  _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-  _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-};
-
-export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>;
+export type NestedBigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
   lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
   gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number;
-  _count?: Prisma.NestedIntFilter<$PrismaModel>;
-  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
-  _sum?: Prisma.NestedBigIntFilter<$PrismaModel>;
-  _min?: Prisma.NestedBigIntFilter<$PrismaModel>;
-  _max?: Prisma.NestedBigIntFilter<$PrismaModel>;
+  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
+  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
+};
+
+export type NestedFloatNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null;
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null;
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null;
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null;
 };
 
 export type NestedUuidNullableFilter<$PrismaModel = never> = {
@@ -2003,17 +2041,6 @@ export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-};
-
-export type NestedFloatNullableFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null;
-  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null;
-  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null;
-  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
-  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
-  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
-  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null;
 };
 
 export type NestedJsonNullableFilter<$PrismaModel = never> =
@@ -2687,17 +2714,6 @@ export type NestedEnumCycleStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel> | $Enums.CycleStatus;
 };
 
-export type NestedBigIntNullableFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null;
-};
-
 export type NestedEnumCycleStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.CycleStatus | Prisma.EnumCycleStatusFieldRefInput<$PrismaModel>;
   in?: $Enums.CycleStatus[] | Prisma.ListEnumCycleStatusFieldRefInput<$PrismaModel>;
@@ -2706,22 +2722,6 @@ export type NestedEnumCycleStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumCycleStatusFilter<$PrismaModel>;
-};
-
-export type NestedBigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null;
-  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null;
-  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>;
-  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null;
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
-  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
-  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
-  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumContributionStatusFilter<$PrismaModel = never> = {

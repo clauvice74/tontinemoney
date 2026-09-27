@@ -4,7 +4,7 @@ import { EventDispatchError, type EventDispatcher } from './event-dispatcher';
 
 /** Message reçu d'un transport (Kafka) ou rejoué depuis la file des messages rejetés. */
 export interface InboundMessage {
-  source: 'kafka' | 'inprocess';
+  source: 'kafka' | 'inprocess' | 'postgres';
   topic?: string;
   partition?: number;
   offset?: string;

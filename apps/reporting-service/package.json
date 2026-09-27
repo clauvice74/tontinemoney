@@ -1,29 +1,29 @@
 {
-  "name": "@tontine/reporting",
+  "name": "@tontine/reporting-service",
   "version": "0.1.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/bootstrap.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "dev": "concurrently -k -n tsc,reporting \"tsc -p tsconfig.build.json --watch --preserveWatchOutput\" \"EVENT_GROUP=reporting SERVICE_NAME=reporting node --watch-path=dist --env-file-if-exists=../../.env dist/main.js\"",
+    "start": "EVENT_GROUP=reporting SERVICE_NAME=reporting node --env-file-if-exists=../../.env dist/main.js",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:coverage": "vitest run --coverage --passWithNoTests"
+    "predev": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@nestjs/common": "11.1.6",
     "@nestjs/core": "11.1.6",
+    "@nestjs/platform-express": "11.1.6",
     "@nestjs/swagger": "11.2.0",
     "@prisma/client": "7.10.0",
     "@tontine/config": "workspace:*",
-    "@tontine/contracts": "workspace:*",
-    "@tontine/database": "workspace:*",
-    "@tontine/events": "workspace:*",
     "@tontine/platform": "workspace:*",
-    "pdfkit": "0.17.2",
-    "zod": "3.25.76"
+    "@tontine/reporting": "workspace:*",
+    "helmet": "8.1.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
   },
   "devDependencies": {
     "@swc/core": "1.13.5",
@@ -31,11 +31,11 @@
     "@tontine/typescript-config": "workspace:*",
     "@types/express": "5.0.3",
     "@types/node": "22.18.0",
-    "@types/pdfkit": "0.17.6",
-    "@vitest/coverage-v8": "3.2.4",
+    "concurrently": "9.2.1",
     "eslint": "9.39.5",
     "typescript": "5.9.3",
     "unplugin-swc": "1.5.7",
     "vitest": "3.2.4"
-  }
+  },
+  "types": "dist/bootstrap.d.ts"
 }

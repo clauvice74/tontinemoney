@@ -23,6 +23,15 @@ export interface TontineAccessPort {
   resolveInvitationCode(code: string): Promise<string | null>;
   /** Tontine dont le nom correspond exactement (unique) — demande de compte US-1.3. */
   findByExactName(name: string): Promise<string | null>;
+  /**
+   * Droit d'administrer une tontine (rapports, étape 6-7) : mêmes règles que
+   * `getAdministered` — NOT_FOUND si inexistante ou invisible, FORBIDDEN si visible sans droit.
+   */
+  administrationAccess(
+    userId: string,
+    role: string,
+    tontineId: string,
+  ): Promise<'ADMIN' | 'FORBIDDEN' | 'NOT_FOUND'>;
 }
 
 export const TONTINE_ACCESS = Symbol('TONTINE_ACCESS');

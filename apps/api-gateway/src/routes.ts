@@ -11,7 +11,7 @@ export interface ResolvedRoute {
  * par défaut. Seuls `/api/v1/*` (et Swagger si autorisé) sont exposés.
  */
 export class RouteTable {
-  private readonly routes: RouteDefinition[];
+  private readonly routes: Array<RouteDefinition & { pattern: RegExp }>;
 
   constructor(
     routes: RouteDefinition[],
@@ -19,7 +19,18 @@ export class RouteTable {
     private readonly exposeDocs: boolean,
     private readonly blocked: readonly string[] = [],
   ) {
-    this.routes = [...routes].sort((a, b) => b.prefix.length - a.prefix.length);
+    this.routes = [...routes]
+      .sort((a, b) => b.prefix.length - a.prefix.length)
+      .map((r) => ({
+        ...r,
+        // `*` : exactement un segment non vide ; le reste du préfixe est littéral
+        pattern: new RegExp(
+          `^${r.prefix
+            .split('*')
+            .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+            .join('[^/]+')}`,
+        ),
+      }));
   }
 
   resolve(path: string): ResolvedRoute | null {
@@ -29,7 +40,7 @@ export class RouteTable {
     // Chemins normalisés uniquement : pas de traversée ni d'encodage de séparateur
     if (/(^|\/)\.\.?(\/|$)|%2e|%2f|%5c|\\/i.test(path)) return null;
     if (this.blocked.some((b) => path.startsWith(b))) return null;
-    const hit = this.routes.find((r) => path.startsWith(r.prefix));
+    const hit = this.routes.find((r) => r.pattern.test(path));
     const segment = path.split('/')[3] ?? '';
     return {
       upstream: hit?.upstream ?? this.defaultUpstream,

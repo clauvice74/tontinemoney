@@ -390,6 +390,7 @@ export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>;
 type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRef<Model, FieldType>;
 
 export const ModelName = {
+  EventSubscription: 'EventSubscription',
   OutboxEvent: 'OutboxEvent',
   EventDeadLetter: 'EventDeadLetter',
   ProcessedEvent: 'ProcessedEvent',
@@ -483,6 +484,7 @@ export type TypeMap<
   };
   meta: {
     modelProps:
+      | 'eventSubscription'
       | 'outboxEvent'
       | 'eventDeadLetter'
       | 'processedEvent'
@@ -559,6 +561,81 @@ export type TypeMap<
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
+    EventSubscription: {
+      payload: Prisma.$EventSubscriptionPayload<ExtArgs>;
+      fields: Prisma.EventSubscriptionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.EventSubscriptionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.EventSubscriptionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        findFirst: {
+          args: Prisma.EventSubscriptionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.EventSubscriptionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        findMany: {
+          args: Prisma.EventSubscriptionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>[];
+        };
+        create: {
+          args: Prisma.EventSubscriptionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        createMany: {
+          args: Prisma.EventSubscriptionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.EventSubscriptionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>[];
+        };
+        delete: {
+          args: Prisma.EventSubscriptionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        update: {
+          args: Prisma.EventSubscriptionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.EventSubscriptionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.EventSubscriptionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.EventSubscriptionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>[];
+        };
+        upsert: {
+          args: Prisma.EventSubscriptionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventSubscriptionPayload>;
+        };
+        aggregate: {
+          args: Prisma.EventSubscriptionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventSubscription>;
+        };
+        groupBy: {
+          args: Prisma.EventSubscriptionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.EventSubscriptionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.EventSubscriptionCountArgs<ExtArgs>;
+          result:
+            runtime.Types.Utils.Optional<Prisma.EventSubscriptionCountAggregateOutputType> | number;
+        };
+      };
+    };
     OutboxEvent: {
       payload: Prisma.$OutboxEventPayload<ExtArgs>;
       fields: Prisma.OutboxEventFieldRefs;
@@ -6064,6 +6141,17 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
 
+export const EventSubscriptionScalarFieldEnum = {
+  group: 'group',
+  position: 'position',
+  owner: 'owner',
+  leaseUntil: 'leaseUntil',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type EventSubscriptionScalarFieldEnum =
+  (typeof EventSubscriptionScalarFieldEnum)[keyof typeof EventSubscriptionScalarFieldEnum];
+
 export const OutboxEventScalarFieldEnum = {
   id: 'id',
   eventType: 'eventType',
@@ -6083,6 +6171,7 @@ export const OutboxEventScalarFieldEnum = {
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   seq: 'seq',
+  deliverySeq: 'deliverySeq',
 } as const;
 
 export type OutboxEventScalarFieldEnum =
@@ -7351,6 +7440,13 @@ export const QueryMode = {
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last',
+} as const;
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
 export const JsonNullValueFilter = {
   DbNull: DbNull,
   JsonNull: JsonNull,
@@ -7358,13 +7454,6 @@ export const JsonNullValueFilter = {
 } as const;
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last',
-} as const;
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
 
 /**
  * Field references
@@ -7379,6 +7468,26 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>;
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>;
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>;
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>;
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>;
 
 /**
  * Reference to a field of type 'Int'
@@ -7401,16 +7510,6 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>;
 
 /**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>;
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>;
-
-/**
  * Reference to a field of type 'OutboxStatus'
  */
 export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -7425,16 +7524,6 @@ export type ListEnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'OutboxStatus[]'
 >;
-
-/**
- * Reference to a field of type 'BigInt'
- */
-export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>;
-
-/**
- * Reference to a field of type 'BigInt[]'
- */
-export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>;
 
 /**
  * Reference to a field of type 'IdempotencyStatus'
@@ -8592,6 +8681,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions =
   PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter;
 export type GlobalOmitConfig = {
+  eventSubscription?: Prisma.EventSubscriptionOmit;
   outboxEvent?: Prisma.OutboxEventOmit;
   eventDeadLetter?: Prisma.EventDeadLetterOmit;
   processedEvent?: Prisma.ProcessedEventOmit;

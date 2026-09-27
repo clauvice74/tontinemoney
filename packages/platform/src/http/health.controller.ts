@@ -1,8 +1,13 @@
 import { Controller, Get, HttpCode, Res, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { KvStore, MetricsService, OutboxRelay, PrismaService, Public } from '@tontine/platform';
+import { PrismaService } from '../context/prisma.service';
+import { OutboxRelay } from '../events/outbox-relay';
+import { KvStore } from '../kv/kv-store';
+import { MetricsService } from '../observability/metrics.service';
+import { Public } from './decorators';
 import { type Response } from 'express';
 
+/** Vivacité, disponibilité (base, KV) et métriques Prometheus : commun à chaque processus. */
 @ApiExcludeController()
 @Controller({ version: VERSION_NEUTRAL })
 export class HealthController {
