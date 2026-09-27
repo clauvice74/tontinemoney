@@ -156,6 +156,27 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 | GET 🔒  | `/reports/financial` · `/contributions` · `/wallets` · `/compliance` · `/tontines` `?from&to&currency&format` | période par défaut : 1er du mois → aujourd’hui (366 j max) ; `format=json` → `{report, title, period, filters, generatedAt, rows:[{section, indicator, currency, count, amountMinor, amount, ratePercent}]}` ; `csv` / `pdf` en pièce jointe. Agrégats uniquement, génération journalisée |
 | GET 🔒  | `/reports/export?report&from&to&currency&format`                                                              | `report` ∈ financial, contributions, wallets, compliance, tontines ; `format` csv (défaut) ou pdf                                                                                                                                                                                         |
 
+## Alias de compatibilité
+
+Chemins supplémentaires servis par le **même** handler que la route de référence (mêmes contrôles d’accès, validation, idempotence et limites de débit).
+
+| Alias                                                                                         | Route de référence                                                               |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| GET `/auth/profile` · PATCH `/auth/profile`                                                   | GET `/auth/me` · PATCH `/me/profile`                                             |
+| POST `/auth/register`                                                                         | POST `/auth/request-account` (demande soumise à validation, 5 / h / IP partagés) |
+| POST `/auth/verify-email`                                                                     | POST `/auth/activate`                                                            |
+| POST `/auth/send-otp` · `/auth/verify-otp`                                                    | POST `/auth/mfa/sms-code` · `/auth/login/mfa`                                    |
+| POST `/auth/enable-mfa` · `/auth/disable-mfa`                                                 | POST `/auth/mfa/enable` · `/auth/mfa/disable`                                    |
+| GET `/kyc/status` · `/kyc/history`                                                            | GET `/kyc/me`                                                                    |
+| GET `/kyc/pending`                                                                            | GET `/kyc/reviews`                                                               |
+| POST `/kyc/upload-document` · `/kyc/upload-selfie`                                            | POST `/kyc/submit` · `/kyc/liveness`                                             |
+| POST `/kyc/verify` `{requestId, annotation}` · `/kyc/reject` `{requestId, category, comment}` | POST `/kyc/requests/{id}/decision` (APPROVE · REJECT)                            |
+| POST `/tontines/{id}/invitations/{invitationId}/accept` · `/reject`                           | POST `/invitations/{id}/respond` (l’invitation doit appartenir à la tontine)     |
+| GET `/contributions`                                                                          | GET `/me/contributions`                                                          |
+| POST `/contributions/{id}/pay`                                                                | POST `/tontines/{id}/contributions/{id}/pay` (Idempotency-Key)                   |
+
+Nouvelles lectures associées : GET `/kyc/{memberId}` (personnel `kyc.review`, accès journalisé) et GET `/contributions/{id}` (débiteur, admin de la tontine ou super-admin ; 404 sinon).
+
 ## Exploitation
 
 | GET 🔒 | `/admin/jobs` · POST `/admin/jobs/{name}/run`            | tâches planifiées |

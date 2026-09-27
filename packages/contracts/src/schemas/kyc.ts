@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { KYC_DOCUMENT_TYPES, KYC_REJECT_CATEGORIES } from '../enums';
+import { uuidSchema } from './common';
 
 export const KYC_MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const KYC_MIN_WIDTH = 1000;
@@ -51,3 +52,19 @@ export const amlResolutionSchema = z.object({
   resolution: z.enum(['CONFIRMED_MATCH', 'FALSE_POSITIVE']),
   comment: z.string().trim().min(1).max(2000),
 });
+
+/** `POST /kyc/verify` : accepter un dossier (annotation obligatoire, US-3.3). */
+export const kycVerifySchema = z
+  .object({
+    requestId: uuidSchema,
+    annotation: z.string().trim().min(10, 'Annotation de 10 caractères minimum').max(2000),
+  })
+  .strict();
+/** `POST /kyc/reject` : rejeter un dossier (catégorie et commentaire obligatoires). */
+export const kycRejectSchema = z
+  .object({
+    requestId: uuidSchema,
+    category: z.enum(KYC_REJECT_CATEGORIES),
+    comment: z.string().trim().min(1, 'Commentaire obligatoire').max(2000),
+  })
+  .strict();

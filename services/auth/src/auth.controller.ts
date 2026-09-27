@@ -114,7 +114,7 @@ export class AuthController {
     });
   }
 
-  @Post('login/mfa')
+  @Post(['login/mfa', 'verify-otp'])
   @Public()
   @HttpCode(200)
   @ApiOperation({ summary: 'Second facteur (TOTP, SMS ou code de récupération)' })
@@ -162,7 +162,7 @@ export class AuthController {
     res.clearCookie(REFRESH_COOKIE, { path: COOKIE_PATH });
   }
 
-  @Get('me')
+  @Get(['me', 'profile'])
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mon compte : rôle, statut, état d’accès, MFA' })
   async me(@CurrentUser() actor: Actor) {
@@ -239,7 +239,7 @@ export class AuthController {
     });
   }
 
-  @Post('request-account')
+  @Post(['request-account', 'register'])
   @Public()
   @HttpCode(202)
   @ApiOperation({
@@ -250,7 +250,7 @@ export class AuthController {
     return this.registration.requestAccount(body);
   }
 
-  @Post('activate')
+  @Post(['activate', 'verify-email'])
   @Public()
   @HttpCode(200)
   @ApiOperation({
@@ -301,7 +301,7 @@ export class AuthController {
     return this.mfa.status(actor);
   }
 
-  @Post('mfa/enable')
+  @Post(['mfa/enable', 'enable-mfa'])
   @ApiBearerAuth()
   @HttpCode(200)
   @ApiOperation({ summary: 'Activer le MFA (US-1.6) : TOTP → QR code ; SMS → code envoyé' })
@@ -324,7 +324,7 @@ export class AuthController {
     return this.mfa.verify(actor, body.code);
   }
 
-  @Post('mfa/sms-code')
+  @Post(['mfa/sms-code', 'send-otp'])
   @ApiBearerAuth()
   @HttpCode(202)
   @ApiOperation({ summary: 'Recevoir un code SMS (MFA SMS actif)' })
@@ -333,7 +333,7 @@ export class AuthController {
     return { sent: true };
   }
 
-  @Post('mfa/disable')
+  @Post(['mfa/disable', 'disable-mfa'])
   @ApiBearerAuth()
   @HttpCode(204)
   @ApiOperation({ summary: 'Désactiver le MFA : mot de passe + code valide (alerte envoyée)' })

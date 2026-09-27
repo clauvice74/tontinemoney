@@ -19,8 +19,10 @@ import {
   amlResolutionSchema,
   duplicateResolutionSchema,
   kycDecisionSchema,
+  kycRejectSchema,
   kycSubmitSchema,
   kycTier3Schema,
+  kycVerifySchema,
 } from '@tontine/contracts';
 import {
   type Actor,
@@ -63,14 +65,14 @@ export class KycController {
     return this.kyc.requirements(actor);
   }
 
-  @Post('liveness')
+  @Post(['liveness', 'upload-selfie'])
   @HttpCode(201)
   @ApiOperation({ summary: 'Démarrer une session de capture caméra (liveness simulée, A-16)' })
   async liveness(@CurrentUser() actor: Actor) {
     return this.kyc.startLiveness(actor);
   }
 
-  @Post('submit')
+  @Post(['submit', 'upload-document'])
   @HttpCode(201)
   @ApiConsumes('multipart/form-data')
   @upload(['front', 'back', 'selfie'])
@@ -106,14 +108,14 @@ export class KycController {
     });
   }
 
-  @Get('me')
+  @Get(['me', 'status', 'history'])
   @ApiOperation({ summary: 'Mon statut KYC et l’historique de mes soumissions' })
   async me(@CurrentUser() actor: Actor) {
     return this.kyc.me(actor);
   }
 
   // ------------------------------------------------------------ Agents KYC (US-3.3 à 3.5)
-  @Get('reviews')
+  @Get(['reviews', 'pending'])
   @RequirePermission('kyc.review')
   @ApiOperation({ summary: 'Dossiers à revoir, triés par ancienneté, avec SLA' })
   async queue(@Query('status') status?: string) {
@@ -198,5 +200,46 @@ export class KycController {
     @ZodBody(amlResolutionSchema) body: z.infer<typeof amlResolutionSchema>,
   ): Promise<void> {
     await this.review.resolveAml(actor, id, body.resolution, body.comment);
+  }
+
+  @Post('verify')
+  @HttpCode(200)
+  @RequirePermission('kyc.review')
+  @ApiOperation({ summary: 'Accepter un dossier (alias de requests/{id}/decision, APPROVE)' })
+  @ApiZodBody(kycVerifySchema)
+  async verify(
+    @CurrentUser() actor: Actor,
+    @ZodBody(kycVerifySchema) body: z.infer<typeof kycVerifySchema>,
+  ) {
+    const r = await this.review.decide(actor, body.requestId, {
+      action: 'APPROVE',
+      annotation: body.annotation,
+    });
+    return { id: r.id, status: r.status, decidedAt: r.decidedAt?.toISOString() ?? null };
+  }
+
+  @Post('reject')
+  @HttpCode(200)
+  @RequirePermission('kyc.review')
+  @ApiOperation({ summary: 'Rejeter un dossier (alias de requests/{id}/decision, REJECT)' })
+  @ApiZodBody(kycRejectSchema)
+  async reject(
+    @CurrentUser() actor: Actor,
+    @ZodBody(kycRejectSchema) body: z.infer<typeof kycRejectSchema>,
+  ) {
+    const r = await this.review.decide(actor, body.requestId, {
+      action: 'REJECT',
+      category: body.category,
+      comment: body.comment,
+    });
+    return { id: r.id, status: r.status, decidedAt: r.decidedAt?.toISOString() ?? null };
+  }
+
+  /** Déclarée en dernier : les routes fixes (`me`, `reviews`…) sont résolues avant. */
+  @Get(':memberId')
+  @RequirePermission('kyc.review')
+  @ApiOperation({ summary: 'Statut et historique KYC d’un membre (personnel, accès journalisé)' })
+  async ofMember(@Param('memberId', ParseUUIDPipe) memberId: string) {
+    return this.kyc.statusForStaff(memberId);
   }
 }

@@ -70,7 +70,7 @@ export class MembersController {
     return toMemberView(await this.members.get(actor.userId));
   }
 
-  @Patch('me/profile')
+  @Patch(['me/profile', 'auth/profile'])
   @ApiOperation({
     summary: 'Compléter / modifier mon profil (US-2.2) — verrou optimiste par version',
   })

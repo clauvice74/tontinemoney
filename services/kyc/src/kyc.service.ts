@@ -282,9 +282,26 @@ export class KycService {
   }
 
   async me(actor: Actor) {
-    const member = await this.members.snapshot(actor.userId);
+    return this.statusOf(actor.userId);
+  }
+
+  /** Vue KYC d'un membre par le personnel (agent KYC, super-admin) : accès journalisé. */
+  async statusForStaff(memberId: string) {
+    const member = await this.members.snapshot(memberId);
+    if (!member) throw new DomainError('NOT_FOUND', 'Membre introuvable');
+    await this.audit.record({
+      action: 'kyc.status.read_by_staff',
+      resourceType: 'member',
+      resourceId: memberId,
+      result: 'SUCCESS',
+    });
+    return { memberId, ...(await this.statusOf(memberId)) };
+  }
+
+  private async statusOf(memberId: string) {
+    const member = await this.members.snapshot(memberId);
     const rows = await this.prisma.kycRequest.findMany({
-      where: { memberId: actor.userId },
+      where: { memberId },
       orderBy: { submittedAt: 'desc' },
       take: 20,
     });

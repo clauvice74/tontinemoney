@@ -459,7 +459,44 @@
     },
     "/api/v1/auth/login/mfa": {
       "post": {
-        "operationId": "AuthController_loginMfa_v1",
+        "operationId": "AuthController_loginMfa[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challengeToken": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["challengeToken", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Second facteur (TOTP, SMS ou code de récupération)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/verify-otp": {
+      "post": {
+        "operationId": "AuthController_loginMfa[1]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -527,7 +564,7 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "operationId": "AuthController_me_v1",
+        "operationId": "AuthController_me[0]_v1",
         "parameters": [],
         "responses": {
           "200": {
@@ -541,6 +578,110 @@
         ],
         "summary": "Mon compte : rôle, statut, état d’accès, MFA",
         "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/profile": {
+      "get": {
+        "operationId": "AuthController_me[1]_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon compte : rôle, statut, état d’accès, MFA",
+        "tags": ["Authentification"]
+      },
+      "patch": {
+        "operationId": "MembersController_update[1]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "dateOfBirth": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": ["M", "F", "OTHER", "UNDISCLOSED"]
+                  },
+                  "language": {
+                    "type": "string",
+                    "pattern": "^(fr|en)(-[A-Z]{2})?$"
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "maxLength": 50
+                  }
+                },
+                "required": ["version"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Compléter / modifier mon profil (US-2.2) — verrou optimiste par version",
+        "tags": ["Membres"]
       }
     },
     "/api/v1/auth/sessions": {
@@ -590,7 +731,78 @@
     },
     "/api/v1/auth/request-account": {
       "post": {
-        "operationId": "AuthController_requestAccount_v1",
+        "operationId": "AuthController_requestAccount[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "pattern": "^[\\p{L}\\p{M}' .-]+$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": ["SMS", "EMAIL"]
+                  },
+                  "invitationCode": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "tontineName": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "captchaToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "preferredChannel",
+                  "captchaToken"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Demande de compte (US-1.3) — réponse générique, captcha, 5 / heure / IP",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_requestAccount[1]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -661,7 +873,51 @@
     },
     "/api/v1/auth/activate": {
       "post": {
-        "operationId": "AuthController_activate_v1",
+        "operationId": "AuthController_activate[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 512
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
+                  },
+                  "otp": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["password"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Activation du compte par lien (48 h) ou OTP (15 min) et choix du mot de passe",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "AuthController_activate[1]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -822,7 +1078,43 @@
     },
     "/api/v1/auth/mfa/enable": {
       "post": {
-        "operationId": "AuthController_mfaEnable_v1",
+        "operationId": "AuthController_mfaEnable[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["TOTP", "SMS"]
+                  }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activer le MFA (US-1.6) : TOTP → QR code ; SMS → code envoyé",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/enable-mfa": {
+      "post": {
+        "operationId": "AuthController_mfaEnable[1]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -894,7 +1186,25 @@
     },
     "/api/v1/auth/mfa/sms-code": {
       "post": {
-        "operationId": "AuthController_mfaSmsCode_v1",
+        "operationId": "AuthController_mfaSmsCode[0]_v1",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recevoir un code SMS (MFA SMS actif)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/send-otp": {
+      "post": {
+        "operationId": "AuthController_mfaSmsCode[1]_v1",
         "parameters": [],
         "responses": {
           "202": {
@@ -912,7 +1222,49 @@
     },
     "/api/v1/auth/mfa/disable": {
       "post": {
-        "operationId": "AuthController_mfaDisable_v1",
+        "operationId": "AuthController_mfaDisable[0]_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 12
+                  }
+                },
+                "required": ["password", "code"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Désactiver le MFA : mot de passe + code valide (alerte envoyée)",
+        "tags": ["Authentification"]
+      }
+    },
+    "/api/v1/auth/disable-mfa": {
+      "post": {
+        "operationId": "AuthController_mfaDisable[1]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1582,7 +1934,7 @@
         "tags": ["Membres"]
       },
       "patch": {
-        "operationId": "MembersController_update_v1",
+        "operationId": "MembersController_update[0]_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4036,7 +4388,25 @@
     },
     "/api/v1/kyc/liveness": {
       "post": {
-        "operationId": "KycController_liveness_v1",
+        "operationId": "KycController_liveness[0]_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Démarrer une session de capture caméra (liveness simulée, A-16)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/upload-selfie": {
+      "post": {
+        "operationId": "KycController_liveness[1]_v1",
         "parameters": [],
         "responses": {
           "201": {
@@ -4054,7 +4424,25 @@
     },
     "/api/v1/kyc/submit": {
       "post": {
-        "operationId": "KycController_submit_v1",
+        "operationId": "KycController_submit[0]_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soumettre pièce d’identité (recto/verso) + selfie caméra (US-3.1)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/upload-document": {
+      "post": {
+        "operationId": "KycController_submit[1]_v1",
         "parameters": [],
         "responses": {
           "201": {
@@ -4090,7 +4478,43 @@
     },
     "/api/v1/kyc/me": {
       "get": {
-        "operationId": "KycController_me_v1",
+        "operationId": "KycController_me[0]_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon statut KYC et l’historique de mes soumissions",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/status": {
+      "get": {
+        "operationId": "KycController_me[1]_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mon statut KYC et l’historique de mes soumissions",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/history": {
+      "get": {
+        "operationId": "KycController_me[2]_v1",
         "parameters": [],
         "responses": {
           "200": {
@@ -4108,7 +4532,34 @@
     },
     "/api/v1/kyc/reviews": {
       "get": {
-        "operationId": "KycController_queue_v1",
+        "operationId": "KycController_queue[0]_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dossiers à revoir, triés par ancienneté, avec SLA",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/pending": {
+      "get": {
+        "operationId": "KycController_queue[1]_v1",
         "parameters": [
           {
             "name": "status",
@@ -4418,6 +4869,129 @@
             "bearer": []
           }
         ],
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/verify": {
+      "post": {
+        "operationId": "KycController_verify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "annotation": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  }
+                },
+                "required": ["requestId", "annotation"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accepter un dossier (alias de requests/{id}/decision, APPROVE)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/reject": {
+      "post": {
+        "operationId": "KycController_reject_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "DOCUMENT_ILLISIBLE",
+                      "DOCUMENT_EXPIRE",
+                      "DOCUMENT_FALSIFIE",
+                      "FACE_MATCH_ECHOUE",
+                      "DOUBLON_CONFIRME",
+                      "AML_MATCH_CONFIRME",
+                      "INFORMATION_INCOHERENTE",
+                      "TYPE_DOCUMENT_NON_ACCEPTE",
+                      "AUTRE"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": ["requestId", "category", "comment"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rejeter un dossier (alias de requests/{id}/decision, REJECT)",
+        "tags": ["KYC"]
+      }
+    },
+    "/api/v1/kyc/{memberId}": {
+      "get": {
+        "operationId": "KycController_ofMember_v1",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Statut et historique KYC d’un membre (personnel, accès journalisé)",
         "tags": ["KYC"]
       }
     },
@@ -5006,6 +5580,76 @@
           }
         ],
         "summary": "Accepter ou refuser une invitation (éligibilité vérifiée à l’acceptation)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/invitations/{invitationId}/accept": {
+      "post": {
+        "operationId": "TontinesController_accept_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accepter une invitation (alias de invitations/{id}/respond)",
+        "tags": ["Tontines"]
+      }
+    },
+    "/api/v1/tontines/{id}/invitations/{invitationId}/reject": {
+      "post": {
+        "operationId": "TontinesController_decline_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Refuser une invitation (alias de invitations/{id}/respond)",
         "tags": ["Tontines"]
       }
     },
@@ -5649,6 +6293,69 @@
         "tags": ["Tontines — cycles et contributions"]
       }
     },
+    "/api/v1/contributions/{contributionId}/pay": {
+      "post": {
+        "operationId": "CyclesController_payFlat_v1",
+        "parameters": [
+          {
+            "name": "contributionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Payer sa contribution (alias de tontines/{id}/contributions/{id}/pay)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/contributions/{contributionId}": {
+      "get": {
+        "operationId": "CyclesController_contribution_v1",
+        "parameters": [
+          {
+            "name": "contributionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Une contribution (débiteur, admin de la tontine ou super-admin)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
     "/api/v1/tontines/{id}/entry-fee/pay": {
       "post": {
         "operationId": "CyclesController_entryFee_v1",
@@ -5687,7 +6394,34 @@
     },
     "/api/v1/me/contributions": {
       "get": {
-        "operationId": "CyclesController_mine_v1",
+        "operationId": "CyclesController_mine[0]_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes échéances (toutes tontines)",
+        "tags": ["Tontines — cycles et contributions"]
+      }
+    },
+    "/api/v1/contributions": {
+      "get": {
+        "operationId": "CyclesController_mine[1]_v1",
         "parameters": [
           {
             "name": "status",

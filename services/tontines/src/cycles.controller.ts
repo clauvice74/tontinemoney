@@ -187,6 +187,29 @@ export class CyclesController {
     return this.contributions.pay(actor, id, contributionId);
   }
 
+  @Post('contributions/:contributionId/pay')
+  @Idempotent('tontine.contribution.pay')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Payer sa contribution (alias de tontines/{id}/contributions/{id}/pay)',
+  })
+  async payFlat(
+    @CurrentUser() actor: Actor,
+    @Param('contributionId', ParseUUIDPipe) contributionId: string,
+  ) {
+    const tontineId = await this.contributions.tontineOf(contributionId);
+    return this.contributions.pay(actor, tontineId, contributionId);
+  }
+
+  @Get('contributions/:contributionId')
+  @ApiOperation({ summary: 'Une contribution (débiteur, admin de la tontine ou super-admin)' })
+  async contribution(
+    @CurrentUser() actor: Actor,
+    @Param('contributionId', ParseUUIDPipe) contributionId: string,
+  ) {
+    return this.contributions.one(actor, contributionId);
+  }
+
   @Post('tontines/:id/entry-fee/pay')
   @Idempotent('tontine.entry-fee.pay')
   @HttpCode(200)
@@ -195,7 +218,7 @@ export class CyclesController {
     return this.contributions.payEntryFee(actor, id);
   }
 
-  @Get('me/contributions')
+  @Get(['me/contributions', 'contributions'])
   @ApiOperation({ summary: 'Mes échéances (toutes tontines)' })
   async mine(@CurrentUser() actor: Actor, @Query('status') status?: string) {
     return { data: await this.contributions.mine(actor, statusQuery.parse(status || undefined)) };

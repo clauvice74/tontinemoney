@@ -374,4 +374,33 @@ export class ContributionsService {
     });
     return rows.map((r) => contributionView(r, r.cycle.tontine, r.cycle.number));
   }
+
+  /** Tontine d'une contribution, pour les routes à plat `/contributions/:id`. */
+  async tontineOf(contributionId: string): Promise<string> {
+    const c = await this.prisma.contribution.findUnique({
+      where: { id: contributionId },
+      select: { tontineId: true },
+    });
+    if (!c) throw new DomainError('NOT_FOUND', 'Contribution introuvable');
+    return c.tontineId;
+  }
+
+  /** Une contribution : son débiteur, l'admin de la tontine ou le super-admin ; 404 sinon. */
+  async one(actor: Actor, contributionId: string) {
+    const c = await this.prisma.contribution.findUnique({
+      where: { id: contributionId },
+      include: {
+        cycle: {
+          select: { number: true, tontine: { select: { id: true, name: true, currency: true } } },
+        },
+      },
+    });
+    if (!c) throw new DomainError('NOT_FOUND', 'Contribution introuvable');
+    if (c.memberId !== actor.userId && actor.role !== 'SUPER_ADMIN') {
+      const visible = await this.tontines.getVisible(actor, c.tontineId).catch(() => null);
+      if (visible?.membership?.role !== 'ADMIN')
+        throw new DomainError('NOT_FOUND', 'Contribution introuvable');
+    }
+    return contributionView(c, c.cycle.tontine, c.cycle.number);
+  }
 }

@@ -355,13 +355,20 @@ export class InvitationsService {
     };
   }
 
-  async respond(actor: Actor, invitationId: string, accept: boolean) {
+  /** `tontineId` (routes imbriquées) : l'invitation doit appartenir à cette tontine. */
+  async respond(actor: Actor, invitationId: string, accept: boolean, tontineId?: string) {
     const me = await this.members.snapshot(actor.userId);
     const inv = await this.prisma.tontineInvitation.findUnique({
       where: { id: invitationId },
       include: { tontine: true },
     });
-    if (!me || !inv || inv.channel === 'LINK' || !this.targets(inv, me))
+    if (
+      !me ||
+      !inv ||
+      (tontineId !== undefined && inv.tontineId !== tontineId) ||
+      inv.channel === 'LINK' ||
+      !this.targets(inv, me)
+    )
       throw new DomainError('NOT_FOUND', 'Invitation introuvable');
     await this.assertPending(inv);
     if (!accept) {

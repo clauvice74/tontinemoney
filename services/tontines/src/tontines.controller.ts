@@ -119,6 +119,28 @@ export class TontinesController {
     return this.invitations.respond(actor, id, body.accept);
   }
 
+  @Post('tontines/:id/invitations/:invitationId/accept')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Accepter une invitation (alias de invitations/{id}/respond)' })
+  async accept(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+  ) {
+    return this.invitations.respond(actor, invitationId, true, id);
+  }
+
+  @Post('tontines/:id/invitations/:invitationId/reject')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Refuser une invitation (alias de invitations/{id}/respond)' })
+  async decline(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+  ) {
+    return this.invitations.respond(actor, invitationId, false, id);
+  }
+
   @Get('invitations/code/:code')
   @Public()
   @ApiOperation({
