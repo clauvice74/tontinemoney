@@ -25,7 +25,10 @@ export const envSchema = z
     KAFKA_GROUP_ID: z.string().min(1).default('tontinemoney-api'),
     KAFKA_TOPIC_PARTITIONS: z.coerce.number().int().min(1).max(64).default(3),
     /** Producteur idempotent Kafka (A-52) : false par défaut (incompatible Redpanda + kafkajs). */
-    KAFKA_IDEMPOTENT_PRODUCER: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
+    KAFKA_IDEMPOTENT_PRODUCER: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((v) => v === 'true'),
     /** Tentatives de traitement d'un message Kafka avant rejet (file des messages rejetés). */
     EVENT_CONSUMER_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(3),
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().min(50).default(250),
