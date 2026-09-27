@@ -48,19 +48,31 @@ Matrice de référence : `packages/auth/src/rbac.ts` (source unique, testée).
 - Concurrence : verrous ordonnés + `SERIALIZABLE` + CHECK SQL ; tests de débits concurrents.
 - Tables append-only protégées par trigger (`audit_logs`, `trx_audit_logs`, `wal_movements`, `mbr_audit_logs`).
 
-## 5. Protections HTTP
+## 5. API Gateway (défense en profondeur)
+
+Point d'entrée unique des clients (`apps/api-gateway`, :8080). Il ne remplace aucun contrôle des services, qui restent l'autorité (RBAC, propriété, révocation de session).
+
+- JWT : signature RS256 vérifiée par le JWKS du service d'authentification, émetteur, expiration, claims obligatoires ; jeton invalide → 401 sans appeler le service.
+- Règles de bord : `/api/v1/admin/**` et `/api/v1/reports/**` réservés à `SUPER_ADMIN` (configurable, `GATEWAY_EDGE_RULES`).
+- En-têtes d'identité (`X-User-*`, `X-Session-Id`, `X-Forwarded-*`, `Forwarded`) fournis par le client supprimés ; `X-User-Id` / `X-User-Role` repositionnés après vérification, à titre informatif (les services revérifient le JWT).
+- Adresse client : `X-Forwarded-For` n'est pris en compte que pour `GATEWAY_TRUST_PROXY_HOPS` proxys de confiance (0 si le gateway est en frontal) ; l'adresse résolue est transmise seule aux services (limites par IP inchangées).
+- Chemins : uniquement `/api/v1/*` ; segments `.`/`..`, séparateurs encodés et caractères non réservés encodés refusés (contournement de préfixe).
+- Rate limiting par IP (global et plus strict sur `/auth/*`), corps limité (`GATEWAY_MAX_BODY_BYTES`), délai et disjoncteur par service amont, CORS restreint à l'origine du web (la politique CORS des services est retirée), Helmet.
+- Production : les services ne doivent être joignables que par le gateway (réseau privé) ; limiteur partagé (Redis) si plusieurs instances.
+
+## 6. Protections HTTP
 
 Helmet (CSP, HSTS, frameguard, noSniff), CORS limité à `WEB_ORIGIN`, cookies `HttpOnly Secure SameSite=Strict`, rate limiting Redis (login 10/min/IP et 5/10 min/compte, demande de compte 5/h/IP, inscriptions 50/h/admin), taille de corps limitée, validation zod stricte (champs inconnus rejetés), ProblemDetails sans pile d'appels en production.
 
 CSRF : le refresh token est en cookie `SameSite=Strict` ; toutes les autres routes utilisent l'en-tête `Authorization`, non envoyé automatiquement par le navigateur.
 
-## 6. Secrets
+## 7. Secrets
 
 - Aucun secret réel dans le dépôt ; `.env.example` ne contient que des valeurs factices marquées `dev-only`.
 - Clés JWT de dev générées localement dans `.keys/` (ignoré).
 - CI : `gitleaks` sur chaque push ; `pnpm audit --audit-level high`.
 
-## 7. Menaces couvertes par les tests
+## 8. Menaces couvertes par les tests
 
 | Menace                                     | Test                                                             |
 | ------------------------------------------ | ---------------------------------------------------------------- |

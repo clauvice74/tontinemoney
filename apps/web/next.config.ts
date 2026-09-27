@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
-const apiUrl = (process.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+// Point d'entrée unique : l'API Gateway (docs/service-map.md). Évalué au build (`next build`).
+const apiUrl = (process.env.API_URL ?? 'http://localhost:8080').replace(/\/$/, '');
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },

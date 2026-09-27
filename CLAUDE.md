@@ -11,7 +11,7 @@ pnpm install
 docker compose up -d          # postgres, redis, redpanda, minio, mailpit, prometheus, grafana
 pnpm db:migrate               # prisma migrate deploy
 pnpm db:seed                  # comptes de démonstration
-pnpm dev                      # api :4000 (Swagger /api/docs) + web :3000
+pnpm dev                      # api :4000 (Swagger /api/docs), api-gateway :8080 (point d'entrée), web :3000
 
 pnpm format        # prettier --write     | pnpm format:check
 pnpm lint          # eslint (turbo)
@@ -30,7 +30,7 @@ pnpm db:migration:new <nom>   # nouvelle migration (dev)
 
 ## Architecture du dépôt
 
-- `apps/api` hôte NestJS ; `apps/web` Next.js App Router.
+- `apps/api-gateway` point d'entrée unique (routage, JWT, rate limiting — aucune règle métier) ; `apps/api` hôte NestJS ; `apps/web` Next.js App Router (appelle le gateway).
 - `services/<domaine>` : un module NestJS par domaine (auth, members, kyc, tontines, wallets, transactions, payments, notifications, compliance, administration). Chaque package n'exporte que `src/index.ts`.
 - `packages/platform` : outbox, bus d'événements, idempotence, audit, gardes, erreurs, horloge.
 - `packages/contracts` (zod partagé web/api), `packages/events` (catalogue versionné), `packages/auth` (crypto + RBAC), `packages/database` (Prisma).

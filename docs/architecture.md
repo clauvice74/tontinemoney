@@ -28,7 +28,8 @@ flowchart LR
     ADM[services/administration]
     PLAT[packages/platform<br/>outbox · bus · audit · idempotence · guards]
   end
-  WEB -- REST /api/v1 --> API
+  WEB -- REST /api/v1 --> GW[apps/api-gateway :8080<br/>JWT · rate limit · correlation · erreurs]
+  GW --> API
   API --> PG[(PostgreSQL)]
   API --> RD[(Redis)]
   PLAT -- EVENT_TRANSPORT=kafka --> RP[(Redpanda)]
@@ -42,6 +43,8 @@ flowchart LR
 
 ```
 apps/
+  api-gateway/         Point d'entrée unique /api/v1 : routage, JWT (JWKS), règles de bord,
+                       rate limiting, correlation ID, disjoncteur, métriques (extraction, étape 1)
   api/                 Hôte NestJS : bootstrap, Swagger, santé, métriques, planificateur
   web/                 Next.js App Router, Tailwind, composants shadcn/ui
 packages/

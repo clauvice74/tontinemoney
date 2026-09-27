@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=@tontine/api --filter=@tontine/web",
+    "dev": "turbo run dev --filter=@tontine/api --filter=@tontine/api-gateway --filter=@tontine/web",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

@@ -14,13 +14,13 @@ pnpm install
 docker compose up -d        # PostgreSQL, Redis, Redpanda, MinIO, Mailpit, OTel collector, Prometheus, Grafana
 pnpm db:migrate             # migrations SQL versionnées (packages/database/prisma/migrations)
 pnpm db:seed                # comptes et tontine de démonstration
-pnpm dev                    # API :4000 + web :3000
+pnpm dev                    # API :4000, API Gateway :8080, web :3000
 ```
 
 | Service                      | URL                                                                           |
 | ---------------------------- | ----------------------------------------------------------------------------- |
 | Application web              | http://localhost:3000                                                         |
-| API REST v1                  | http://localhost:4000/api/v1                                                  |
+| API REST v1 (API Gateway)    | http://localhost:8080/api/v1 — service par défaut `apps/api` sur :4000        |
 | Swagger / OpenAPI            | http://localhost:4000/api/docs (JSON : `/api/docs-json`, `docs/openapi.json`) |
 | Santé / métriques            | http://localhost:4000/health, `/health/ready`, `/metrics`                     |
 | Messages simulés (SMS/email) | http://localhost:3000/dev/messages (codes OTP, liens d'activation)            |
