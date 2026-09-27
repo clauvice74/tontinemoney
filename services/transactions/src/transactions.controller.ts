@@ -90,14 +90,14 @@ export class TransactionsController {
   }
 
   /** Liste filtrée par le porteur du jeton (US-2.5 §4). */
-  @Get('me/transactions')
+  @Get(['me/transactions', 'transactions'])
   @ApiOperation({ summary: 'Mes transactions (initiées ou reçues)' })
   @ApiZodQuery(listQuery)
   async mine(@CurrentUser() actor: Actor, @ZodQuery(listQuery) q: z.infer<typeof listQuery>) {
     return this.page({ OR: [{ initiatorId: actor.userId }, { beneficiaryId: actor.userId }] }, q);
   }
 
-  @Get('me/transactions/:id')
+  @Get(['me/transactions/:id', 'transactions/:id'])
   @ApiOperation({ summary: 'Détail d’une de mes transactions' })
   async one(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
     return transactionView(await this.transactions.getForActor(actor, id));
@@ -128,7 +128,7 @@ export class TransactionsController {
     };
   }
 
-  @Post('admin/transactions/:id/reverse')
+  @Post(['admin/transactions/:id/reverse', 'transactions/:id/reverse'])
   @Roles('SUPER_ADMIN')
   @HttpCode(200)
   @ApiOperation({ summary: 'Contre-passer une transaction (US-6.4)' })

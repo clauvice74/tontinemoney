@@ -187,7 +187,7 @@
     },
     "/api/v1/me/notifications": {
       "get": {
-        "operationId": "MyNotificationsController_list_v1",
+        "operationId": "MyNotificationsController_list[0]_v1",
         "parameters": [
           {
             "name": "limit",
@@ -239,6 +239,107 @@
           }
         },
         "summary": "Mes notifications in-app (historique)",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "MyNotificationsController_list[1]_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "unread",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["true", "false"]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mes notifications in-app (historique)",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/me/notifications/{id}": {
+      "get": {
+        "operationId": "MyNotificationsController_one[0]_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Une de mes notifications",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/v1/notifications/{id}": {
+      "get": {
+        "operationId": "MyNotificationsController_one[1]_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Une de mes notifications",
         "tags": ["Notifications"]
       }
     },
@@ -2534,6 +2635,205 @@
         "tags": ["Portefeuille"]
       }
     },
+    "/api/v1/wallets/{walletId}": {
+      "get": {
+        "operationId": "WalletsController_one_v1",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Portefeuille par identifiant (titulaire ou super-admin)",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/wallets/{walletId}/balance": {
+      "get": {
+        "operationId": "WalletsController_balance_v1",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Solde total, disponible et bloqué (titulaire ou super-admin)",
+        "tags": ["Portefeuille"]
+      }
+    },
+    "/api/v1/wallets/{walletId}/history": {
+      "get": {
+        "operationId": "WalletsController_walletHistory_v1",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": ["CREDIT", "DEBIT", "HOLD", "RELEASE"]
+                }
+              ]
+            }
+          },
+          {
+            "name": "context",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "TONTINE_CONTRIBUTION",
+                    "TONTINE_PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "tontineId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mouvements d’un portefeuille (titulaire ou super-admin)",
+        "tags": ["Portefeuille"]
+      }
+    },
     "/api/v1/admin/wallets/{walletId}/status": {
       "post": {
         "operationId": "WalletsController_setStatus_v1",
@@ -3254,7 +3554,104 @@
     },
     "/api/v1/me/transactions": {
       "get": {
-        "operationId": "TransactionsController_mine_v1",
+        "operationId": "TransactionsController_mine[0]_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "VALIDATED",
+                    "COMPLETED",
+                    "FAILED",
+                    "REJECTED",
+                    "REVERSED",
+                    "REFUNDED"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "DEPOSIT",
+                    "WITHDRAWAL",
+                    "TRANSFER",
+                    "CONTRIBUTION",
+                    "PAYOUT",
+                    "PENALTY",
+                    "ENTRY_FEE",
+                    "COLLATION",
+                    "REFUND",
+                    "REVERSAL"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes transactions (initiées ou reçues)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/transactions": {
+      "get": {
+        "operationId": "TransactionsController_mine[1]_v1",
         "parameters": [
           {
             "name": "limit",
@@ -3351,7 +3748,34 @@
     },
     "/api/v1/me/transactions/{id}": {
       "get": {
-        "operationId": "TransactionsController_one_v1",
+        "operationId": "TransactionsController_one[0]_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’une de mes transactions",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_one[1]_v1",
         "parameters": [
           {
             "name": "id",
@@ -3502,7 +3926,53 @@
     },
     "/api/v1/admin/transactions/{id}/reverse": {
       "post": {
-        "operationId": "TransactionsController_reverse_v1",
+        "operationId": "TransactionsController_reverse[0]_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Contre-passer une transaction (US-6.4)",
+        "tags": ["Transactions"]
+      }
+    },
+    "/api/v1/transactions/{id}/reverse": {
+      "post": {
+        "operationId": "TransactionsController_reverse[1]_v1",
         "parameters": [
           {
             "name": "id",
@@ -5667,7 +6137,65 @@
     },
     "/api/v1/me/wallet/deposits": {
       "post": {
-        "operationId": "PaymentsController_deposit_v1",
+        "operationId": "PaymentsController_deposit[0]_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["MOBILE_MONEY", "CARD"]
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": ["amount", "currency", "method"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dépôt Mobile Money (USSD simulé) ou carte (3-D Secure simulé) — US-7.1 / US-7.2",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/deposit": {
+      "post": {
+        "operationId": "PaymentsController_deposit[1]_v1",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -5725,7 +6253,7 @@
     },
     "/api/v1/me/wallet/withdrawals": {
       "post": {
-        "operationId": "PaymentsController_withdraw_v1",
+        "operationId": "PaymentsController_withdraw[0]_v1",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -5781,9 +6309,190 @@
         "tags": ["Paiements"]
       }
     },
+    "/api/v1/payments/withdraw": {
+      "post": {
+        "operationId": "PaymentsController_withdraw[1]_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["MOBILE_MONEY"]
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": ["amount", "currency", "method", "phone"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retrait Mobile Money : blocage des fonds puis versement PSP (US-7.3)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/mobile-money": {
+      "post": {
+        "operationId": "PaymentsController_mobileMoney_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": ["amount", "currency", "phone"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dépôt Mobile Money (alias de /me/wallet/deposits, méthode implicite)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/card": {
+      "post": {
+        "operationId": "PaymentsController_card_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clé unique (8-128 caractères) par opération",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,14})(\\.\\d+)?$"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": ["amount", "currency"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dépôt par carte, 3-D Secure (alias de /me/wallet/deposits)",
+        "tags": ["Paiements"]
+      }
+    },
     "/api/v1/me/payments": {
       "get": {
-        "operationId": "PaymentsController_mine_v1",
+        "operationId": "PaymentsController_mine[0]_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mes paiements",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments": {
+      "get": {
+        "operationId": "PaymentsController_mine[1]_v1",
         "parameters": [],
         "responses": {
           "200": {
@@ -5801,7 +6510,34 @@
     },
     "/api/v1/me/payments/{id}": {
       "get": {
-        "operationId": "PaymentsController_one_v1",
+        "operationId": "PaymentsController_one[0]_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Détail d’un paiement (historique des statuts)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/{id}": {
+      "get": {
+        "operationId": "PaymentsController_one[1]_v1",
         "parameters": [
           {
             "name": "id",
@@ -5877,6 +6613,82 @@
           }
         ],
         "summary": "Tous les paiements (super-admin)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/refund": {
+      "post": {
+        "operationId": "PaymentsController_refundById_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paymentId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["paymentId", "reason"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rembourser un dépôt (alias de /admin/payments/{id}/refund)",
+        "tags": ["Paiements"]
+      }
+    },
+    "/api/v1/payments/reconcile": {
+      "post": {
+        "operationId": "PaymentsController_reconcile_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Réconciliation PSP d’une journée (alias de /admin/reconciliation/run, kind PSP)",
         "tags": ["Paiements"]
       }
     },

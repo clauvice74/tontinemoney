@@ -23,11 +23,11 @@ import { z } from 'zod';
 const listSchema = paginationQuerySchema.extend({ unread: z.enum(['true', 'false']).optional() });
 
 @ApiTags('Notifications')
-@Controller({ path: 'me/notifications', version: '1' })
+@Controller({ version: '1' })
 export class MyNotificationsController {
   constructor(private readonly prisma: PrismaService) {}
 
-  @Get()
+  @Get(['me/notifications', 'notifications'])
   @ApiOperation({ summary: 'Mes notifications in-app (historique)' })
   @ApiZodQuery(listSchema)
   async list(@CurrentUser() actor: Actor, @ZodQuery(listSchema) q: z.infer<typeof listSchema>) {
@@ -68,7 +68,25 @@ export class MyNotificationsController {
     };
   }
 
-  @Post(':id/read')
+  @Get(['me/notifications/:id', 'notifications/:id'])
+  @ApiOperation({ summary: 'Une de mes notifications' })
+  async one(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
+    const n = await this.prisma.notification.findFirst({
+      where: { id, recipientId: actor.userId, channel: 'IN_APP' },
+    });
+    if (!n) throw new DomainError('NOT_FOUND');
+    return {
+      id: n.id,
+      category: n.category,
+      priority: n.priority,
+      title: n.title,
+      body: n.body,
+      createdAt: n.createdAt.toISOString(),
+      readAt: n.readAt?.toISOString() ?? null,
+    };
+  }
+
+  @Post('me/notifications/:id/read')
   @HttpCode(204)
   @ApiOperation({ summary: 'Marquer une notification comme lue' })
   async read(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<void> {
@@ -84,7 +102,7 @@ export class MyNotificationsController {
     }
   }
 
-  @Post('read-all')
+  @Post('me/notifications/read-all')
   @HttpCode(204)
   @ApiOperation({ summary: 'Tout marquer comme lu' })
   async readAll(@CurrentUser() actor: Actor): Promise<void> {

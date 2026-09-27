@@ -111,21 +111,28 @@ Liens envoyés par email/SMS : `${APP_PUBLIC_URL}/activate/{token}`, `${APP_PUBL
 
 ## Portefeuille, transactions, paiements (épiques 5-7)
 
-| Méthode     | Route                                                                       | Corps / réponse                                                          |
-| ----------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| GET 🔒      | `/me/wallet`                                                                | `{id, currency, status, balance, available, blocked}`                    |
-| GET 🔒      | `/me/wallet/movements?type&context&from&to&tontineId&cursor`                | historique avec `balanceAfter`                                           |
-| POST 🔒💸   | `/me/wallet/deposits`                                                       | `{amount, currency, method:'MOBILE_MONEY'                                | 'CARD', phone?}`→`PaymentView {id, type, method, status, amount, provider, redirectUrl?, createdAt}` |
-| POST 🔒💸   | `/me/wallet/withdrawals`                                                    | `{amount, currency, method:'MOBILE_MONEY', phone}` → `PaymentView`       |
-| POST 🔒💸   | `/me/wallet/transfers`                                                      | `{toIdentifier                                                           | toMemberId, amount, currency, note?}`→`TransactionView`                                              |
-| GET 🔒      | `/me/payments` · `/me/payments/{id}`                                        | paiements                                                                |
-| GET 🔒      | `/me/transactions`                                                          | transactions (initiées ou reçues)                                        |
-| POST        | `/payments/webhooks/{provider}`                                             | webhook PSP signé (HMAC `x-psp-signature`, `x-psp-timestamp`)            |
-| GET/POST    | `/psp-sim/checkout/{reference}`                                             | **simulateur** : page carte 3-D Secure fictive, `POST {outcome:'SUCCESS' | 'FAILURE'}`                                                                                          |
-| POST        | `/psp-sim/mobile-money/{reference}/confirm`                                 | **simulateur** : confirmation USSD `{outcome}`                           |
-| POST 🔒     | `/admin/payments/{id}/refund`                                               | SUPER_ADMIN `{reason}`                                                   |
-| GET 🔒      | `/admin/transactions?status&type` · POST `/admin/transactions/{id}/reverse` | SUPER_ADMIN                                                              |
-| GET/POST 🔒 | `/admin/reconciliation` · `/admin/reconciliation/run`                       | `{kind:'INTERNAL'                                                        | 'PSP', date?}`; rapport`?format=csv`                                                                 |
+| Méthode     | Route                                                                                        | Corps / réponse                                                                         |
+| ----------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| GET 🔒      | `/me/wallet`                                                                                 | `{id, currency, status, balance, available, blocked}`                                   |
+| GET 🔒      | `/me/wallet/movements?type&context&from&to&tontineId&cursor`                                 | historique avec `balanceAfter`                                                          |
+| POST 🔒💸   | `/me/wallet/deposits`                                                                        | `{amount, currency, method:'MOBILE_MONEY'                                               | 'CARD', phone?}`→`PaymentView {id, type, method, status, amount, provider, redirectUrl?, createdAt}` |
+| POST 🔒💸   | `/me/wallet/withdrawals`                                                                     | `{amount, currency, method:'MOBILE_MONEY', phone}` → `PaymentView`                      |
+| POST 🔒💸   | `/me/wallet/transfers`                                                                       | `{toIdentifier                                                                          | toMemberId, amount, currency, note?}`→`TransactionView`                                              |
+| GET 🔒      | `/me/payments` · `/me/payments/{id}`                                                         | paiements                                                                               |
+| GET 🔒      | `/me/transactions`                                                                           | transactions (initiées ou reçues)                                                       |
+| POST        | `/payments/webhooks/{provider}`                                                              | webhook PSP signé (HMAC `x-psp-signature`, `x-psp-timestamp`)                           |
+| GET/POST    | `/psp-sim/checkout/{reference}`                                                              | **simulateur** : page carte 3-D Secure fictive, `POST {outcome:'SUCCESS'                | 'FAILURE'}`                                                                                          |
+| POST        | `/psp-sim/mobile-money/{reference}/confirm`                                                  | **simulateur** : confirmation USSD `{outcome}`                                          |
+| POST 🔒     | `/admin/payments/{id}/refund`                                                                | SUPER_ADMIN `{reason}`                                                                  |
+| GET 🔒      | `/admin/transactions?status&type` · POST `/admin/transactions/{id}/reverse`                  | SUPER_ADMIN                                                                             |
+| GET 🔒      | `/wallets/{id}` · `/wallets/{id}/balance` · `/wallets/{id}/history`                          | titulaire ou SUPER_ADMIN (lecture journalisée) ; 404 pour tout autre (refus journalisé) |
+| POST 🔒💸   | `/payments/deposit` · `/payments/withdraw`                                                   | alias de `/me/wallet/deposits` · `/me/wallet/withdrawals` (même clé d’idempotence)      |
+| POST 🔒💸   | `/payments/mobile-money` `{amount, currency, phone}` · `/payments/card` `{amount, currency}` | dépôt, méthode implicite                                                                |
+| GET 🔒      | `/payments` · `/payments/{id}`                                                               | alias de `/me/payments` · `/me/payments/{id}`                                           |
+| POST 🔒     | `/payments/refund` `{paymentId, reason}` · `/payments/reconcile` `{date?}`                   | SUPER_ADMIN, alias du remboursement et de la réconciliation PSP                         |
+| GET/POST 🔒 | `/transactions` · `/transactions/{id}` · POST `/transactions/{id}/reverse`                   | alias de `/me/transactions*` et de `/admin/transactions/{id}/reverse`                   |
+| GET 🔒      | `/notifications` · `/notifications/{id}` · `/me/notifications/{id}`                          | mes notifications in-app ; lecture unitaire limitée au destinataire                     |
+| GET/POST 🔒 | `/admin/reconciliation` · `/admin/reconciliation/run`                                        | `{kind:'INTERNAL'                                                                       | 'PSP', date?}`; rapport`?format=csv`                                                                 |
 
 ## Conformité & fraude (épique 9, A-14)
 

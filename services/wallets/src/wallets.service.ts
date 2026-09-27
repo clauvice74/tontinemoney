@@ -144,8 +144,14 @@ export class WalletsService {
 
   /** US-5.2 — historique paginé par curseur, filtres type / date / contexte, solde après opération. */
   async history(memberId: string, q: WalletHistoryQuery) {
-    const wallet = await this.memberWallet(memberId);
+    return this.historyOf(await this.memberWallet(memberId), q);
+  }
+
+  /** Mouvements d'un portefeuille, du plus récent au plus ancien (curseur : `seq`). */
+  async historyOf(wallet: Wallet, q: WalletHistoryQuery) {
     const cursor = decodeCursor(q.cursor);
+    const cursorSeq =
+      cursor && /^\d{1,19}$/.test(String(cursor.k)) ? BigInt(String(cursor.k)) : null;
     const where: Prisma.WalletMovementWhereInput = {
       walletId: wallet.id,
       ...(q.type ? { type: q.type } : {}),
@@ -159,7 +165,7 @@ export class WalletsService {
             },
           }
         : {}),
-      ...(cursor ? { seq: { lt: BigInt(String(cursor.k)) } } : {}),
+      ...(cursorSeq !== null ? { seq: { lt: cursorSeq } } : {}),
     };
     const rows = await this.prisma.walletMovement.findMany({
       where,

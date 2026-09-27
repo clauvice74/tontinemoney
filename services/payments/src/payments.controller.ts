@@ -16,7 +16,11 @@ import {
   type DepositInput,
   PAYMENT_STATUSES,
   type WithdrawalInput,
+  cardDepositSchema,
   depositSchema,
+  mobileMoneyDepositSchema,
+  pspReconcileSchema,
+  refundByIdSchema,
   refundSchema,
   withdrawalSchema,
 } from '@tontine/contracts';
@@ -38,6 +42,7 @@ import { type Request } from 'express';
 import { z } from 'zod';
 import { PaymentsService } from './payments.service';
 import { ProviderRegistry } from './provider-registry';
+import { PspReconciliationService } from './psp-reconciliation.service';
 
 const adminQuery = z.object({
   status: z.enum(PAYMENT_STATUSES).optional(),
@@ -59,9 +64,12 @@ function headersOf(req: Request): Record<string, string | undefined> {
 @ApiBearerAuth()
 @Controller({ version: '1' })
 export class PaymentsController {
-  constructor(private readonly payments: PaymentsService) {}
+  constructor(
+    private readonly payments: PaymentsService,
+    private readonly reconciliation: PspReconciliationService,
+  ) {}
 
-  @Post('me/wallet/deposits')
+  @Post(['me/wallet/deposits', 'payments/deposit'])
   @Idempotent('wallet.deposit')
   @ApiOperation({
     summary: 'Dépôt Mobile Money (USSD simulé) ou carte (3-D Secure simulé) — US-7.1 / US-7.2',
@@ -75,7 +83,7 @@ export class PaymentsController {
     return this.payments.deposit(actor, body, req.header('idempotency-key') ?? '');
   }
 
-  @Post('me/wallet/withdrawals')
+  @Post(['me/wallet/withdrawals', 'payments/withdraw'])
   @Idempotent('wallet.withdrawal')
   @ApiOperation({ summary: 'Retrait Mobile Money : blocage des fonds puis versement PSP (US-7.3)' })
   @ApiZodBody(withdrawalSchema)
@@ -87,13 +95,45 @@ export class PaymentsController {
     return this.payments.withdraw(actor, body, req.header('idempotency-key') ?? '');
   }
 
-  @Get('me/payments')
+  @Post('payments/mobile-money')
+  @Idempotent('wallet.deposit')
+  @ApiOperation({ summary: 'Dépôt Mobile Money (alias de /me/wallet/deposits, méthode implicite)' })
+  @ApiZodBody(mobileMoneyDepositSchema)
+  async mobileMoney(
+    @CurrentUser() actor: Actor,
+    @ZodBody(mobileMoneyDepositSchema) body: z.infer<typeof mobileMoneyDepositSchema>,
+    @Req() req: Request,
+  ) {
+    return this.payments.deposit(
+      actor,
+      { ...body, method: 'MOBILE_MONEY' },
+      req.header('idempotency-key') ?? '',
+    );
+  }
+
+  @Post('payments/card')
+  @Idempotent('wallet.deposit')
+  @ApiOperation({ summary: 'Dépôt par carte, 3-D Secure (alias de /me/wallet/deposits)' })
+  @ApiZodBody(cardDepositSchema)
+  async card(
+    @CurrentUser() actor: Actor,
+    @ZodBody(cardDepositSchema) body: z.infer<typeof cardDepositSchema>,
+    @Req() req: Request,
+  ) {
+    return this.payments.deposit(
+      actor,
+      { ...body, method: 'CARD' },
+      req.header('idempotency-key') ?? '',
+    );
+  }
+
+  @Get(['me/payments', 'payments'])
   @ApiOperation({ summary: 'Mes paiements' })
   async mine(@CurrentUser() actor: Actor) {
     return { data: await this.payments.listMine(actor) };
   }
 
-  @Get('me/payments/:id')
+  @Get(['me/payments/:id', 'payments/:id'])
   @ApiOperation({ summary: 'Détail d’un paiement (historique des statuts)' })
   async one(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
     return this.payments.getMine(actor, id);
@@ -105,6 +145,29 @@ export class PaymentsController {
   @ApiZodQuery(adminQuery)
   async all(@ZodQuery(adminQuery) q: z.infer<typeof adminQuery>) {
     return { data: await this.payments.listAll(q) };
+  }
+
+  @Post('payments/refund')
+  @Roles('SUPER_ADMIN')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Rembourser un dépôt (alias de /admin/payments/{id}/refund)' })
+  @ApiZodBody(refundByIdSchema)
+  async refundById(
+    @CurrentUser() actor: Actor,
+    @ZodBody(refundByIdSchema) body: z.infer<typeof refundByIdSchema>,
+  ) {
+    return this.payments.refund(actor, body.paymentId, body.reason);
+  }
+
+  @Post('payments/reconcile')
+  @Roles('SUPER_ADMIN')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Réconciliation PSP d’une journée (alias de /admin/reconciliation/run, kind PSP)',
+  })
+  @ApiZodBody(pspReconcileSchema)
+  async reconcile(@ZodBody(pspReconcileSchema) body: z.infer<typeof pspReconcileSchema>) {
+    return this.reconciliation.run(body.date);
   }
 
   @Post('admin/payments/:id/refund')

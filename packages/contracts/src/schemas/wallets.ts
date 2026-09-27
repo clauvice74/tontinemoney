@@ -58,3 +58,16 @@ export const walletStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'SUSPENDED', 'LOCKED', 'CLOSED']),
   reason: reasonSchema,
 });
+
+/** `POST /payments/mobile-money` : dépôt Mobile Money (méthode implicite). */
+export const mobileMoneyDepositSchema = z
+  .object({ amount: amountStringSchema, currency: currencySchema, phone: phoneSchema })
+  .strict();
+/** `POST /payments/card` : dépôt par carte (méthode implicite). */
+export const cardDepositSchema = z
+  .object({ amount: amountStringSchema, currency: currencySchema })
+  .strict();
+/** `POST /payments/refund` : remboursement, identifiant du paiement dans le corps. */
+export const refundByIdSchema = z.object({ paymentId: uuidSchema, reason: reasonSchema }).strict();
+/** `POST /payments/reconcile` : réconciliation PSP d'une journée (veille par défaut). */
+export const pspReconcileSchema = z.object({ date: isoDateSchema.optional() }).strict();
