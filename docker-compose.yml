@@ -28,6 +28,8 @@ services:
     image: redpandadata/redpanda:v24.2.7
     command:
       - redpanda start
+      # Nœud unique : sujets internes (dont l'attribution des producer id) en réplication 1
+      - --mode dev-container
       - --smp 1
       - --memory 512M
       - --overprovisioned

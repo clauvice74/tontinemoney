@@ -37,6 +37,8 @@ export interface KafkaTransportOptions {
   /** Tentatives de traitement avant rejet (InboxProcessor). */
   maxAttempts: number;
   replicationFactor?: number;
+  /** Réessais du client (connexion, attribution du producer id au démarrage du broker). */
+  retry?: { retries: number; initialRetryTime: number; maxRetryTime: number };
 }
 
 /** En-têtes Kafka d'un événement : métadonnées de l'enveloppe, lisibles sans désérialiser. */
@@ -81,6 +83,9 @@ export class KafkaTransport implements EventTransport {
       clientId: options.clientId,
       brokers: options.brokers,
       logLevel: logLevel.WARN,
+      // ~30 s de patience au démarrage : le coordinateur qui attribue les producer id
+      // (producteur idempotent) peut répondre NOT_COORDINATOR tant qu'il n'est pas prêt.
+      retry: options.retry ?? { retries: 10, initialRetryTime: 300, maxRetryTime: 5000 },
     });
     this.processor = new InboxProcessor(
       dispatcher,
