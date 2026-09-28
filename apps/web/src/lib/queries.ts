@@ -1,8 +1,15 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { api } from './api';
-import type { ListResponse, NotificationView, TontineView, WalletView } from './api/types';
+import type {
+  ContributionView,
+  ListResponse,
+  NotificationView,
+  TontineView,
+  WalletView,
+} from './api/types';
 import { useAuthStore } from './auth/store';
 
 /** Clés de cache partagées. */
@@ -60,3 +67,46 @@ export function useAdminTontines() {
   const q = useMyTontines();
   return { ...q, data: q.data?.data.filter((t) => t.myRole === 'ADMIN') ?? [] };
 }
+
+/** Échéance du membre (toutes tontines) : tontine et pénalité réglée renseignées. */
+export type MyContribution = ContributionView & {
+  tontineId: string;
+  tontineName: string;
+  penaltyPaid?: boolean;
+};
+
+/**
+ * Contributions du membre dans toutes ses tontines (`/me/contributions`, admins compris),
+ * triées par échéance.
+ */
+export function useMyContributions() {
+  const query = useQuery({
+    queryKey: ['me', 'contributions'],
+    queryFn: () => api.get<ListResponse<MyContribution>>('/me/contributions'),
+    // Paiement en cours (saga asynchrone, A-53) : rafraîchissement jusqu'à l'issue
+    refetchInterval: (q) =>
+      q.state.data?.data.some((c) => c.paymentStatus === 'PROCESSING') ? 1500 : false,
+  });
+  // Fin d'un paiement asynchrone : solde, tontines et cycles changent aussi.
+  const queryClient = useQueryClient();
+  const processing = query.data?.data.filter((c) => c.paymentStatus === 'PROCESSING').length ?? 0;
+  const previous = useRef(processing);
+  useEffect(() => {
+    if (processing < previous.current) {
+      void queryClient.invalidateQueries({ queryKey: qk.wallet });
+      void queryClient.invalidateQueries({ queryKey: qk.tontines });
+      void queryClient.invalidateQueries({ queryKey: ['wallet-movements'] });
+    }
+    previous.current = processing;
+  }, [processing, queryClient]);
+  return {
+    contributions: query.data?.data ?? [],
+    isPending: query.isPending,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
+
+/** Échéances à payer (à l'heure, en retard ou en défaut). */
+export const PAYABLE_STATUSES = ['PENDING', 'LATE', 'DEFAULTED'] as const;

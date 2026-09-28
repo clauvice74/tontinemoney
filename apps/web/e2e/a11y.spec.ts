@@ -51,4 +51,19 @@ test.describe('Accessibilité WCAG AA (axe-core)', () => {
     await expect(page.getByRole('navigation', { name: 'Navigation mobile' })).toBeVisible();
     await expectAccessible(page);
   });
+
+  test('tontines : liste, détail et assistant de création', async ({ page }) => {
+    await login(page, 'admin.tontine@tontinemoney.local');
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'));
+    await page.goto('/tontines');
+    await expect(page.getByRole('heading', { level: 1, name: 'Mes tontines' })).toBeVisible();
+    await expectAccessible(page);
+    await page.getByRole('link', { name: /Voir les détails — Tontine Solidarité Douala/ }).click();
+    await expect(page.getByText('Informations générales')).toBeVisible();
+    await expect(page.getByText(/Cycle 1 — /)).toBeVisible();
+    await expectAccessible(page);
+    await page.goto('/tontines/new');
+    await expect(page.getByText('Étape 1 sur 4 — Type')).toBeVisible();
+    await expectAccessible(page);
+  });
 });

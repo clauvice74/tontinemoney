@@ -141,3 +141,43 @@ describe('Routes à plat /cycles', () => {
     expect(badId.status).toBe(400);
   });
 });
+
+describe('Vue tontine : cycle en cours (A-58)', () => {
+  it('GET /tontines et /tontines/:id exposent le cycle en cours, mis à jour après paiement', async () => {
+    const s = await startTontine(ctx);
+    const [, bella] = s.users;
+    const cycle = await firstCycle(s.tontineId);
+    const token = await ctx.token(bella!);
+    const expected = {
+      number: 1,
+      status: cycle.status,
+      dueDate: cycle.dueDate.toISOString().slice(0, 10),
+      beneficiary: { memberId: cycle.beneficiaryId, firstName: expect.any(String) },
+      paidCount: 0,
+      memberCount: 3,
+    };
+    const one = await ctx.http.get(`/api/v1/tontines/${s.tontineId}`).set(bearer(token));
+    expect(one.body.currentCycle).toEqual(expected);
+    const list = await ctx.http.get('/api/v1/tontines').set(bearer(token));
+    expect(list.body.data.find((t: { id: string }) => t.id === s.tontineId).currentCycle).toEqual(
+      expected,
+    );
+
+    expect((await payCurrent(ctx, s, bella!)).status).toBe(202);
+    await settle(ctx);
+    const after = await ctx.http.get(`/api/v1/tontines/${s.tontineId}`).set(bearer(token));
+    expect(after.body.currentCycle.paidCount).toBe(1);
+  });
+
+  it('null tant que la tontine n’a pas démarré', async () => {
+    const s = await startTontine(ctx);
+    await ctx.prisma.tontine.update({
+      where: { id: s.tontineId },
+      data: { currentCycleNumber: null },
+    });
+    const res = await ctx.http
+      .get(`/api/v1/tontines/${s.tontineId}`)
+      .set(bearer(await ctx.token(s.admin)));
+    expect(res.body.currentCycle).toBeNull();
+  });
+});
