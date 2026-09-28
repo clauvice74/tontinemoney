@@ -48,7 +48,9 @@ test.describe('Lot 3 : accueil, tontines, création, invitation', () => {
 
     await page.getByRole('button', { name: 'Continuer' }).click();
     await expect(page.locator('#name-error')).toBeVisible();
-    await page.getByLabel('Nom de la tontine').fill('Tontine E2E lot 3');
+    // Nom unique par administrateur : un suffixe par exécution
+    const name = `Tontine E2E ${String(Date.now()).slice(-8)}`;
+    await page.getByLabel('Nom de la tontine').fill(name);
     await page.getByRole('button', { name: 'Continuer' }).click();
 
     await expect(page.getByText('Étape 2 sur 4 — Montant')).toBeVisible();
@@ -70,7 +72,7 @@ test.describe('Lot 3 : accueil, tontines, création, invitation', () => {
     await page.getByRole('button', { name: 'Créer la tontine' }).click();
 
     await expect(page).toHaveURL(/\/tontines\/[0-9a-f-]{36}$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Tontine E2E lot 3' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Inviter un membre' })).toBeVisible();
   });
 

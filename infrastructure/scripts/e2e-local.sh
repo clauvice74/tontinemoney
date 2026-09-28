@@ -5,6 +5,26 @@
 # Prérequis : pnpm build, base migrée et alimentée (pnpm db:migrate && pnpm db:seed).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# Demandes de compte laissées en attente par les exécutions précédentes du parcours
+# d'inscription (e-mails parcours.*@example.test) : expirées comme le ferait la tâche
+# auth.expire-access-requests, sinon la règle « 3 demandes en attente par IP » (US-1.3)
+# bloquerait le test dès la 4e exécution locale. Aucune autre donnée n'est touchée.
+(cd "$ROOT/packages/database" && node --env-file=../../.env -e '
+  const { Client } = require("pg");
+  const db = new Client({ connectionString: process.env.DATABASE_URL });
+  (async () => {
+    await db.connect();
+    await db.query("BEGIN");
+    const r = await db.query(`UPDATE auth.auth_access_requests ar SET status = $1
+      FROM auth.auth_users u WHERE u.id = ar."userId" AND ar.status = $2
+        AND u.email LIKE $3 RETURNING ar."userId"`, ["EXPIRED", "PENDING", "parcours.%@example.test"]);
+    const ids = r.rows.map((x) => x.userId);
+    if (ids.length) await db.query("UPDATE auth.auth_users SET status = $1 WHERE id = ANY($2::uuid[])", ["EXPIRED", ids]);
+    await db.query("COMMIT");
+    console.log(`demandes de compte E2E expirées : ${ids.length}`);
+    await db.end();
+  })().catch(async (e) => { console.error("nettoyage E2E impossible :", e.message); process.exit(0); });
+') || true
 cd "$ROOT/apps/api"
 EMAIL_DRIVER=memory PSP_WEBHOOK_DELIVERY=http node --env-file=../../.env dist/main.js > /tmp/tm-api.log 2>&1 &
 API=$!
@@ -12,7 +32,11 @@ cd "$ROOT/apps/reporting-service"
 EVENT_GROUP=reporting SERVICE_NAME=reporting node --env-file=../../.env dist/main.js > /tmp/tm-reporting.log 2>&1 &
 REP=$!
 cd "$ROOT/apps/api-gateway"
-node --env-file=../../.env dist/main.js > /tmp/tm-gateway.log 2>&1 &
+# Toute la suite vient d'une seule IP : le quota /auth (60/min par défaut, refresh et me compris)
+# serait dépassé par les connexions successives. Limiteur toujours actif, quota relevé ici
+# seulement (une variable déjà définie n'est pas écrasée par --env-file).
+GATEWAY_AUTH_RATE_LIMIT_PER_MINUTE="${E2E_AUTH_RATE_LIMIT_PER_MINUTE:-600}" \
+  node --env-file=../../.env dist/main.js > /tmp/tm-gateway.log 2>&1 &
 GW=$!
 cd "$ROOT/apps/payment-gateway"
 node --env-file=../../.env dist/main.js > /tmp/tm-payment-gateway.log 2>&1 &
