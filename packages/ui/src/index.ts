@@ -55,3 +55,21 @@ export {
 export { FieldError, Fieldset, FormField, type FormFieldProps } from './components/form-field';
 export { CursorPagination, type CursorPaginationProps } from './components/pagination';
 export { EmptyState, type EmptyStateProps } from './components/empty-state';
+export { ProgressBar, type ProgressBarProps } from './components/progress-bar';
+export { Avatar, avatarTone, initialsOf, type AvatarProps } from './components/avatar';
+export {
+  Timeline,
+  type TimelineItem,
+  type TimelineProps,
+  type TimelineStatus,
+} from './components/timeline';
+export { KpiCard, type KpiCardProps } from './components/kpi-card';
+export {
+  Dropdown,
+  DropdownContent,
+  DropdownGroup,
+  DropdownItem,
+  DropdownLabel,
+  DropdownSeparator,
+  DropdownTrigger,
+} from './components/dropdown';

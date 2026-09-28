@@ -207,8 +207,8 @@ export default function TontineAdminDashboardPage() {
                       </div>
                     </div>
                     <p className="text-sm">
-                      Collecté : <Money value={c.collected} className="font-semibold" /> · Reste :{' '}
-                      <Money value={c.remaining} className="font-semibold" />
+                      Collecté : <Money value={c.collected} className="font-medium" /> · Reste :{' '}
+                      <Money value={c.remaining} className="font-medium" />
                     </p>
                   </CardContent>
                 </Card>

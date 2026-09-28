@@ -44,7 +44,7 @@ export default function HomePage() {
             <p className="inline-flex rounded-full bg-card px-3 py-1 text-xs font-medium text-primary shadow-sm">
               La tontine, en toute transparence
             </p>
-            <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="text-4xl font-medium tracking-tight md:text-5xl">
               Épargnez ensemble, en confiance.
             </h1>
             <p className="max-w-prose text-lg text-muted-foreground">
@@ -75,11 +75,11 @@ export default function HomePage() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-lg bg-muted p-3">
                   <p className="text-muted-foreground">Cotisation</p>
-                  <p className="text-lg font-semibold tabular-nums">50 000 XAF</p>
+                  <p className="text-lg font-medium tabular-nums">50 000 XAF</p>
                 </div>
                 <div className="rounded-lg bg-muted p-3">
                   <p className="text-muted-foreground">Collecté</p>
-                  <p className="text-lg font-semibold tabular-nums">400 000 XAF</p>
+                  <p className="text-lg font-medium tabular-nums">400 000 XAF</p>
                 </div>
               </div>
               <div>
@@ -101,7 +101,7 @@ export default function HomePage() {
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="fonctionnalites">
-        <h2 id="fonctionnalites" className="mb-8 text-2xl font-semibold tracking-tight">
+        <h2 id="fonctionnalites" className="mb-8 text-2xl font-medium tracking-tight">
           Tout ce qu’il faut pour une tontine sereine
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

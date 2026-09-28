@@ -56,7 +56,7 @@ export default function TontineAdminLayout({ children }: { children: ReactNode }
           › Administration
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{t?.name ?? 'Administration'}</h1>
+          <h1 className="text-2xl font-medium tracking-tight">{t?.name ?? 'Administration'}</h1>
           {t ? <StatusBadge status={t.status} labels={TONTINE_STATUS_LABELS} /> : null}
         </div>
       </div>

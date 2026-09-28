@@ -1,16 +1,29 @@
 import type { PlatformRole } from '@tontine/contracts';
+import type { MessageKey } from './i18n';
 
 export interface NavItem {
   href: string;
-  label: string;
+  /** Clé de traduction du libellé. */
+  label: MessageKey;
+  /** Libellé non traduit (nom de tontine) : remplace `label` à l'affichage. */
+  text?: string;
   icon: NavIcon;
   /** Correspondance exacte du chemin pour l'état actif. */
   exact?: boolean;
+  /** Sous-navigation (sidebar desktop, tiroir mobile). */
+  children?: NavItem[];
+  /** Pastille de notifications non lues. */
+  badge?: 'unread';
 }
 
-export interface NavSection {
-  title: string;
-  items: NavItem[];
+/** Navigation selon le rôle (charte : sidebar desktop, barre basse mobile, menu du compte). */
+export interface Navigation {
+  /** Sidebar desktop : Accueil, Tontines, Wallet, Reporting, Administration (selon le rôle). */
+  primary: NavItem[];
+  /** Barre basse mobile (espace membre) : Accueil, Tontines, Wallet, Notifications, Profil. */
+  bottom: NavItem[];
+  /** Menu du compte (en-tête). */
+  account: NavItem[];
 }
 
 export type NavIcon =
@@ -36,7 +49,9 @@ export type NavIcon =
   | 'scan'
   | 'copy'
   | 'search'
-  | 'mail';
+  | 'mail'
+  | 'chart'
+  | 'palette';
 
 export const isDev = process.env.NODE_ENV !== 'production';
 
@@ -60,90 +75,126 @@ export function homeFor(role: PlatformRole): string {
   return '/dashboard';
 }
 
+/** Outils de la plateforme (super-administrateur) : sidebar et page d'accueil /admin. */
+export const PLATFORM_TOOLS: NavItem[] = [
+  { href: '/admin/tontine-admins/new', label: 'nav.createAdmin', icon: 'plus' },
+  { href: '/admin/access-requests', label: 'nav.accessRequests', icon: 'inbox' },
+  { href: '/admin/users', label: 'nav.users', icon: 'users' },
+  { href: '/admin/members', label: 'nav.members', icon: 'user' },
+  { href: '/admin/compliance', label: 'nav.complianceRules', icon: 'scale', exact: true },
+  { href: '/admin/compliance/violations', label: 'nav.violations', icon: 'alert' },
+  { href: '/admin/fraud', label: 'nav.fraud', icon: 'alert' },
+  { href: '/admin/jobs', label: 'nav.jobs', icon: 'clock' },
+  { href: '/admin/outbox', label: 'nav.outbox', icon: 'queue' },
+  { href: '/admin/audit', label: 'nav.audit', icon: 'log' },
+];
+
+/** Flux financiers de la plateforme (rubrique « Wallet » du super-administrateur). */
+export const PLATFORM_MONEY: NavItem[] = [
+  { href: '/admin/transactions', label: 'nav.transactions', icon: 'receipt' },
+  { href: '/admin/payments', label: 'nav.payments', icon: 'card' },
+  { href: '/admin/reconciliation', label: 'nav.reconciliation', icon: 'refresh' },
+];
+
+const KYC_REVIEW: NavItem[] = [
+  { href: '/kyc-review', label: 'nav.kycQueue', icon: 'scan', exact: true },
+  { href: '/kyc-review/duplicates', label: 'nav.kycDuplicates', icon: 'copy' },
+  { href: '/kyc-review/aml', label: 'nav.amlMatches', icon: 'search' },
+];
+
+const DEV_TOOLS: NavItem = {
+  href: '/dev/ui-kit',
+  label: 'nav.development',
+  icon: 'palette',
+  children: [
+    { href: '/dev/messages', label: 'nav.simulatedMessages', icon: 'mail' },
+    { href: '/dev/ui-kit', label: 'nav.uiKit', icon: 'palette' },
+  ],
+};
+
 export function buildNavigation(
   role: PlatformRole,
   adminTontines: Array<{ id: string; name: string }>,
-): NavSection[] {
-  const sections: NavSection[] = [];
+): Navigation {
+  const primary: NavItem[] = [];
+  let bottom: NavItem[] = [];
+  let account: NavItem[];
   if (hasMemberSpace(role)) {
-    sections.push({
-      title: 'Mon espace',
-      items: [
-        { href: '/dashboard', label: 'Tableau de bord', icon: 'dashboard' },
-        { href: '/wallet', label: 'Portefeuille', icon: 'wallet' },
-        { href: '/tontines', label: 'Mes tontines', icon: 'tontines', exact: true },
-        { href: '/notifications', label: 'Notifications', icon: 'bell' },
-        { href: '/kyc', label: 'Vérification d’identité', icon: 'id' },
-        { href: '/profile', label: 'Profil', icon: 'user' },
-        { href: '/security', label: 'Sécurité', icon: 'shield' },
-      ],
-    });
-    sections.push({
-      title: 'Administration de tontine',
-      items: [
-        { href: '/tontines/new', label: 'Créer une tontine', icon: 'plus' },
-        ...adminTontines.map((t) => ({
-          href: `/tontines/${t.id}/admin`,
-          label: t.name,
-          icon: 'settings' as const,
-        })),
-      ],
-    });
-  }
-  if (role === 'KYC_AGENT' || role === 'SUPER_ADMIN') {
-    sections.push({
-      title: 'Revue KYC',
-      items: [
-        { href: '/kyc-review', label: 'File de revue', icon: 'scan', exact: true },
-        { href: '/kyc-review/duplicates', label: 'Doublons', icon: 'copy' },
-        { href: '/kyc-review/aml', label: 'Correspondances AML', icon: 'search' },
-      ],
-    });
-  }
-  if (role === 'COMPLIANCE_AGENT') {
-    sections.push({
-      title: 'Conformité',
-      items: [{ href: '/kyc-review/aml', label: 'Correspondances AML', icon: 'search' }],
-    });
+    primary.push(
+      { href: '/dashboard', label: 'nav.home', icon: 'dashboard' },
+      { href: '/tontines', label: 'nav.tontines', icon: 'tontines' },
+      { href: '/wallet', label: 'nav.wallet', icon: 'wallet' },
+    );
+    if (adminTontines.length > 0) {
+      primary.push(
+        { href: '/reporting', label: 'nav.reporting', icon: 'chart' },
+        {
+          href: `/tontines/${adminTontines[0]!.id}/admin`,
+          label: 'nav.administration',
+          icon: 'settings',
+          children: [
+            ...adminTontines.map((t) => ({
+              href: `/tontines/${t.id}/admin`,
+              label: 'nav.administration' as const,
+              text: t.name,
+              icon: 'settings' as const,
+            })),
+            { href: '/tontines/new', label: 'nav.createTontine', icon: 'plus' },
+          ],
+        },
+      );
+    }
+    bottom = [
+      { href: '/dashboard', label: 'nav.home', icon: 'dashboard' },
+      { href: '/tontines', label: 'nav.tontines', icon: 'tontines' },
+      { href: '/wallet', label: 'nav.wallet', icon: 'wallet' },
+      { href: '/notifications', label: 'nav.notifications', icon: 'bell', badge: 'unread' },
+      { href: '/profile', label: 'nav.profile', icon: 'user' },
+    ];
+    account = [
+      { href: '/profile', label: 'nav.profile', icon: 'user' },
+      { href: '/kyc', label: 'nav.kyc', icon: 'id' },
+      { href: '/security', label: 'nav.security', icon: 'shield' },
+    ];
+  } else {
+    account = [
+      { href: '/notifications', label: 'nav.notifications', icon: 'bell', badge: 'unread' },
+      { href: '/security', label: 'nav.security', icon: 'shield' },
+    ];
   }
   if (role === 'SUPER_ADMIN') {
-    sections.push({
-      title: 'Plateforme',
-      items: [
-        { href: '/admin', label: 'Vue d’ensemble', icon: 'dashboard', exact: true },
-        { href: '/admin/tontine-admins/new', label: 'Créer un admin', icon: 'plus' },
-        { href: '/admin/access-requests', label: 'Demandes d’accès', icon: 'inbox' },
-        { href: '/admin/users', label: 'Utilisateurs', icon: 'users' },
-        { href: '/admin/members', label: 'Membres', icon: 'user' },
-        { href: '/admin/tontines', label: 'Tontines', icon: 'tontines' },
-        { href: '/admin/compliance', label: 'Règles de conformité', icon: 'scale', exact: true },
-        { href: '/admin/compliance/violations', label: 'Violations', icon: 'alert' },
-        { href: '/admin/fraud', label: 'Signalement de fraude', icon: 'alert' },
-        { href: '/admin/transactions', label: 'Transactions', icon: 'receipt' },
-        { href: '/admin/payments', label: 'Paiements', icon: 'card' },
-        { href: '/admin/reconciliation', label: 'Réconciliation', icon: 'refresh' },
-        { href: '/admin/jobs', label: 'Tâches planifiées', icon: 'clock' },
-        { href: '/admin/outbox', label: 'DLQ événements', icon: 'queue' },
-        { href: '/admin/audit', label: 'Journal d’audit', icon: 'log' },
-      ],
-    });
+    primary.push(
+      { href: '/admin', label: 'nav.home', icon: 'dashboard', exact: true },
+      { href: '/admin/tontines', label: 'nav.tontines', icon: 'tontines' },
+      {
+        href: '/admin/transactions',
+        label: 'nav.wallet',
+        icon: 'wallet',
+        children: PLATFORM_MONEY,
+      },
+      { href: '/reporting', label: 'nav.reporting', icon: 'chart' },
+      {
+        href: '/admin/users',
+        label: 'nav.administration',
+        icon: 'settings',
+        children: PLATFORM_TOOLS,
+      },
+      { href: '/kyc-review', label: 'nav.kycReview', icon: 'scan', children: KYC_REVIEW },
+    );
   }
-  if (!hasMemberSpace(role)) {
-    sections.push({
-      title: 'Mon compte',
-      items: [
-        { href: '/notifications', label: 'Notifications', icon: 'bell' },
-        { href: '/security', label: 'Sécurité', icon: 'shield' },
-      ],
-    });
+  if (role === 'KYC_AGENT') {
+    primary.push(...KYC_REVIEW);
   }
-  if (simulatorsEnabled) {
-    sections.push({
-      title: 'Développement',
-      items: [{ href: '/dev/messages', label: 'Messages simulés', icon: 'mail' }],
-    });
+  if (role === 'COMPLIANCE_AGENT') {
+    primary.push({ href: '/kyc-review/aml', label: 'nav.amlMatches', icon: 'search' });
   }
-  return sections;
+  if (simulatorsEnabled) primary.push(DEV_TOOLS);
+  return { primary, bottom, account };
+}
+
+/** Élément actif, ou l'un de ses enfants. */
+export function isActiveTree(pathname: string, item: NavItem): boolean {
+  return isActive(pathname, item) || (item.children ?? []).some((c) => isActiveTree(pathname, c));
 }
 
 export function isActive(pathname: string, item: NavItem): boolean {

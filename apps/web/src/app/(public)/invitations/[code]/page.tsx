@@ -101,7 +101,7 @@ export default function InvitationPage() {
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   <div className="col-span-2">
                     <dt className="text-muted-foreground">Tontine</dt>
-                    <dd className="text-lg font-semibold">{preview.data.tontine?.name ?? '—'}</dd>
+                    <dd className="text-lg font-medium">{preview.data.tontine?.name ?? '—'}</dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">Cotisation</dt>

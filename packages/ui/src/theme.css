@@ -1,71 +1,159 @@
 /*
- * Thème TontineMoney (Tailwind CSS 4) — jetons de couleur au format shadcn/ui.
+ * Thème TontineMoney (Tailwind CSS 4) — charte graphique officielle (docs/design-system.md).
  * À importer après `@import 'tailwindcss';` dans la feuille globale de l'application.
- * Couleur principale : teal/émeraude. Contrastes vérifiés AA (texte ≥ 4,5:1).
+ *
+ * Palette : navy #042C53 / #185FA5 / #E6F1FB, or #BA7517 / #EF9F27 / #FAEEDA, succès #3B6D11,
+ * avertissement #854F0B, erreur #A32D2D, neutre #5F5E5A, surface #F1EFE8.
+ * Jetons au format shadcn/ui (compatibilité des écrans) + jetons de marque.
+ * - `primary` = navy (liens, états actifs) ; `cta` = bouton principal or vif + texte navy
+ *   (6,48:1 ; l'or #BA7517 + blanc n'atteint que 3,72:1 — décision A-56).
+ * - Anneau de focus navy moyen (5,67:1 sur la surface ; l'or vif n'atteint pas 3:1 sur blanc).
+ * Couples texte / fond ≥ 4,5:1 ; bordures de champ, indicateurs et focus ≥ 3:1 (WCAG AA).
+ * Mode sombre dérivé du navy (la charte ne définit que le mode clair) : préférence système,
+ * ou forcé par `data-theme="light|dark"` sur <html>.
  */
 
 :root {
   color-scheme: light;
-  --background: #f8fafb;
-  --foreground: #0f1f1c;
+  --navy: #042c53;
+  --navy-mid: #185fa5;
+  --navy-light: #e6f1fb;
+  --gold: #ba7517;
+  --gold-vivid: #ef9f27;
+  --gold-pale: #faeeda;
+  --surface: #f1efe8;
+  --neutral: #5f5e5a;
+  --background: #f1efe8;
+  --foreground: #042c53;
   --card: #ffffff;
-  --card-foreground: #0f1f1c;
+  --card-foreground: #042c53;
   --popover: #ffffff;
-  --popover-foreground: #0f1f1c;
-  --primary: #0f766e;
-  --primary-foreground: #ffffff;
-  --secondary: #e6f4f1;
-  --secondary-foreground: #134e48;
-  --muted: #eef2f2;
-  --muted-foreground: #4b5b58;
-  --accent: #d9f2ec;
-  --accent-foreground: #0f3d38;
-  --destructive: #b42318;
+  --popover-foreground: #042c53;
+  --primary: #042c53;
+  --primary-foreground: #faeeda;
+  --secondary: #e6f1fb;
+  --secondary-foreground: #042c53;
+  --muted: #f1efe8;
+  --muted-foreground: #5f5e5a;
+  --accent: #e6f1fb;
+  --accent-foreground: #042c53;
+  --cta: #ef9f27;
+  --cta-hover: #e0901f;
+  --cta-foreground: #042c53;
+  --progress: #ba7517;
+  --destructive: #a32d2d;
   --destructive-foreground: #ffffff;
-  --success: #067647;
+  --destructive-soft: #fcebeb;
+  --success: #3b6d11;
   --success-foreground: #ffffff;
-  --warning: #9a5b00;
+  --success-soft: #eaf3de;
+  --warning: #854f0b;
   --warning-foreground: #ffffff;
-  --info: #175cd3;
+  --warning-soft: #faeeda;
+  --info: #185fa5;
   --info-foreground: #ffffff;
-  --border: #d5dfdd;
-  --input: #c3d0cd;
-  --ring: #0d9488;
-  --radius: 0.625rem;
+  --info-soft: #e6f1fb;
+  --border: #d9d5c9;
+  --input: #85837b;
+  --ring: #185fa5;
+  --nav: #042c53;
+  --nav-foreground: #c5d3e0;
+  --nav-active: #faeeda;
+  --nav-indicator: #ba7517;
+  --nav-hover: #0a3a66;
+  --nav-ring: #faeeda;
+  --radius: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     color-scheme: dark;
-    --background: #0b1413;
-    --foreground: #e7f0ee;
-    --card: #111d1b;
-    --card-foreground: #e7f0ee;
-    --popover: #111d1b;
-    --popover-foreground: #e7f0ee;
-    --primary: #2dd4bf;
-    --primary-foreground: #04201c;
-    --secondary: #16302c;
-    --secondary-foreground: #c9ece5;
-    --muted: #172522;
-    --muted-foreground: #a3b6b2;
-    --accent: #1b3934;
-    --accent-foreground: #d7f5ee;
-    --destructive: #f97066;
-    --destructive-foreground: #2a0603;
-    --success: #47cd89;
-    --success-foreground: #052e1a;
-    --warning: #fdb022;
-    --warning-foreground: #2b1700;
-    --info: #84adff;
-    --info-foreground: #06183d;
-    --border: #25403b;
-    --input: #2f4d48;
-    --ring: #2dd4bf;
+    --background: #021b33;
+    --foreground: #f1efe8;
+    --card: #06325c;
+    --card-foreground: #f1efe8;
+    --popover: #06325c;
+    --popover-foreground: #f1efe8;
+    --primary: #faeeda;
+    --primary-foreground: #042c53;
+    --secondary: #0a3a66;
+    --secondary-foreground: #f1efe8;
+    --muted: #0a2a4a;
+    --muted-foreground: #afc3d6;
+    --accent: #0a3a66;
+    --accent-foreground: #f1efe8;
+    --cta: #ef9f27;
+    --cta-hover: #f5b04a;
+    --cta-foreground: #042c53;
+    --progress: #ef9f27;
+    --destructive: #f2b8b8;
+    --destructive-foreground: #3f1616;
+    --destructive-soft: #3f1616;
+    --success: #a8d17f;
+    --success-foreground: #1f3a12;
+    --success-soft: #1f3a12;
+    --warning: #f5c77e;
+    --warning-foreground: #3d2a0b;
+    --warning-soft: #3d2a0b;
+    --info: #8dbbe8;
+    --info-foreground: #0a3a66;
+    --info-soft: #0a3a66;
+    --border: #2b5f92;
+    --input: #6e8faf;
+    --ring: #8dbbe8;
+    --nav: #031526;
+    --nav-hover: #0a3a66;
   }
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --background: #021b33;
+  --foreground: #f1efe8;
+  --card: #06325c;
+  --card-foreground: #f1efe8;
+  --popover: #06325c;
+  --popover-foreground: #f1efe8;
+  --primary: #faeeda;
+  --primary-foreground: #042c53;
+  --secondary: #0a3a66;
+  --secondary-foreground: #f1efe8;
+  --muted: #0a2a4a;
+  --muted-foreground: #afc3d6;
+  --accent: #0a3a66;
+  --accent-foreground: #f1efe8;
+  --cta: #ef9f27;
+  --cta-hover: #f5b04a;
+  --cta-foreground: #042c53;
+  --progress: #ef9f27;
+  --destructive: #f2b8b8;
+  --destructive-foreground: #3f1616;
+  --destructive-soft: #3f1616;
+  --success: #a8d17f;
+  --success-foreground: #1f3a12;
+  --success-soft: #1f3a12;
+  --warning: #f5c77e;
+  --warning-foreground: #3d2a0b;
+  --warning-soft: #3d2a0b;
+  --info: #8dbbe8;
+  --info-foreground: #0a3a66;
+  --info-soft: #0a3a66;
+  --border: #2b5f92;
+  --input: #6e8faf;
+  --ring: #8dbbe8;
+  --nav: #031526;
+  --nav-hover: #0a3a66;
+}
+
 @theme inline {
+  --color-navy: var(--navy);
+  --color-navy-mid: var(--navy-mid);
+  --color-navy-light: var(--navy-light);
+  --color-gold: var(--gold);
+  --color-gold-vivid: var(--gold-vivid);
+  --color-gold-pale: var(--gold-pale);
+  --color-surface: var(--surface);
+  --color-neutral: var(--neutral);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -80,24 +168,55 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-foreground: var(--cta-foreground);
+  --color-progress: var(--progress);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --font-sans:
-    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
+  --color-nav-active: var(--nav-active);
+  --color-nav-indicator: var(--nav-indicator);
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-ring: var(--nav-ring);
+  /* Rayons de la charte : inline 4 px, champs 8 px, cartes 12 px, modales 16 px */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  /* Typographie de la charte : Arial / Helvetica, deux graisses (400, 500), jamais 600/700 */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 500;
+  --font-weight-extrabold: 500;
+  --font-weight-black: 500;
+  --text-h1: 32px;
+  --text-h1--line-height: 1.2;
+  --text-h2: 24px;
+  --text-h2--line-height: 1.25;
+  --text-h3: 18px;
+  --text-h3--line-height: 1.35;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.4;
+  --text-mono: 11px;
+  --text-mono--line-height: 1.4;
 }
 
 @layer base {
@@ -108,7 +227,29 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+  }
+  /* Hiérarchie de la charte (graisse 500, jamais de majuscules forcées) */
+  h1 {
+    font-size: var(--text-h1);
+    line-height: 1.2;
+    font-weight: 500;
+  }
+  h2 {
+    font-size: var(--text-h2);
+    line-height: 1.25;
+    font-weight: 500;
+  }
+  h3 {
+    font-size: var(--text-h3);
+    line-height: 1.35;
+    font-weight: 500;
+  }
+  b,
+  strong {
+    font-weight: 500;
   }
   :focus-visible {
     outline: 2px solid var(--ring);

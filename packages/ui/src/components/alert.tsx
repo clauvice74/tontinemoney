@@ -4,16 +4,16 @@ import * as React from 'react';
 import { cn } from '../lib/cn';
 
 export const alertVariants = cva(
-  'relative flex w-full gap-3 rounded-lg border p-4 text-sm [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0',
+  'relative flex w-full gap-3 rounded-md border p-4 text-sm [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
         default: 'bg-card text-card-foreground',
-        info: 'border-info/40 bg-info/10 text-foreground [&>svg]:text-info',
-        success: 'border-success/40 bg-success/10 text-foreground [&>svg]:text-success',
-        warning: 'border-warning/40 bg-warning/10 text-foreground [&>svg]:text-warning',
+        info: 'border-info/30 bg-info-soft text-foreground [&>svg]:text-info',
+        success: 'border-success/30 bg-success-soft text-foreground [&>svg]:text-success',
+        warning: 'border-warning/30 bg-warning-soft text-foreground [&>svg]:text-warning',
         destructive:
-          'border-destructive/40 bg-destructive/10 text-foreground [&>svg]:text-destructive',
+          'border-destructive/30 bg-destructive-soft text-foreground [&>svg]:text-destructive',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -53,7 +53,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       >
         {hideIcon ? null : <Icon aria-hidden="true" />}
         <div className="flex-1 space-y-1">
-          {title ? <p className="font-semibold leading-tight">{title}</p> : null}
+          {title ? <p className="font-medium leading-tight">{title}</p> : null}
           {children ? <div className="text-sm leading-relaxed">{children}</div> : null}
         </div>
       </div>

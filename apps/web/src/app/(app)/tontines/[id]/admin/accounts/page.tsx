@@ -75,7 +75,7 @@ export default function TontineAccountsPage() {
                   accounts.isPending ? (
                     <LoadingBlock lines={1} />
                   ) : account?.balance ? (
-                    <p className="text-2xl font-semibold">
+                    <p className="text-2xl font-medium">
                       <Money value={account.balance} />
                     </p>
                   ) : (

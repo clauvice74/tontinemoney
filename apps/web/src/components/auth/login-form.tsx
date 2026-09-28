@@ -119,7 +119,7 @@ export function LoginForm({
     return (
       <form onSubmit={submitMfa} className="space-y-4" noValidate aria-labelledby="mfa-title">
         <div className="space-y-1">
-          <h2 id="mfa-title" className="text-lg font-semibold">
+          <h2 id="mfa-title" className="text-lg font-medium">
             Vérification en deux étapes
           </h2>
           <p className="text-sm text-muted-foreground">

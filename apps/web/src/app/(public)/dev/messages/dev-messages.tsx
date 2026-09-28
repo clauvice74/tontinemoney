@@ -88,7 +88,7 @@ export function DevMessages() {
                         {formatDateTime(m.createdAt)}
                       </span>
                     </div>
-                    {m.subject ? <p className="font-semibold">{m.subject}</p> : null}
+                    {m.subject ? <p className="font-medium">{m.subject}</p> : null}
                     <Linkified text={m.body} />
                   </CardContent>
                 </Card>

@@ -17,7 +17,7 @@ export function AuthCard({
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-10 sm:py-16">
       <Card>
         <CardHeader>
-          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+          <h1 className="text-xl font-medium tracking-tight">{title}</h1>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </CardHeader>
         <CardContent>{children}</CardContent>

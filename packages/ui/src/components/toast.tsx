@@ -13,6 +13,8 @@ const toastVariants = cva(
         success: 'border-success/50 bg-card text-card-foreground border-l-4 border-l-success',
         destructive:
           'border-destructive/50 bg-card text-card-foreground border-l-4 border-l-destructive',
+        warning: 'border-warning/50 bg-card text-card-foreground border-l-4 border-l-warning',
+        info: 'border-info/50 bg-card text-card-foreground border-l-4 border-l-info',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -91,7 +93,7 @@ export function Toaster() {
           }}
         >
           <div className="grid gap-1">
-            <ToastPrimitive.Title className="text-sm font-semibold">{t.title}</ToastPrimitive.Title>
+            <ToastPrimitive.Title className="text-sm font-medium">{t.title}</ToastPrimitive.Title>
             {t.description ? (
               <ToastPrimitive.Description className="text-sm text-muted-foreground">
                 {t.description}

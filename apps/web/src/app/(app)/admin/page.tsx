@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tontine/ui';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
-import { buildNavigation } from '@/lib/navigation';
+import { useI18n } from '@/lib/i18n';
+import { type NavItem, PLATFORM_MONEY, PLATFORM_TOOLS } from '@/lib/navigation';
 
 const DESCRIPTIONS: Record<string, string> = {
   '/admin/tontine-admins/new': 'Créer le compte d’un administrateur de tontine (US-1.1).',
@@ -23,8 +24,12 @@ const DESCRIPTIONS: Record<string, string> = {
 };
 
 export default function AdminHomePage() {
-  const platform = buildNavigation('SUPER_ADMIN', []).find((s) => s.title === 'Plateforme');
-  const items = platform?.items.filter((i) => i.href !== '/admin') ?? [];
+  const { t } = useI18n();
+  const items: NavItem[] = [
+    { href: '/admin/tontines', label: 'nav.tontines', icon: 'tontines' },
+    ...PLATFORM_TOOLS,
+    ...PLATFORM_MONEY,
+  ];
   return (
     <div>
       <PageHeader
@@ -40,7 +45,7 @@ export default function AdminHomePage() {
             >
               <Card className="h-full transition-colors hover:bg-muted/50">
                 <CardHeader>
-                  <CardTitle>{i.label}</CardTitle>
+                  <CardTitle>{t(i.label)}</CardTitle>
                   <CardDescription>{DESCRIPTIONS[i.href]}</CardDescription>
                 </CardHeader>
                 <CardContent />

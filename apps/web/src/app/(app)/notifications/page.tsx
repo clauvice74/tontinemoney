@@ -115,7 +115,7 @@ export default function NotificationsPage() {
                           {!n.readAt ? (
                             <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
                           ) : null}
-                          <p className={cn('text-sm', !n.readAt && 'font-semibold')}>
+                          <p className={cn('text-sm', !n.readAt && 'font-medium')}>
                             {!n.readAt ? <span className="sr-only">Non lue : </span> : null}
                             {n.title}
                           </p>

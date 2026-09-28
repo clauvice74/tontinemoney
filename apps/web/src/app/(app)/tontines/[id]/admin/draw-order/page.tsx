@@ -54,7 +54,7 @@ function OrderEditor({ tontineId, initial }: { tontineId: string; initial: Parti
       <ol className="space-y-2">
         {order.map((p, i) => (
           <li key={p.memberId} className="flex items-center gap-3 rounded-lg border bg-card p-3">
-            <span className="grid size-8 place-items-center rounded-full bg-secondary text-sm font-semibold tabular-nums">
+            <span className="grid size-8 place-items-center rounded-full bg-secondary text-sm font-medium tabular-nums">
               {i + 1}
             </span>
             <span className="flex-1 font-medium">{p.firstName}</span>

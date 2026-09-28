@@ -147,7 +147,7 @@ export default function TontinesPage() {
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
                     <p>
-                      <Money value={t.contribution} className="font-semibold" /> ·{' '}
+                      <Money value={t.contribution} className="font-medium" /> ·{' '}
                       {label(FREQUENCY_LABELS, t.frequency)}
                     </p>
                     <p className="flex items-center gap-1 text-muted-foreground">

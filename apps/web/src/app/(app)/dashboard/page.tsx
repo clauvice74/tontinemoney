@@ -132,7 +132,7 @@ function RecentNotifications() {
           {d.data.map((n) => (
             <li key={n.id} className="py-2.5">
               <div className="flex items-start justify-between gap-2">
-                <p className={n.readAt ? 'text-sm' : 'text-sm font-semibold'}>
+                <p className={n.readAt ? 'text-sm' : 'text-sm font-medium'}>
                   {!n.readAt ? <span className="sr-only">Non lue : </span> : null}
                   {n.title}
                 </p>

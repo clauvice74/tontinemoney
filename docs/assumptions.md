@@ -255,3 +255,24 @@ Cohérence : les rapports, l'annuaire d'une tontine et la réconciliation sont *
 **Ports à distance.** Les ports déjà définis (étapes 4 à 6) deviennent des appels internes quand le consommateur est dans un autre processus : liste fermée de méthodes en lecture (`REMOTE_PORTS`), corps signé HMAC avec l'appelant et un horodatage borné (60 s ; pas de nonce : requêtes en lecture seule, réseau interne), appelants autorisés par `INTERNAL_PORT_CALLERS`, jamais exposés par le gateway (`/api/v1/internal/` bloqué). Le jeton d'accès est vérifié par Auth à chaque requête (port `auth.tokens`) plutôt que localement par JWKS : un service extrait applique la révocation de session et le changement de rôle aussi immédiatement que le monolithe (coût : un appel interne par requête). Délai d'appel 5 s ; propriétaire indisponible → 503 (`PROVIDER_UNAVAILABLE`).
 
 **Déploiement.** `EXTRACTED_SERVICES` retire du monolithe les domaines servis ailleurs (configuration refusée avec le transport `inprocess`) ; le gateway route par préfixe, avec un joker d'un segment. Configuration par défaut (`.env.example`, CI) : reporting extrait, transport `postgres` ; le monolithe seul reste possible (`EXTRACTED_SERVICES=`, `GATEWAY_ROUTES=[]`). Base de données encore partagée (un schéma et un rôle par service, A-48) ; une base par service n'est pas nécessaire tant que les droits sont séparés.
+
+## A-56 — Refonte des interfaces selon la charte graphique (lot 1 : design system)
+
+La charte graphique v1.0 (« TontineMoney_Charte Graphique.docx ») fait foi. Décisions :
+(1) **Bouton principal** : or vif #EF9F27 avec texte navy #042C53 (6,48:1), validé par le porteur du
+projet — l'or #BA7517 avec un texte blanc n'atteint que 3,72:1, alors que la charte impose aussi le
+niveau AA ; l'or #BA7517 reste la couleur des barres de progression et de l'indicateur actif
+(composants, ≥ 3:1). (2) **Typographie** : la charte (H1 32 / H2 24 / H3 18 / corps 14 /
+secondaire 12 / mono 11, graisses 400 et 500) prime sur le prompt de conception (« H1 22px Bold »,
+corps 10 px, secondaire 8 px), qui contredit la règle « jamais 600/700 » et descendrait sous une
+taille lisible. (3) **Mode sombre** dérivé du navy (la charte ne le définit pas), contrastes
+vérifiés. (4) **Focus** en navy moyen : l'or vif n'atteint pas 3:1 sur fond blanc. (5) Le jeton
+`primary` (shadcn) devient le navy : les boutons existants passent en « secondaire », le bouton
+principal or est posé écran par écran (un seul par écran). (6) **Inscription** : les
+spécifications (US-1.3) prévalent — demande de compte sans mot de passe, validée par un
+administrateur, puis OTP (15 min) et création du mot de passe (US-1.1/1.2) ; les champs « mot de
+passe / confirmation » du formulaire d'inscription du prompt sont déplacés à l'étape « création
+du mot de passe ». (7) **Livraison par lots** : 1 design system, navigation, FR/EN et documents
+UX ; 2 authentification ; 3 tableau de bord et tontines ; 4 wallet, KYC, notifications, profil ;
+5 administration. Maquettes et prototype : réalisés dans l'application (écrans réels) et dans le
+UI kit `/dev/ui-kit`.

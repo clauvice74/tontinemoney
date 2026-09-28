@@ -12,7 +12,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-h1 font-medium">{title}</h1>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
@@ -35,7 +35,7 @@ export function Section({
     <section className="space-y-3" aria-label={title}>
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="text-h2 font-medium">{title}</h2>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
         {actions}
@@ -67,7 +67,7 @@ export function StatCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">{value}</p>
+      <p className="mt-1 text-2xl font-medium tabular-nums tracking-tight">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );

@@ -104,7 +104,7 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
         <div className="space-y-4">
           <div className="flex flex-wrap gap-4 text-sm">
             <p>
-              Pénalités dues : <Money value={d.myPenaltyBalance} className="font-semibold" />
+              Pénalités dues : <Money value={d.myPenaltyBalance} className="font-medium" />
             </p>
             {d.myBeneficiaryCycles.length > 0 ? (
               <p>
@@ -169,7 +169,7 @@ function MyContributions({ tontine }: { tontine: TontineView }) {
                             summary={
                               <>
                                 Cotisation du cycle {c.cycleNumber ?? ''} de « {tontine.name} » :{' '}
-                                <Money value={c.amount} className="font-semibold" />
+                                <Money value={c.amount} className="font-medium" />
                                 {c.penalty && c.penalty.amountMinor !== '0' ? (
                                   <> + pénalité {formatMoneyView(c.penalty)}</>
                                 ) : null}
@@ -264,7 +264,7 @@ export default function TontineDetailPage() {
                     summary={
                       <>
                         Droit d’entrée de « {t.name} » :{' '}
-                        <Money value={t.entryFee} className="font-semibold" />
+                        <Money value={t.entryFee} className="font-medium" />
                       </>
                     }
                   />
