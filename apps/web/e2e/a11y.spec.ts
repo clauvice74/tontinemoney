@@ -24,7 +24,15 @@ test.describe('Accessibilité WCAG AA (axe-core)', () => {
     await expectAccessible(page);
   });
 
-  test('connexion', async ({ page }) => {
+  for (const path of ['/', '/login', '/request-account', '/activate', '/forgot-password'])
+    test(`page publique ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expectAccessible(page);
+    });
+
+  test('page publique /login en mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/login');
     await expectAccessible(page);
   });

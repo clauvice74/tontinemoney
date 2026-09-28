@@ -27,6 +27,9 @@ import {
   Input,
   KpiCard,
   LoadingBlock,
+  OtpInput,
+  PasswordInput,
+  Stepper,
   ProgressBar,
   Table,
   TableBody,
@@ -38,7 +41,7 @@ import {
   toast,
 } from '@tontine/ui';
 import { ChevronDown, Eye, Inbox, Pause, Users, Wallet } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { LogoMark } from '@/components/logo';
 import { useI18n } from '@/lib/i18n';
 
@@ -95,6 +98,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 /** UI kit : jetons, typographie et composants officiels, en rendu réel (clair / sombre). */
 export function UiKit() {
   const { setTheme, theme } = useI18n();
+  const [otp, setOtp] = useState('4821');
   return (
     <div className="mx-auto max-w-6xl space-y-12 px-4 py-10">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -431,6 +435,30 @@ export function UiKit() {
               ))}
             </TableBody>
           </Table>
+        </Card>
+      </Section>
+
+      <Section id="auth" title="Authentification : étapes, code, mot de passe">
+        <Card>
+          <CardContent className="grid gap-6 pt-5 md:grid-cols-2">
+            <div className="space-y-5">
+              <Stepper
+                label="Étapes de l’inscription"
+                steps={['Inscription', 'Validation', 'Code', 'Mot de passe']}
+                current={2}
+              />
+              <FormField
+                id="kit-otp"
+                label="Code d’activation"
+                description="6 chiffres, collage et remplissage SMS"
+              >
+                <OtpInput value={otp} onValueChange={setOtp} />
+              </FormField>
+            </div>
+            <FormField id="kit-password" label="Mot de passe">
+              <PasswordInput defaultValue="Cigale#Epargne2026" />
+            </FormField>
+          </CardContent>
         </Card>
       </Section>
 

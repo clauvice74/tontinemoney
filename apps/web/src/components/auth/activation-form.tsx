@@ -1,168 +1,221 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { zodFr } from '@/lib/zod-fr';
 import { identifierSchema } from '@tontine/contracts';
-import { Alert, Button, FormField, Input, toast } from '@tontine/ui';
+import { Alert, Button, FormField, Input, OtpInput, toast } from '@tontine/ui';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '@/lib/api';
 import { ApiError } from '@/lib/api/errors';
 import { applyServerErrors, formatError } from '@/lib/forms';
+import { useI18n } from '@/lib/i18n';
+import { zodFr } from '@/lib/zod-fr';
+import { AuthCard } from './auth-card';
 import { PasswordFields, newPasswordFields, refinePasswordConfirmation } from './password-fields';
 
-const activationSchema = z
-  .object({
-    mode: z.enum(['token', 'otp']),
-    identifier: z.string().trim(),
-    otp: z.string().trim(),
-    ...newPasswordFields,
-  })
-  .superRefine((v, ctx) => {
-    refinePasswordConfirmation(v, ctx);
-    if (v.mode === 'otp') {
-      if (!identifierSchema.safeParse(v.identifier).success) {
-        ctx.addIssue({ code: 'custom', path: ['identifier'], message: 'Identifiant requis' });
-      }
-      if (!/^\d{6}$/.test(v.otp)) {
-        ctx.addIssue({ code: 'custom', path: ['otp'], message: 'Le code comporte 6 chiffres' });
-      }
-    }
-  });
-type ActivationValues = z.infer<typeof activationSchema>;
+/** Délai avant de pouvoir redemander un code (limite aussi les envois inutiles). */
+const RESEND_COOLDOWN_S = 60;
+
+const passwordSchema = z.object(newPasswordFields).superRefine(refinePasswordConfirmation);
+type PasswordValues = z.infer<typeof passwordSchema>;
+
+type Step = 'code' | 'password' | 'done';
 
 /**
- * Activation de compte (US-1.1 / US-1.2) : par lien (jeton, 48 h) ou par code OTP (15 min).
- * Choix du mot de passe dans les deux cas.
+ * Activation du compte (US-1.1 / US-1.2 / US-1.3) en deux étapes : code à 6 chiffres
+ * (15 minutes) puis création du mot de passe — ou mot de passe seul avec un lien (48 h).
+ * Le code n'est vérifié qu'à l'envoi final (un seul appel) : s'il est refusé, retour à
+ * l'étape « code » avec le motif (invalide, expiré, trop d'essais).
  */
-export function ActivationForm({ token }: { token?: string }) {
-  const [done, setDone] = useState(false);
+export function ActivationFlow({ token }: { token?: string }) {
+  const { t } = useI18n();
+  const [step, setStep] = useState<Step>(token ? 'password' : 'code');
+  const [identifier, setIdentifier] = useState('');
+  const [otp, setOtp] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [identifierError, setIdentifierError] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_S);
   const [resending, setResending] = useState(false);
 
-  const form = useForm<ActivationValues>({
-    resolver: zodResolver(activationSchema, zodFr),
-    defaultValues: {
-      mode: token ? 'token' : 'otp',
-      identifier: '',
-      otp: '',
-      password: '',
-      confirm: '',
-    },
+  useEffect(() => {
+    if (step !== 'code' || cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [step, cooldown]);
+
+  const form = useForm<PasswordValues>({
+    resolver: zodResolver(passwordSchema, zodFr),
+    defaultValues: { password: '', confirm: '' },
   });
-  const password = form.watch('password');
   const errors = form.formState.errors;
 
-  const onSubmit = form.handleSubmit(async (v) => {
-    setFormError(null);
-    try {
-      const body = token
-        ? { token, password: v.password }
-        : { identifier: v.identifier, otp: v.otp, password: v.password };
-      await api.post('/auth/activate', body, { auth: false });
-      setDone(true);
-      toast.success('Compte activé');
-    } catch (e) {
-      if (
-        e instanceof ApiError &&
-        (e.code === 'TOKEN_EXPIRED' || e.code === 'TOKEN_ALREADY_USED')
-      ) {
-        setFormError(
-          token
-            ? `${e.title}. Vous pouvez activer votre compte avec le code reçu, ou demander un nouveau code.`
-            : e.title,
-        );
-        return;
-      }
-      setFormError(applyServerErrors(e, form.setError, ['password', 'identifier', 'otp']));
-    }
-  });
+  function validateCode(): boolean {
+    const idOk = identifierSchema.safeParse(identifier).success;
+    const otpOk = /^\d{6}$/.test(otp);
+    setIdentifierError(idOk ? null : t('auth.otp.identifierNeeded'));
+    setOtpError(otpOk ? null : t('auth.otp.incomplete'));
+    return idOk && otpOk;
+  }
+
+  function submitCode(e?: React.FormEvent) {
+    e?.preventDefault();
+    setCodeError(null);
+    if (validateCode()) setStep('password');
+  }
 
   async function resend() {
-    const parsed = identifierSchema.safeParse(form.getValues('identifier'));
+    const parsed = identifierSchema.safeParse(identifier);
     if (!parsed.success) {
-      form.setError('identifier', {
-        message: 'Saisissez votre email ou téléphone pour recevoir un nouveau code',
-      });
+      setIdentifierError(t('auth.otp.identifierNeeded'));
       return;
     }
     setResending(true);
     try {
       await api.post('/auth/activation/resend', { identifier: parsed.data }, { auth: false });
-      toast.success(
-        'Code renvoyé',
-        'Si un compte en attente existe, un nouveau code a été envoyé.',
-      );
-    } catch (e) {
-      toast.error('Envoi impossible', formatError(e));
+      toast.success(t('auth.otp.resentTitle'), t('auth.otp.resentBody'));
+      setCooldown(RESEND_COOLDOWN_S);
+      setOtp('');
+    } catch (err) {
+      toast.error(t('auth.otp.resendFailed'), formatError(err));
     } finally {
       setResending(false);
     }
   }
 
-  if (done) {
+  const submitPassword = form.handleSubmit(async (v) => {
+    setFormError(null);
+    try {
+      const body = token
+        ? { token, password: v.password }
+        : { identifier: identifierSchema.parse(identifier), otp, password: v.password };
+      await api.post('/auth/activate', body, { auth: false });
+      setStep('done');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        const back: Record<string, string> = {
+          INVALID_OTP: t('auth.otp.invalid'),
+          OTP_EXPIRED: t('auth.otp.expired'),
+          OTP_LOCKED: t('auth.otp.locked'),
+        };
+        if (!token && back[err.code]) {
+          setCodeError(back[err.code]!);
+          setOtp('');
+          setStep('code');
+          return;
+        }
+        if (token && ['TOKEN_EXPIRED', 'TOKEN_ALREADY_USED', 'INVALID_TOKEN'].includes(err.code)) {
+          setFormError(t('auth.link.expired'));
+          return;
+        }
+      }
+      setFormError(applyServerErrors(err, form.setError, ['password']));
+    }
+  });
+
+  if (step === 'done') {
     return (
-      <div className="space-y-4">
-        <Alert variant="success" title="Votre compte est activé">
-          Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
-        </Alert>
-        <Button asChild className="w-full">
-          <Link href="/login">Se connecter</Link>
-        </Button>
-      </div>
+      <AuthCard title={t('auth.activated.title')} step="password">
+        <div className="space-y-4">
+          <Alert variant="success" title={t('auth.activated.title')}>
+            {t('auth.activated.body')}
+          </Alert>
+          <Button variant="primary" size="lg" className="w-full" asChild>
+            <Link href="/login">{t('auth.activated.cta')}</Link>
+          </Button>
+        </div>
+      </AuthCard>
+    );
+  }
+
+  if (step === 'code') {
+    return (
+      <AuthCard title={t('auth.otp.title')} description={t('auth.otp.description')} step="code">
+        <form onSubmit={submitCode} className="space-y-5" noValidate>
+          {codeError ? <Alert variant="destructive" title={codeError} /> : null}
+          <FormField
+            id="identifier"
+            label={t('auth.otp.identifier')}
+            error={identifierError ?? undefined}
+            required
+          >
+            <Input
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              autoComplete="username"
+              autoFocus={!identifier}
+            />
+          </FormField>
+          <FormField id="otp" label={t('auth.otp.code')} error={otpError ?? undefined} required>
+            <OtpInput value={otp} onValueChange={setOtp} autoFocus={!!identifier} />
+          </FormField>
+          <Button type="submit" variant="primary" size="lg" className="w-full">
+            {t('auth.otp.submit')}
+          </Button>
+          <div className="text-center">
+            {cooldown > 0 ? (
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                {t('auth.otp.resendIn', { seconds: cooldown })}
+              </p>
+            ) : (
+              <Button
+                type="button"
+                variant="link"
+                loading={resending}
+                onClick={() => void resend()}
+              >
+                {t('auth.otp.resend')}
+              </Button>
+            )}
+          </div>
+        </form>
+      </AuthCard>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
-      {formError ? <Alert variant="destructive" title={formError} /> : null}
-      {!token ? (
-        <>
-          <FormField
-            id="identifier"
-            label="Email ou téléphone"
-            error={errors.identifier?.message}
-            required
-          >
-            <Input {...form.register('identifier')} autoComplete="username" />
-          </FormField>
-          <FormField
-            id="otp"
-            label="Code d’activation"
-            description="Code à 6 chiffres reçu par SMS ou email (valable 15 minutes)."
-            error={errors.otp?.message}
-            required
-          >
-            <Input
-              {...form.register('otp')}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-            />
-          </FormField>
-          <Button
+    <AuthCard
+      title={token ? t('auth.link.title') : t('auth.password.title')}
+      description={token ? t('auth.link.description') : t('auth.password.description')}
+      step="password"
+      footer={
+        token ? (
+          <Link href="/activate" className="font-medium text-info underline underline-offset-4">
+            {t('auth.link.useCode')}
+          </Link>
+        ) : (
+          <button
             type="button"
-            variant="link"
-            className="h-auto px-0"
-            onClick={() => void resend()}
-            loading={resending}
+            className="font-medium text-info underline underline-offset-4"
+            onClick={() => setStep('code')}
           >
-            Renvoyer le code
-          </Button>
-        </>
-      ) : null}
-      <PasswordFields
-        passwordProps={form.register('password')}
-        confirmProps={form.register('confirm')}
-        passwordError={errors.password?.message}
-        confirmError={errors.confirm?.message}
-        value={password}
-      />
-      <Button type="submit" className="w-full" loading={form.formState.isSubmitting}>
-        Activer mon compte
-      </Button>
-    </form>
+            {t('auth.password.changeCode')}
+          </button>
+        )
+      }
+    >
+      <form onSubmit={submitPassword} className="space-y-5" noValidate>
+        {formError ? <Alert variant="destructive" title={formError} /> : null}
+        <PasswordFields
+          passwordProps={form.register('password')}
+          confirmProps={form.register('confirm')}
+          passwordError={errors.password?.message}
+          confirmError={errors.confirm?.message}
+          value={form.watch('password')}
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          loading={form.formState.isSubmitting}
+        >
+          {t('auth.password.submit')}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

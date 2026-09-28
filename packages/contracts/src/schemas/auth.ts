@@ -81,6 +81,11 @@ export const identifierSchema = z.string().trim().min(3).max(255);
 export const loginSchema = z.object({
   identifier: identifierSchema,
   password: z.string().min(1).max(256),
+  /**
+   * « Se souvenir de moi » (A-57) : faux → cookie de session (effacé à la fermeture du
+   * navigateur) ; la session serveur garde sa durée (7 jours, US-1.4). Vrai par défaut.
+   */
+  rememberMe: z.boolean().optional(),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 

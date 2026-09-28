@@ -33,6 +33,8 @@ export interface IssuedTokens {
   expiresIn: number;
   refreshToken: string;
   refreshExpiresAt: Date;
+  /** Faux : cookie de session, effacé à la fermeture du navigateur (A-57). */
+  persistent: boolean;
   sessionId: string;
   newDevice: boolean;
 }
@@ -87,6 +89,7 @@ export class TokenService implements AccessTokenVerifier {
     user: User,
     mfaUsed: boolean,
     tontineIds: string[],
+    persistent = true,
   ): Promise<IssuedTokens> {
     const now = this.clock.now();
     const { ip, userAgent } = RequestContext.metadata();
@@ -98,6 +101,7 @@ export class TokenService implements AccessTokenVerifier {
       data: {
         userId: user.id,
         familyId: generateOpaqueToken(),
+        persistent,
         tokenHash: sha256Hex(refreshToken),
         deviceFingerprint: fingerprint,
         userAgent: ua,
@@ -132,6 +136,7 @@ export class TokenService implements AccessTokenVerifier {
       expiresIn: this.config.ACCESS_TOKEN_TTL_SECONDS,
       refreshToken,
       refreshExpiresAt: expiresAt,
+      persistent,
       sessionId: session.id,
       newDevice: !known && hadDevices,
     };
@@ -173,6 +178,7 @@ export class TokenService implements AccessTokenVerifier {
         data: {
           userId: session.userId,
           familyId: session.familyId,
+          persistent: session.persistent,
           tokenHash: sha256Hex(next),
           deviceFingerprint: session.deviceFingerprint,
           userAgent: session.userAgent,
@@ -191,6 +197,7 @@ export class TokenService implements AccessTokenVerifier {
         expiresIn: this.config.ACCESS_TOKEN_TTL_SECONDS,
         refreshToken: next,
         refreshExpiresAt: replacement.expiresAt,
+        persistent: replacement.persistent,
         sessionId: replacement.id,
         newDevice: false,
       };

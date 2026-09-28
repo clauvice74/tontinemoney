@@ -317,6 +317,7 @@ export const RefreshSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   familyId: 'familyId',
+  persistent: 'persistent',
   tokenHash: 'tokenHash',
   deviceFingerprint: 'deviceFingerprint',
   userAgent: 'userAgent',

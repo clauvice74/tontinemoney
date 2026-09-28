@@ -73,3 +73,6 @@ export {
   DropdownSeparator,
   DropdownTrigger,
 } from './components/dropdown';
+export { OtpInput, type OtpInputProps } from './components/otp-input';
+export { PasswordInput, type PasswordInputProps } from './components/password-input';
+export { Stepper, type StepperProps } from './components/stepper';

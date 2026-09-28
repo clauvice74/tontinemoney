@@ -79,7 +79,8 @@ export class AuthController {
       secure: this.config.COOKIE_SECURE,
       sameSite: 'strict',
       path: COOKIE_PATH,
-      expires: t.refreshExpiresAt,
+      // « Se souvenir de moi » décoché : cookie de session (A-57)
+      ...(t.persistent ? { expires: t.refreshExpiresAt } : {}),
     });
   }
 

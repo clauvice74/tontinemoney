@@ -28,6 +28,7 @@ export type RefreshSessionMinAggregateOutputType = {
   id: string | null;
   userId: string | null;
   familyId: string | null;
+  persistent: boolean | null;
   tokenHash: string | null;
   deviceFingerprint: string | null;
   userAgent: string | null;
@@ -46,6 +47,7 @@ export type RefreshSessionMaxAggregateOutputType = {
   id: string | null;
   userId: string | null;
   familyId: string | null;
+  persistent: boolean | null;
   tokenHash: string | null;
   deviceFingerprint: string | null;
   userAgent: string | null;
@@ -64,6 +66,7 @@ export type RefreshSessionCountAggregateOutputType = {
   id: number;
   userId: number;
   familyId: number;
+  persistent: number;
   tokenHash: number;
   deviceFingerprint: number;
   userAgent: number;
@@ -83,6 +86,7 @@ export type RefreshSessionMinAggregateInputType = {
   id?: true;
   userId?: true;
   familyId?: true;
+  persistent?: true;
   tokenHash?: true;
   deviceFingerprint?: true;
   userAgent?: true;
@@ -101,6 +105,7 @@ export type RefreshSessionMaxAggregateInputType = {
   id?: true;
   userId?: true;
   familyId?: true;
+  persistent?: true;
   tokenHash?: true;
   deviceFingerprint?: true;
   userAgent?: true;
@@ -119,6 +124,7 @@ export type RefreshSessionCountAggregateInputType = {
   id?: true;
   userId?: true;
   familyId?: true;
+  persistent?: true;
   tokenHash?: true;
   deviceFingerprint?: true;
   userAgent?: true;
@@ -214,6 +220,7 @@ export type RefreshSessionGroupByOutputType = {
   id: string;
   userId: string;
   familyId: string;
+  persistent: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -251,6 +258,7 @@ export type RefreshSessionWhereInput = {
   id?: Prisma.UuidFilter<'RefreshSession'> | string;
   userId?: Prisma.UuidFilter<'RefreshSession'> | string;
   familyId?: Prisma.UuidFilter<'RefreshSession'> | string;
+  persistent?: Prisma.BoolFilter<'RefreshSession'> | boolean;
   tokenHash?: Prisma.StringFilter<'RefreshSession'> | string;
   deviceFingerprint?: Prisma.StringFilter<'RefreshSession'> | string;
   userAgent?: Prisma.StringFilter<'RefreshSession'> | string;
@@ -270,6 +278,7 @@ export type RefreshSessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
   familyId?: Prisma.SortOrder;
+  persistent?: Prisma.SortOrder;
   tokenHash?: Prisma.SortOrder;
   deviceFingerprint?: Prisma.SortOrder;
   userAgent?: Prisma.SortOrder;
@@ -294,6 +303,7 @@ export type RefreshSessionWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.RefreshSessionWhereInput | Prisma.RefreshSessionWhereInput[];
     userId?: Prisma.UuidFilter<'RefreshSession'> | string;
     familyId?: Prisma.UuidFilter<'RefreshSession'> | string;
+    persistent?: Prisma.BoolFilter<'RefreshSession'> | boolean;
     deviceFingerprint?: Prisma.StringFilter<'RefreshSession'> | string;
     userAgent?: Prisma.StringFilter<'RefreshSession'> | string;
     ip?: Prisma.StringFilter<'RefreshSession'> | string;
@@ -314,6 +324,7 @@ export type RefreshSessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
   familyId?: Prisma.SortOrder;
+  persistent?: Prisma.SortOrder;
   tokenHash?: Prisma.SortOrder;
   deviceFingerprint?: Prisma.SortOrder;
   userAgent?: Prisma.SortOrder;
@@ -342,6 +353,7 @@ export type RefreshSessionScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<'RefreshSession'> | string;
   userId?: Prisma.UuidWithAggregatesFilter<'RefreshSession'> | string;
   familyId?: Prisma.UuidWithAggregatesFilter<'RefreshSession'> | string;
+  persistent?: Prisma.BoolWithAggregatesFilter<'RefreshSession'> | boolean;
   tokenHash?: Prisma.StringWithAggregatesFilter<'RefreshSession'> | string;
   deviceFingerprint?: Prisma.StringWithAggregatesFilter<'RefreshSession'> | string;
   userAgent?: Prisma.StringWithAggregatesFilter<'RefreshSession'> | string;
@@ -359,6 +371,7 @@ export type RefreshSessionScalarWhereWithAggregatesInput = {
 export type RefreshSessionCreateInput = {
   id?: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -378,6 +391,7 @@ export type RefreshSessionUncheckedCreateInput = {
   id?: string;
   userId: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -395,6 +409,7 @@ export type RefreshSessionUncheckedCreateInput = {
 export type RefreshSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -414,6 +429,7 @@ export type RefreshSessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   userId?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -432,6 +448,7 @@ export type RefreshSessionCreateManyInput = {
   id?: string;
   userId: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -449,6 +466,7 @@ export type RefreshSessionCreateManyInput = {
 export type RefreshSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -467,6 +485,7 @@ export type RefreshSessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   userId?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -495,6 +514,7 @@ export type RefreshSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
   familyId?: Prisma.SortOrder;
+  persistent?: Prisma.SortOrder;
   tokenHash?: Prisma.SortOrder;
   deviceFingerprint?: Prisma.SortOrder;
   userAgent?: Prisma.SortOrder;
@@ -513,6 +533,7 @@ export type RefreshSessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
   familyId?: Prisma.SortOrder;
+  persistent?: Prisma.SortOrder;
   tokenHash?: Prisma.SortOrder;
   deviceFingerprint?: Prisma.SortOrder;
   userAgent?: Prisma.SortOrder;
@@ -531,6 +552,7 @@ export type RefreshSessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
   familyId?: Prisma.SortOrder;
+  persistent?: Prisma.SortOrder;
   tokenHash?: Prisma.SortOrder;
   deviceFingerprint?: Prisma.SortOrder;
   userAgent?: Prisma.SortOrder;
@@ -634,6 +656,7 @@ export type RefreshSessionUncheckedUpdateManyWithoutUserNestedInput = {
 export type RefreshSessionCreateWithoutUserInput = {
   id?: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -651,6 +674,7 @@ export type RefreshSessionCreateWithoutUserInput = {
 export type RefreshSessionUncheckedCreateWithoutUserInput = {
   id?: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -713,6 +737,7 @@ export type RefreshSessionScalarWhereInput = {
   id?: Prisma.UuidFilter<'RefreshSession'> | string;
   userId?: Prisma.UuidFilter<'RefreshSession'> | string;
   familyId?: Prisma.UuidFilter<'RefreshSession'> | string;
+  persistent?: Prisma.BoolFilter<'RefreshSession'> | boolean;
   tokenHash?: Prisma.StringFilter<'RefreshSession'> | string;
   deviceFingerprint?: Prisma.StringFilter<'RefreshSession'> | string;
   userAgent?: Prisma.StringFilter<'RefreshSession'> | string;
@@ -730,6 +755,7 @@ export type RefreshSessionScalarWhereInput = {
 export type RefreshSessionCreateManyUserInput = {
   id?: string;
   familyId: string;
+  persistent?: boolean;
   tokenHash: string;
   deviceFingerprint: string;
   userAgent: string;
@@ -747,6 +773,7 @@ export type RefreshSessionCreateManyUserInput = {
 export type RefreshSessionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -764,6 +791,7 @@ export type RefreshSessionUpdateWithoutUserInput = {
 export type RefreshSessionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -781,6 +809,7 @@ export type RefreshSessionUncheckedUpdateWithoutUserInput = {
 export type RefreshSessionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   familyId?: Prisma.StringFieldUpdateOperationsInput | string;
+  persistent?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string;
   deviceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string;
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -802,6 +831,7 @@ export type RefreshSessionSelect<
     id?: boolean;
     userId?: boolean;
     familyId?: boolean;
+    persistent?: boolean;
     tokenHash?: boolean;
     deviceFingerprint?: boolean;
     userAgent?: boolean;
@@ -826,6 +856,7 @@ export type RefreshSessionSelectCreateManyAndReturn<
     id?: boolean;
     userId?: boolean;
     familyId?: boolean;
+    persistent?: boolean;
     tokenHash?: boolean;
     deviceFingerprint?: boolean;
     userAgent?: boolean;
@@ -850,6 +881,7 @@ export type RefreshSessionSelectUpdateManyAndReturn<
     id?: boolean;
     userId?: boolean;
     familyId?: boolean;
+    persistent?: boolean;
     tokenHash?: boolean;
     deviceFingerprint?: boolean;
     userAgent?: boolean;
@@ -871,6 +903,7 @@ export type RefreshSessionSelectScalar = {
   id?: boolean;
   userId?: boolean;
   familyId?: boolean;
+  persistent?: boolean;
   tokenHash?: boolean;
   deviceFingerprint?: boolean;
   userAgent?: boolean;
@@ -891,6 +924,7 @@ export type RefreshSessionOmit<
   | 'id'
   | 'userId'
   | 'familyId'
+  | 'persistent'
   | 'tokenHash'
   | 'deviceFingerprint'
   | 'userAgent'
@@ -933,6 +967,10 @@ export type $RefreshSessionPayload<
       id: string;
       userId: string;
       familyId: string;
+      /**
+       * « Se souvenir de moi » (A-57) : faux → cookie de session côté navigateur.
+       */
+      persistent: boolean;
       tokenHash: string;
       deviceFingerprint: string;
       userAgent: string;
@@ -1534,6 +1572,7 @@ export interface RefreshSessionFieldRefs {
   readonly id: Prisma.FieldRef<'RefreshSession', 'String'>;
   readonly userId: Prisma.FieldRef<'RefreshSession', 'String'>;
   readonly familyId: Prisma.FieldRef<'RefreshSession', 'String'>;
+  readonly persistent: Prisma.FieldRef<'RefreshSession', 'Boolean'>;
   readonly tokenHash: Prisma.FieldRef<'RefreshSession', 'String'>;
   readonly deviceFingerprint: Prisma.FieldRef<'RefreshSession', 'String'>;
   readonly userAgent: Prisma.FieldRef<'RefreshSession', 'String'>;

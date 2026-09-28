@@ -8,6 +8,7 @@ import {
   type ThemePreference,
   writePreferenceCookie,
 } from './config';
+import { setZodLocale } from '../zod-fr';
 import { en } from './en';
 import { type Dictionary, fr } from './fr';
 
@@ -61,6 +62,8 @@ export function I18nProvider({
   children: ReactNode;
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  // Messages de validation dans la langue courante (dès le premier rendu)
+  setZodLocale(locale);
   const [theme, setThemeState] = useState<ThemePreference>(initialTheme);
 
   const setLocale = useCallback((l: Locale) => {

@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { cn } from '@tontine/ui';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * Icône « coupe » de la charte (§01) : le pot commun, une pièce qui y tombe.
@@ -33,6 +36,7 @@ export function Logo({
   tagline?: boolean;
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
     <Link
       href={href}
@@ -59,7 +63,7 @@ export function Logo({
               onNavy ? 'text-nav-foreground' : 'text-muted-foreground',
             )}
           >
-            CIGALE · Épargne communautaire
+            CIGALE · {t('common.tagline')}
           </span>
         ) : null}
       </span>

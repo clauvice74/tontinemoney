@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { zodFr } from '@/lib/zod-fr';
 import { Alert, Button } from '@tontine/ui';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -17,11 +16,15 @@ import {
 import { api } from '@/lib/api';
 import { ApiError } from '@/lib/api/errors';
 import { applyServerErrors } from '@/lib/forms';
+import { useI18n } from '@/lib/i18n';
+import { zodFr } from '@/lib/zod-fr';
 
 const schema = z.object(newPasswordFields).superRefine(refinePasswordConfirmation);
 type Values = z.infer<typeof schema>;
 
+/** Nouveau mot de passe (US-1.5) : lien valable 1 heure, 5 derniers mots de passe refusés. */
 export default function ResetPasswordPage() {
+  const { t } = useI18n();
   const params = useParams<{ token: string }>();
   const token = decodeURIComponent(params.token ?? '');
   const [done, setDone] = useState(false);
@@ -50,21 +53,24 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthCard
-      title="Nouveau mot de passe"
-      description="Choisissez un mot de passe différent de vos 5 derniers."
+      title={t('auth.reset.title')}
+      description={t('auth.reset.description')}
       footer={
-        <Link href="/forgot-password" className="font-medium text-primary underline">
-          Demander un nouveau lien
+        <Link
+          href="/forgot-password"
+          className="font-medium text-info underline underline-offset-4"
+        >
+          {t('auth.reset.newLink')}
         </Link>
       }
     >
       {done ? (
         <div className="space-y-4">
-          <Alert variant="success" title="Mot de passe modifié">
-            Vos autres sessions ont été fermées. Vous pouvez vous reconnecter.
+          <Alert variant="success" title={t('auth.reset.doneTitle')}>
+            {t('auth.reset.doneBody')}
           </Alert>
-          <Button asChild className="w-full">
-            <Link href="/login">Se connecter</Link>
+          <Button variant="primary" size="lg" asChild className="w-full">
+            <Link href="/login">{t('auth.activated.cta')}</Link>
           </Button>
         </div>
       ) : (
@@ -77,8 +83,14 @@ export default function ResetPasswordPage() {
             confirmError={errors.confirm?.message}
             value={form.watch('password')}
           />
-          <Button type="submit" className="w-full" loading={form.formState.isSubmitting}>
-            Réinitialiser
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            loading={form.formState.isSubmitting}
+          >
+            {t('auth.reset.submit')}
           </Button>
         </form>
       )}

@@ -1,16 +1,9 @@
 import type { Metadata } from 'next';
-import { ActivationForm } from '@/components/auth/activation-form';
-import { AuthCard } from '@/components/auth/auth-card';
+import { ActivationFlow } from '@/components/auth/activation-form';
 
 export const metadata: Metadata = { title: 'Activer mon compte' };
 
+/** Activation par code (OTP à 6 chiffres) puis création du mot de passe. */
 export default function ActivateWithCodePage() {
-  return (
-    <AuthCard
-      title="Activer mon compte"
-      description="Saisissez l’identifiant et le code reçus, puis choisissez votre mot de passe."
-    >
-      <ActivationForm />
-    </AuthCard>
-  );
+  return <ActivationFlow />;
 }

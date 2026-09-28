@@ -276,3 +276,7 @@ du mot de passe ». (7) **Livraison par lots** : 1 design system, navigation, FR
 UX ; 2 authentification ; 3 tableau de bord et tontines ; 4 wallet, KYC, notifications, profil ;
 5 administration. Maquettes et prototype : réalisés dans l'application (écrans réels) et dans le
 UI kit `/dev/ui-kit`.
+
+## A-57 — Écrans d'authentification (refonte, lot 2)
+
+« Se souvenir de moi » : case cochée par défaut ; décochée, le refresh token est posé en **cookie de session** (effacé à la fermeture du navigateur) tandis que la session serveur garde la durée de la spécification (7 jours, US-1.4) — aucune règle de sécurité n'est assouplie. Le choix est porté par le défi MFA (métadonnée) puis par la session (`auth_refresh_sessions.persistent`), et conservé à chaque rotation. Activation en deux écrans (code, puis mot de passe) pour suivre le parcours du prompt ; l'API reste un appel unique (le code n'est pas vérifié séparément, pour ne pas ouvrir un second point d'essai des codes) : un code refusé ramène à l'écran « code » avec le motif (invalide, expiré, trop d'essais). Minuteur : délai de 60 s avant de redemander un code (la validité de 15 min est indiquée en texte, l'heure d'envoi n'étant pas connue de la page). Messages de validation dans la langue choisie (carte d'erreurs zod bilingue).

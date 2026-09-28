@@ -492,6 +492,33 @@ describe('US-1.4 — connexion et déconnexion', () => {
     expect(res.headers['retry-after']).toBeDefined();
   });
 
+  it('« se souvenir de moi » (A-57) : cookie persistant par défaut, de session sinon — conservé à la rotation', async () => {
+    const rawCookie = (h: unknown) => (h as string[]).find((c) => c.startsWith('tm_rt='))!;
+    const u = await ctx.createUser();
+    const remembered = await ctx.http
+      .post('/api/v1/auth/login')
+      .send({ identifier: u.email, password: PASSWORD, rememberMe: true });
+    expect(rawCookie(remembered.headers['set-cookie'])).toMatch(/Expires=/);
+    const legacy = await ctx.http
+      .post('/api/v1/auth/login')
+      .send({ identifier: u.email, password: PASSWORD });
+    expect(rawCookie(legacy.headers['set-cookie'])).toMatch(/Expires=/);
+
+    const session = await ctx.http
+      .post('/api/v1/auth/login')
+      .send({ identifier: u.email, password: PASSWORD, rememberMe: false });
+    const first = rawCookie(session.headers['set-cookie']);
+    expect(first).not.toMatch(/Expires=|Max-Age=/);
+    const rotated = await ctx.http.post('/api/v1/auth/refresh').set('Cookie', first.split(';')[0]!);
+    expect(rotated.status).toBe(200);
+    expect(rawCookie(rotated.headers['set-cookie'])).not.toMatch(/Expires=|Max-Age=/);
+    // La session serveur garde sa durée de 7 jours (US-1.4)
+    const row = await ctx.prisma.refreshSession.findFirstOrThrow({
+      where: { userId: u.id, persistent: false, rotatedAt: null },
+    });
+    expect(row.expiresAt.getTime() - ctx.clock.now().getTime()).toBe(7 * 86_400_000);
+  });
+
   it('refresh : rotation du refresh token, l’ancien devient inutilisable et sa réutilisation révoque la famille', async () => {
     const u = await ctx.createUser();
     const { cookie } = await ctx.login(u);

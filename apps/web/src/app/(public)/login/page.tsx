@@ -7,6 +7,7 @@ import { Suspense, useEffect, useRef } from 'react';
 import { AuthCard } from '@/components/auth/auth-card';
 import { type LoginOutcome, LoginForm } from '@/components/auth/login-form';
 import { useAuthStore } from '@/lib/auth/store';
+import { useI18n } from '@/lib/i18n';
 import { homeFor } from '@/lib/navigation';
 
 /** N'accepte que des chemins internes pour la redirection post-connexion. */
@@ -16,6 +17,7 @@ function safeNext(next: string | null): string | null {
 }
 
 function LoginContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get('next'));
@@ -32,32 +34,32 @@ function LoginContent() {
     handledByForm.current = true;
     if (recoveryCodesExhausted) {
       toast({
-        title: 'Codes de récupération épuisés',
-        description: 'Générez de nouveaux codes dans « Sécurité ».',
+        title: t('auth.login.recoveryExhaustedTitle'),
+        description: t('auth.login.recoveryExhaustedBody'),
         variant: 'destructive',
       });
     }
     if (mfaSetupRequired) {
-      toast({
-        title: 'Double authentification obligatoire',
-        description: 'Activez-la pour accéder aux fonctions d’administration.',
-      });
+      toast({ title: t('auth.login.mfaSetupTitle'), description: t('auth.login.mfaSetupBody') });
       router.replace('/security');
       return;
     }
-    toast.success(`Bienvenue ${me.firstName} !`);
+    toast.success(t('auth.login.welcome', { name: me.firstName }));
     router.replace(next ?? homeFor(me.role));
   }
 
   return (
     <AuthCard
-      title="Connexion"
-      description="Accédez à votre espace TontineMoney."
+      title={t('auth.login.title')}
+      description={t('auth.login.description')}
       footer={
         <>
-          Pas encore de compte ?{' '}
-          <Link href="/request-account" className="font-medium text-primary underline">
-            Demander un compte
+          {t('auth.login.noAccount')}{' '}
+          <Link
+            href="/request-account"
+            className="font-medium text-info underline underline-offset-4"
+          >
+            {t('auth.login.signup')}
           </Link>
         </>
       }

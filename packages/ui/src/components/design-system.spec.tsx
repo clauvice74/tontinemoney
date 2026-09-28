@@ -5,6 +5,9 @@ import { Avatar, avatarTone, initialsOf } from './avatar';
 import { Button, buttonVariants } from './button';
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from './dropdown';
 import { KpiCard } from './kpi-card';
+import { OtpInput } from './otp-input';
+import { PasswordInput } from './password-input';
+import { Stepper } from './stepper';
 import { ProgressBar } from './progress-bar';
 import { Timeline } from './timeline';
 
@@ -95,5 +98,53 @@ describe('Dropdown', () => {
     await user.keyboard('{Enter}');
     expect(await screen.findByRole('menuitem', { name: 'Voir' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Suspendre' })).toBeInTheDocument();
+  });
+});
+
+describe('OtpInput', () => {
+  it('un seul champ réel : chiffres uniquement, longueur bornée, complétion signalée', async () => {
+    const user = userEvent.setup();
+    let value = '';
+    let completed = '';
+    const { rerender } = render(
+      <OtpInput
+        aria-label="Code"
+        value={value}
+        onValueChange={(v) => (value = v)}
+        onComplete={(v) => (completed = v)}
+      />,
+    );
+    const input = screen.getByLabelText('Code');
+    expect(input).toHaveAttribute('autocomplete', 'one-time-code');
+    expect(input).toHaveAttribute('inputmode', 'numeric');
+    await user.click(input);
+    await user.paste('12a3456789');
+    expect(value).toBe('123456');
+    expect(completed).toBe('123456');
+    rerender(<OtpInput aria-label="Code" value={value} onValueChange={() => undefined} />);
+    expect(screen.getByLabelText('Code')).toHaveValue('123456');
+  });
+});
+
+describe('PasswordInput', () => {
+  it('bouton afficher / masquer accessible', async () => {
+    const user = userEvent.setup();
+    render(<PasswordInput aria-label="Mot de passe" defaultValue="secret" />);
+    const input = screen.getByLabelText('Mot de passe');
+    expect(input).toHaveAttribute('type', 'password');
+    await user.click(screen.getByRole('button', { name: 'Afficher le mot de passe' }));
+    expect(input).toHaveAttribute('type', 'text');
+    expect(screen.getByRole('button', { name: 'Masquer le mot de passe' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+});
+
+describe('Stepper', () => {
+  it('étape courante signalée', () => {
+    render(<Stepper label="Étapes" steps={['Inscription', 'Code', 'Mot de passe']} current={1} />);
+    expect(screen.getByRole('list', { name: 'Étapes' })).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')[1]).toHaveAttribute('aria-current', 'step');
   });
 });

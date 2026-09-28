@@ -51,17 +51,70 @@ export const frenchErrorMap: ZodErrorMap = (issue, ctx) => {
   }
 };
 
+/** Messages de validation en anglais (langue choisie dans le menu du compte, A-56). */
+export const englishErrorMap: ZodErrorMap = (issue, ctx) => {
+  switch (issue.code) {
+    case ZodIssueCode.invalid_type:
+      if (issue.received === 'undefined' || issue.received === 'null' || issue.received === 'nan') {
+        return { message: 'Required' };
+      }
+      if (issue.expected === 'integer') return { message: 'Whole number expected' };
+      if (issue.expected === 'number') return { message: 'Number expected' };
+      return { message: 'Invalid value' };
+    case ZodIssueCode.too_small:
+      if (issue.type === 'string') {
+        return {
+          message:
+            issue.minimum === 1 ? 'Required' : `At least ${String(issue.minimum)} characters`,
+        };
+      }
+      if (issue.type === 'number') return { message: `Minimum value: ${String(issue.minimum)}` };
+      if (issue.type === 'array') {
+        return { message: `Select at least ${String(issue.minimum)} item(s)` };
+      }
+      return { message: 'Value too small' };
+    case ZodIssueCode.too_big:
+      if (issue.type === 'string')
+        return { message: `At most ${String(issue.maximum)} characters` };
+      if (issue.type === 'number') return { message: `Maximum value: ${String(issue.maximum)}` };
+      return { message: 'Value too large' };
+    case ZodIssueCode.invalid_string:
+      if (issue.validation === 'email') return { message: 'Invalid email format' };
+      if (issue.validation === 'uuid') return { message: 'Invalid identifier' };
+      return { message: 'Invalid format' };
+    case ZodIssueCode.invalid_enum_value:
+      return { message: 'Select a value from the list' };
+    case ZodIssueCode.invalid_literal:
+      return { message: 'Invalid value' };
+    case ZodIssueCode.unrecognized_keys:
+      return { message: 'Fields not allowed' };
+    default:
+      return { message: ctx.defaultError };
+  }
+};
+
+let zodLocale: 'fr' | 'en' = 'fr';
+
+/** Langue des messages de validation (appelée par le fournisseur i18n). */
+export function setZodLocale(locale: 'fr' | 'en'): void {
+  zodLocale = locale;
+}
+
+const localizedErrorMap: ZodErrorMap = (issue, ctx) =>
+  zodLocale === 'en' ? englishErrorMap(issue, ctx) : frenchErrorMap(issue, ctx);
+
 /**
  * Options de parsing à passer à `zodResolver(schema, zodFr)`. La carte d'erreurs contextuelle
- * s'applique quel que soit l'exemplaire de zod ayant créé le schéma (le bundler peut charger
- * la version CommonJS pour `@tontine/contracts` et la version ESM pour l'application).
+ * suit la langue choisie et s'applique quel que soit l'exemplaire de zod ayant créé le schéma
+ * (le bundler peut charger la version CommonJS pour `@tontine/contracts` et la version ESM
+ * pour l'application).
  */
-export const zodFr: ParseParams = { errorMap: frenchErrorMap, path: [], async: false };
+export const zodFr: ParseParams = { errorMap: localizedErrorMap, path: [], async: false };
 
 let installed = false;
 
 export function installFrenchZodErrors(): void {
   if (installed) return;
-  z.setErrorMap(frenchErrorMap);
+  z.setErrorMap(localizedErrorMap);
   installed = true;
 }

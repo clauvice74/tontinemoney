@@ -193,6 +193,8 @@ export class LoginService {
           type: 'MFA_CHALLENGE',
           tokenHash: sha256Hex(challenge),
           expiresAt: new Date(now.getTime() + MFA_CHALLENGE_TTL_MS),
+          // Choix « se souvenir de moi » conservé jusqu'au second facteur
+          metadata: { rememberMe: input.rememberMe !== false },
         },
       });
       if (user.mfaType === 'SMS') {
@@ -224,10 +226,18 @@ export class LoginService {
         expiresIn: MFA_CHALLENGE_TTL_MS / 1000,
       };
     }
-    return { kind: 'tokens', tokens: await this.completeLogin(user, false), user };
+    return {
+      kind: 'tokens',
+      tokens: await this.completeLogin(user, false, input.rememberMe !== false),
+      user,
+    };
   }
 
-  private async completeLogin(user: User, mfaUsed: boolean): Promise<IssuedTokens> {
+  private async completeLogin(
+    user: User,
+    mfaUsed: boolean,
+    persistent: boolean,
+  ): Promise<IssuedTokens> {
     const now = this.clock.now();
     const ctx = RequestContext.metadata();
     const tontineIds = await this.tokens.claimsFor(user.id);
@@ -236,7 +246,7 @@ export class LoginService {
         where: { id: user.id },
         data: { failedLoginCount: 0, lockedUntil: null, lockReason: null, lastLoginAt: now },
       });
-      const t = await this.tokens.openSession(tx, user, mfaUsed, tontineIds);
+      const t = await this.tokens.openSession(tx, user, mfaUsed, tontineIds, persistent);
       await this.outbox.add(tx, {
         type: 'user.login',
         aggregateType: 'user',
@@ -340,7 +350,11 @@ export class LoginService {
       }
     }
     return {
-      tokens: await this.completeLogin(user, true),
+      tokens: await this.completeLogin(
+        user,
+        true,
+        (challenge.metadata as { rememberMe?: boolean } | null)?.rememberMe !== false,
+      ),
       user,
       recoveryCodesExhausted: exhausted,
     };

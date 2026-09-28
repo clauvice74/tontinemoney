@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PublicFooter } from '@/components/public-footer';
 import { PublicHeader } from '@/components/public-header';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -8,10 +9,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <main id="contenu" className="flex-1">
         {children}
       </main>
-      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} TontineMoney — environnement de démonstration, aucune
-        transaction réelle.
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
