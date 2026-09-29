@@ -4,14 +4,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, LoadingBlock, toast } from '@tontine/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PageHeader } from '@/components/page-header';
 import { CreateTontineForm } from '@/components/tontines/create-tontine-form';
 import { api } from '@/lib/api';
 import type { MemberView, TontineView } from '@/lib/api/types';
+import { useI18n } from '@/lib/i18n';
 import { currencyForCountry } from '@/lib/money';
 import { qk, useCurrentUser } from '@/lib/queries';
 
+/** Création d'une tontine (US-4.1) puis invitations facultatives (US-4.2). */
 export default function NewTontinePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = useCurrentUser();
@@ -24,34 +26,40 @@ export default function NewTontinePage() {
   const eligible = user?.kycLevel === 'TIER_3' && user.memberStatus === 'ACTIVE';
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <PageHeader
-        title="Créer une tontine"
-        description="La tontine est créée en brouillon ; vous en devenez l’administrateur."
-      />
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-h1">{t('wizard.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('wizard.description')}</p>
+      </div>
       {!eligible ? (
-        <Alert
-          variant="warning"
-          title="Vérification d’identité de niveau 3 requise"
-          className="mb-6"
-        >
-          <p>
-            La création d’une tontine est réservée aux membres actifs vérifiés au niveau 3. Vous
-            pouvez préparer la configuration, mais l’enregistrement sera refusé tant que ce niveau
-            n’est pas atteint.
-          </p>
+        <Alert variant="warning" title={t('wizard.eligibilityTitle')}>
+          <p>{t('wizard.eligibilityBody')}</p>
           <Button asChild size="sm" variant="outline" className="mt-2">
-            <Link href="/kyc">Compléter ma vérification</Link>
+            <Link href="/kyc">{t('wizard.eligibilityCta')}</Link>
           </Button>
         </Alert>
       ) : null}
       <CreateTontineForm
         defaultCurrency={currencyForCountry(profile.data?.country)}
-        onSubmit={async (values) => {
+        onSubmit={async (values, invitees) => {
           const created = await api.post<TontineView>('/tontines', values);
+          toast.success(t('wizard.created'), t('wizard.createdBody', { name: created.name }));
+          if (invitees.length > 0) {
+            // Envoi séquentiel : un échec n'empêche pas les suivants ; résumé en fin d'envoi.
+            let failed = 0;
+            for (const target of invitees) {
+              try {
+                await api.post(`/tontines/${created.id}/invitations`, target);
+              } catch {
+                failed += 1;
+              }
+            }
+            const sent = invitees.length - failed;
+            if (sent > 0) toast.success(t('wizard.invitationsSent', { count: sent }));
+            if (failed > 0) toast.error(t('wizard.invitationsFailed', { count: failed }));
+          }
           await queryClient.invalidateQueries({ queryKey: qk.tontines });
-          toast.success('Tontine créée', `« ${created.name} » est en brouillon.`);
-          router.push(`/tontines/${created.id}/admin`);
+          router.push(`/tontines/${created.id}`);
         }}
       />
     </div>

@@ -40,9 +40,24 @@ export const SEATED_STATUSES = ['ACTIVE', 'SUSPENDED', 'PENDING_ACTIVATION'] as 
 /** Adhésions donnant accès en lecture à la tontine. */
 export const VISIBLE_STATUSES = ['ACTIVE', 'SUSPENDED', 'PENDING_ACTIVATION'] as const;
 
+/** Résumé du cycle en cours (liste et détail des tontines, refonte lot 3). */
+export interface CurrentCycleSummary {
+  number: number;
+  status: string;
+  dueDate: string;
+  beneficiary: { memberId: string; firstName: string } | null;
+  paidCount: number;
+  memberCount: number;
+}
+
 export function tontineView(
   t: Tontine,
-  extra: { memberCount: number; myRole?: string | null; myStatus?: string | null },
+  extra: {
+    memberCount: number;
+    myRole?: string | null;
+    myStatus?: string | null;
+    currentCycle?: CurrentCycleSummary | null;
+  },
 ) {
   return {
     id: t.id,
@@ -76,6 +91,7 @@ export function tontineView(
     pausedReason: t.pausedReason,
     myRole: extra.myRole ?? null,
     myStatus: extra.myStatus ?? null,
+    currentCycle: extra.currentCycle ?? null,
     version: t.version,
   };
 }
@@ -138,11 +154,51 @@ export class TontinesService {
 
   async view(actor: Actor, tontineId: string) {
     const { tontine, membership } = await this.getVisible(actor, tontineId);
+    const current = await this.currentCycles([tontine]);
     return tontineView(tontine, {
       memberCount: await this.seatedCount(tontineId),
       myRole: membership?.role ?? null,
       myStatus: membership?.status ?? null,
+      currentCycle: current.get(tontine.id) ?? null,
     });
+  }
+
+  /**
+   * Cycle en cours de chaque tontine (numéro courant) : échéance, bénéficiaire (prénom),
+   * contributions reçues. Une requête pour toutes les tontines, une pour les prénoms.
+   */
+  async currentCycles(tontines: Tontine[]): Promise<Map<string, CurrentCycleSummary>> {
+    const pairs = tontines
+      .filter((t) => t.currentCycleNumber !== null)
+      .map((t) => ({ tontineId: t.id, number: t.currentCycleNumber! }));
+    if (pairs.length === 0) return new Map();
+    const cycles = await this.prisma.tontineCycle.findMany({
+      where: { OR: pairs },
+      include: { contributions: { select: { status: true } } },
+    });
+    const names = new Map(
+      (
+        await this.members.snapshots(
+          cycles.flatMap((c) => (c.beneficiaryId ? [c.beneficiaryId] : [])),
+        )
+      ).map((m) => [m.id, m.firstName]),
+    );
+    return new Map(
+      cycles.map((c) => [
+        c.tontineId,
+        {
+          number: c.number,
+          status: c.status,
+          dueDate: c.dueDate.toISOString().slice(0, 10),
+          beneficiary: c.beneficiaryId
+            ? { memberId: c.beneficiaryId, firstName: names.get(c.beneficiaryId) ?? '—' }
+            : null,
+          paidCount: c.contributions.filter((x) => x.status === 'PAID' || x.status === 'PAID_LATE')
+            .length,
+          memberCount: c.contributions.length,
+        },
+      ]),
+    );
   }
 
   async listMine(actor: Actor) {
@@ -160,11 +216,13 @@ export class TontinesService {
       _count: { _all: true },
     });
     const byId = new Map(counts.map((c) => [c.tontineId, c._count._all]));
+    const current = await this.currentCycles(rows.map((r) => r.tontine));
     return rows.map((r) =>
       tontineView(r.tontine, {
         memberCount: byId.get(r.tontineId) ?? 0,
         myRole: r.role,
         myStatus: r.status,
+        currentCycle: current.get(r.tontineId) ?? null,
       }),
     );
   }

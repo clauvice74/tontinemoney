@@ -99,6 +99,13 @@ export const TONTINE_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Annulée',
 };
 
+export const CYCLE_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'À venir',
+  IN_PROGRESS: 'En cours',
+  PAYOUT_PENDING: 'Versement en attente',
+  PAYOUT_PROCESSING: 'Versement en cours',
+  COMPLETED: 'Terminé',
+};
 export const FREQUENCY_LABELS: Record<string, string> = {
   WEEKLY: 'Hebdomadaire',
   BIWEEKLY: 'Toutes les deux semaines',

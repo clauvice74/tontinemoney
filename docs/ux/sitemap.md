@@ -11,9 +11,9 @@ flowchart TD
   PUB --> P3["/activate, /activate/:token : OTP + mot de passe ✅ L2"]
   PUB --> P4["/login ✅ L2"]
   PUB --> P5["/forgot-password, /reset-password/:token ✅ L2"]
-  PUB --> P6["/invitations/:code 🔄 L3"]
-  APP --> M1["/dashboard Accueil 🔄 L3"]
-  APP --> M2["/tontines, /tontines/:id, /tontines/new 🔄 L3"]
+  PUB --> P6["/invitations/:code ✅ L3"]
+  APP --> M1["/dashboard Accueil ✅ L3"]
+  APP --> M2["/tontines, /tontines/:id, /tontines/new ✅ L3"]
   APP --> M3["/wallet (+ dépôt, retrait) 🔄 L4"]
   APP --> M4["/kyc 🔄 L4"]
   APP --> M5["/notifications 🔄 L4"]
@@ -34,11 +34,11 @@ flowchart TD
 | `/activate/:token`                           | Activation : OTP, création du mot de passe                                          | 2    |
 | `/login`                                     | Connexion (e-mail ou téléphone, se souvenir de moi, MFA)                            | 2    |
 | `/forgot-password`, `/reset-password/:token` | Mot de passe oublié                                                                 | 2    |
-| `/dashboard`                                 | Accueil membre : solde, prochaine contribution, tontines, historique, notifications | 3    |
-| `/tontines`                                  | Liste (cartes)                                                                      | 3    |
-| `/tontines/new`                              | Assistant de création (4 étapes)                                                    | 3    |
-| `/tontines/:id`                              | Détail : informations, progression, cycles, membres, historique                     | 3    |
-| `/invitations/:code`                         | Adhésion                                                                            | 3    |
+| `/dashboard`                                 | Accueil membre : solde, prochaine contribution, tontines, historique, notifications | 3 ✅ |
+| `/tontines`                                  | Liste (cartes)                                                                      | 3 ✅ |
+| `/tontines/new`                              | Assistant de création (4 étapes)                                                    | 3 ✅ |
+| `/tontines/:id`                              | Détail : informations, progression, cycles, membres, contributions, bénéficiaires   | 3 ✅ |
+| `/invitations/:code`                         | Adhésion                                                                            | 3 ✅ |
 | `/wallet`                                    | Solde, bloqués, historique, filtres, dépôt, retrait                                 | 4    |
 | `/kyc`                                       | Statut et envoi des documents                                                       | 4    |
 | `/notifications`                             | Liste chronologique, filtres                                                        | 4    |

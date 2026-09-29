@@ -353,6 +353,15 @@ export interface TontineView {
   pausedReason?: string | null;
   myRole: TontineMemberRole | null;
   myStatus: TontineMemberStatus | null;
+  /** Cycle en cours (numéro, échéance, bénéficiaire, contributions reçues). */
+  currentCycle?: {
+    number: number;
+    status: string;
+    dueDate: string;
+    beneficiary: { memberId: string; firstName: string } | null;
+    paidCount: number;
+    memberCount: number;
+  } | null;
   version: number;
 }
 
@@ -391,6 +400,8 @@ export interface ContributionView {
   status: ContributionStatus;
   amount: MoneyView;
   penalty?: MoneyView | null;
+  /** Montant dû (contribution + pénalité impayée). */
+  totalDue?: MoneyView;
   dueDate?: string;
   paidAt?: string | null;
   tontineId?: string;

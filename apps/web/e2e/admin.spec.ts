@@ -6,7 +6,7 @@ test.describe('Administration', () => {
     await login(page, 'admin.tontine@tontinemoney.local');
     await expect(page).toHaveURL(/\/dashboard/);
     await page.goto('/tontines');
-    await page.getByText('Tontine Solidarité Douala').first().click();
+    await page.getByRole('link', { name: /Voir les détails — Tontine Solidarité Douala/ }).click();
     await expect(page).toHaveURL(/\/tontines\/[0-9a-f-]{36}/);
   });
 
@@ -16,7 +16,7 @@ test.describe('Administration', () => {
     await login(page, 'admin.tontine@tontinemoney.local');
     await expect(page).toHaveURL(/\/dashboard/);
     await page.goto('/tontines');
-    await page.getByText('Tontine Solidarité Douala').first().click();
+    await page.getByRole('link', { name: /Voir les détails — Tontine Solidarité Douala/ }).click();
     await expect(page).toHaveURL(/\/tontines\/[0-9a-f-]{36}/);
     const tontineId = /\/tontines\/([0-9a-f-]{36})/.exec(page.url())?.[1];
     await page.goto(`/tontines/${tontineId}/admin/reports`);
