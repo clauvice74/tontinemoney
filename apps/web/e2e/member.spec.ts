@@ -17,12 +17,16 @@ test.describe('Parcours membre (Awa, KYC niveau 2)', () => {
     await login(page, 'awa@tontinemoney.local');
     await expect(page).toHaveURL(/\/dashboard/);
     await page.goto('/wallet');
-    await page.getByRole('tab', { name: 'Déposer' }).click();
-    await page.getByLabel(/Montant/).fill('1500');
-    await page.getByLabel('Numéro Mobile Money').fill('+237677001122');
-    await page.getByRole('button', { name: 'Déposer' }).click();
-    await page.getByRole('button', { name: 'Simuler la confirmation USSD' }).click();
-    await expect(page.getByText('Votre portefeuille a été crédité.')).toBeVisible({
+    await page.getByRole('button', { name: 'Ajouter de l’argent' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel(/Montant/).fill('1500');
+    await dialog.getByRole('button', { name: 'Continuer' }).click();
+    await dialog.getByLabel('Numéro Mobile Money').fill('+237677001122');
+    await dialog.getByRole('button', { name: 'Continuer' }).click();
+    await expect(dialog.getByText('Récapitulatif')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Confirmer le dépôt' }).click();
+    await dialog.getByRole('button', { name: 'Simuler la confirmation USSD' }).click();
+    await expect(dialog.getByText('Votre wallet a été crédité.')).toBeVisible({
       timeout: 20_000,
     });
   });

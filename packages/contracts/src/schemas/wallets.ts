@@ -42,11 +42,19 @@ export const depositSchema = z
 export type DepositInput = z.infer<typeof depositSchema>;
 
 /** US-7.3 — retrait. */
-export const withdrawalSchema = z.object({
+/** Paramètres d'un retrait ; `POST /me/wallet/withdrawals/otp` envoie le code de confirmation. */
+export const withdrawalRequestSchema = z.object({
   amount: amountStringSchema,
   currency: currencySchema,
   method: z.literal('MOBILE_MONEY'),
   phone: phoneSchema,
+});
+export type WithdrawalRequestInput = z.infer<typeof withdrawalRequestSchema>;
+
+/** Retrait confirmé par le code reçu (A-59) : même montant, devise et numéro que la demande. */
+export const withdrawalSchema = withdrawalRequestSchema.extend({
+  otpChallengeId: z.string().uuid(),
+  otp: z.string().regex(/^\d{6}$/, 'Code à 6 chiffres'),
 });
 export type WithdrawalInput = z.infer<typeof withdrawalSchema>;
 

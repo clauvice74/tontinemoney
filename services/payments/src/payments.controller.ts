@@ -16,12 +16,14 @@ import {
   type DepositInput,
   PAYMENT_STATUSES,
   type WithdrawalInput,
+  type WithdrawalRequestInput,
   cardDepositSchema,
   depositSchema,
   mobileMoneyDepositSchema,
   pspReconcileSchema,
   refundByIdSchema,
   refundSchema,
+  withdrawalRequestSchema,
   withdrawalSchema,
 } from '@tontine/contracts';
 import {
@@ -83,9 +85,26 @@ export class PaymentsController {
     return this.payments.deposit(actor, body, req.header('idempotency-key') ?? '');
   }
 
+  @Post('me/wallet/withdrawals/otp')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Code de confirmation d’un retrait (A-59) : 6 chiffres par SMS (ou e-mail), 5 min, lié au montant et au numéro',
+  })
+  @ApiZodBody(withdrawalRequestSchema)
+  async withdrawalCode(
+    @CurrentUser() actor: Actor,
+    @ZodBody(withdrawalRequestSchema) body: WithdrawalRequestInput,
+  ) {
+    return this.payments.requestWithdrawalCode(actor, body);
+  }
+
   @Post(['me/wallet/withdrawals', 'payments/withdraw'])
   @Idempotent('wallet.withdrawal')
-  @ApiOperation({ summary: 'Retrait Mobile Money : blocage des fonds puis versement PSP (US-7.3)' })
+  @ApiOperation({
+    summary:
+      'Retrait Mobile Money confirmé par code (A-59) : blocage des fonds puis versement PSP (US-7.3)',
+  })
   @ApiZodBody(withdrawalSchema)
   async withdraw(
     @CurrentUser() actor: Actor,

@@ -4,6 +4,7 @@ import { Alert, Button, cn } from '@tontine/ui';
 import { Camera, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { type MessageKey, useI18n } from '@/lib/i18n';
 
 export interface SelfieResult {
   blob: Blob;
@@ -43,18 +44,12 @@ function getFaceDetector(): FaceDetectorLike | null {
   }
 }
 
-function cameraErrorMessage(e: unknown): string {
+function cameraErrorKey(e: unknown): MessageKey {
   const name = e instanceof DOMException ? e.name : '';
-  if (name === 'NotAllowedError' || name === 'SecurityError') {
-    return 'Accès à la caméra refusé. Autorisez la caméra dans les paramètres de votre navigateur, puis réessayez.';
-  }
-  if (name === 'NotFoundError' || name === 'OverconstrainedError') {
-    return 'Aucune caméra frontale détectée sur cet appareil.';
-  }
-  if (name === 'NotReadableError') {
-    return 'La caméra est utilisée par une autre application.';
-  }
-  return 'Impossible de démarrer la capture. Réessayez.';
+  if (name === 'NotAllowedError' || name === 'SecurityError') return 'kyc.selfie.denied';
+  if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'kyc.selfie.notFound';
+  if (name === 'NotReadableError') return 'kyc.selfie.busy';
+  return 'kyc.selfie.failed';
 }
 
 /**
@@ -63,15 +58,14 @@ function cameraErrorMessage(e: unknown): string {
  * sinon bouton de capture. La session de liveness est ouverte au démarrage de la caméra.
  */
 export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: SelfieCaptureProps) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const tokenRef = useRef<string | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [hint, setHint] = useState(
-    'Placez votre visage dans l’ovale, bien éclairé, sans lunettes.',
-  );
+  const [hint, setHint] = useState<MessageKey>('kyc.selfie.frame');
   const [faceAligned, setFaceAligned] = useState(false);
 
   const stopStream = useCallback(() => {
@@ -98,7 +92,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      setError('Capture impossible sur ce navigateur.');
+      setError(t('kyc.selfie.captureFailed'));
       setPhase('error');
       return;
     }
@@ -106,7 +100,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          setError('Capture impossible. Réessayez.');
+          setError(t('kyc.selfie.captureFailed'));
           setPhase('error');
           return;
         }
@@ -118,15 +112,13 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
       'image/jpeg',
       0.92,
     );
-  }, [onCapture, stopStream]);
+  }, [onCapture, stopStream, t]);
 
   async function start() {
     setError(null);
     setPhase('starting');
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError(
-        'Votre navigateur ne permet pas l’accès à la caméra. Utilisez un navigateur récent.',
-      );
+      setError(t('kyc.selfie.unsupported'));
       setPhase('error');
       return;
     }
@@ -148,11 +140,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
       setPhase('live');
     } catch (e) {
       stopStream();
-      setError(
-        e instanceof DOMException
-          ? cameraErrorMessage(e)
-          : 'Impossible d’ouvrir la session de vérification. Réessayez.',
-      );
+      setError(e instanceof DOMException ? t(cameraErrorKey(e)) : t('kyc.selfie.session'));
       setPhase('error');
     }
   }
@@ -173,7 +161,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
         if (!face) {
           stable = 0;
           setFaceAligned(false);
-          setHint('Aucun visage détecté : placez-vous face à la caméra.');
+          setHint('kyc.selfie.noFace');
           return;
         }
         const { x, y, width } = face.boundingBox;
@@ -185,7 +173,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
         if (centered && bigEnough) {
           stable += 1;
           setFaceAligned(true);
-          setHint('Parfait, ne bougez plus…');
+          setHint('kyc.selfie.hold');
           if (stable >= 3) {
             window.clearInterval(timer);
             capture();
@@ -196,9 +184,9 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
           setHint(
             !bigEnough
               ? size <= 0.25
-                ? 'Rapprochez-vous.'
-                : 'Éloignez-vous un peu.'
-              : 'Centrez votre visage dans l’ovale.',
+                ? 'kyc.selfie.closer'
+                : 'kyc.selfie.further'
+              : 'kyc.selfie.center',
           );
         }
       } catch {
@@ -231,7 +219,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
         {phase === 'captured' && preview ? (
           <Image
             src={preview}
-            alt="Aperçu de votre selfie"
+            alt={t('kyc.selfie.preview')}
             fill
             unoptimized
             className="object-cover [transform:scaleX(-1)]"
@@ -243,7 +231,7 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
               playsInline
               muted
               autoPlay
-              aria-label="Aperçu de la caméra"
+              aria-label={t('kyc.selfie.camera')}
               className={cn(
                 'absolute inset-0 size-full object-cover [transform:scaleX(-1)]',
                 phase !== 'live' && 'invisible',
@@ -271,10 +259,10 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
 
       <p className="text-center text-sm text-muted-foreground" aria-live="polite">
         {phase === 'live'
-          ? hint
+          ? t(hint)
           : phase === 'captured'
-            ? 'Selfie capturé.'
-            : 'Le selfie est pris en direct avec la caméra de votre appareil.'}
+            ? t('kyc.selfie.captured')
+            : t('kyc.selfie.intro')}
       </p>
 
       {error ? <Alert variant="destructive" title={error} /> : null}
@@ -287,17 +275,17 @@ export function SelfieCapture({ startLiveness, onCapture, onReset, disabled }: S
             loading={phase === 'starting'}
             disabled={disabled}
           >
-            <Camera aria-hidden="true" /> Activer la caméra
+            <Camera aria-hidden="true" /> {t('kyc.selfie.start')}
           </Button>
         ) : null}
         {phase === 'live' ? (
           <Button type="button" onClick={capture} disabled={disabled}>
-            <Camera aria-hidden="true" /> Prendre le selfie
+            <Camera aria-hidden="true" /> {t('kyc.selfie.take')}
           </Button>
         ) : null}
         {phase === 'captured' ? (
           <Button type="button" variant="outline" onClick={retake} disabled={disabled}>
-            <RotateCcw aria-hidden="true" /> Reprendre
+            <RotateCcw aria-hidden="true" /> {t('kyc.selfie.retake')}
           </Button>
         ) : null}
       </div>

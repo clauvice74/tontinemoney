@@ -68,4 +68,25 @@ test.describe('Accessibilité WCAG AA (axe-core)', () => {
     await expect(page.getByText('Étape 1 sur 4 — Type')).toBeVisible();
     await expectAccessible(page);
   });
+
+  for (const path of ['/wallet', '/kyc', '/notifications', '/profile', '/security'])
+    test(`espace membre ${path}`, async ({ page }) => {
+      await login(page, 'awa@tontinemoney.local');
+      await expect(page).toHaveURL(/\/dashboard/);
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await page.waitForLoadState('networkidle');
+      await expectAccessible(page);
+    });
+
+  test('wallet : dialogues de dépôt et de retrait', async ({ page }) => {
+    await login(page, 'awa@tontinemoney.local');
+    await expect(page).toHaveURL(/\/dashboard/);
+    await page.goto('/wallet?action=deposit');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expectAccessible(page);
+    await page.goto('/wallet?action=withdraw');
+    await expect(page.getByRole('dialog').getByText('Disponible après retrait')).toBeVisible();
+    await expectAccessible(page);
+  });
 });

@@ -9,9 +9,11 @@ import { useEffect, useId, useState } from 'react';
 import { api } from '@/lib/api';
 import { formatBytes } from '@/lib/format';
 import { formatError } from '@/lib/forms';
+import { useI18n } from '@/lib/i18n';
 
 /** Photo de profil (JPEG/PNG ≤ 5 Mo) — chargée avec le jeton puis affichée via une URL blob. */
 export function ProfilePhoto({ hasPhoto }: { hasPhoto: boolean }) {
+  const { t } = useI18n();
   const id = useId();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -37,11 +39,11 @@ export function ProfilePhoto({ hasPhoto }: { hasPhoto: boolean }) {
     e.target.value = '';
     if (!file) return;
     if (!(ACCEPTED_IMAGE_MIME as readonly string[]).includes(file.type)) {
-      setError('Format non accepté : utilisez une image JPEG ou PNG.');
+      setError(t('profile.photoFormat'));
       return;
     }
     if (file.size > PROFILE_PHOTO_MAX_BYTES) {
-      setError(`Fichier trop volumineux (${formatBytes(file.size)}) : 5 Mo maximum.`);
+      setError(t('profile.photoSize', { size: formatBytes(file.size) }));
       return;
     }
     const data = new FormData();
@@ -63,7 +65,7 @@ export function ProfilePhoto({ hasPhoto }: { hasPhoto: boolean }) {
         {url ? (
           <Image
             src={url}
-            alt="Votre photo de profil"
+            alt={t('profile.photoAlt')}
             width={96}
             height={96}
             unoptimized
@@ -74,8 +76,8 @@ export function ProfilePhoto({ hasPhoto }: { hasPhoto: boolean }) {
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor={id}>Photo de profil</Label>
-        <p className="text-xs text-muted-foreground">JPEG ou PNG, 5 Mo maximum.</p>
+        <Label htmlFor={id}>{t('profile.photo')}</Label>
+        <p className="text-xs text-muted-foreground">{t('profile.photoHint')}</p>
         <input
           id={id}
           type="file"
@@ -85,7 +87,7 @@ export function ProfilePhoto({ hasPhoto }: { hasPhoto: boolean }) {
         />
         <Button asChild variant="outline" size="sm" loading={uploading}>
           <label htmlFor={id} className="cursor-pointer">
-            {hasPhoto ? 'Changer la photo' : 'Ajouter une photo'}
+            {hasPhoto ? t('profile.photoChange') : t('profile.photoAdd')}
           </label>
         </Button>
         {error ? <Alert variant="destructive" title={error} /> : null}

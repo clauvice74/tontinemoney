@@ -72,3 +72,24 @@ export function currencyForCountry(country: string | null | undefined): Currency
 export function isNegative(money: MoneyView | null | undefined): boolean {
   return !!money && money.amountMinor.startsWith('-');
 }
+
+/** Montant saisi → unités mineures, ou null s'il est vide ou invalide pour la devise. */
+export function inputToMinor(amount: string | undefined, currency: string): bigint | null {
+  if (!amount || validateAmountPrecision(amount, currency)) return null;
+  try {
+    const minor = toMinor(amount, currency);
+    return minor > 0n ? minor : null;
+  } catch {
+    return null;
+  }
+}
+
+/** `MoneyView` construit à partir d'unités mineures (affichage via `Amount`). */
+export function moneyOf(minor: bigint, currency: string): MoneyView {
+  return { amount: '', amountMinor: minor.toString(), currency };
+}
+
+/** Unités mineures d'un `MoneyView` (0 si absent). */
+export function minorOf(money: MoneyView | null | undefined): bigint {
+  return BigInt(money?.amountMinor ?? '0');
+}

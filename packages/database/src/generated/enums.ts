@@ -51,6 +51,7 @@ export const AuthTokenType = {
   MFA_CHALLENGE: 'MFA_CHALLENGE',
   MFA_SMS_LOGIN: 'MFA_SMS_LOGIN',
   MFA_SETUP_SMS: 'MFA_SETUP_SMS',
+  STEP_UP_OTP: 'STEP_UP_OTP',
 } as const;
 
 export type AuthTokenType = (typeof AuthTokenType)[keyof typeof AuthTokenType];

@@ -15,32 +15,34 @@ import { z } from 'zod';
 import { api } from '@/lib/api';
 import type { MemberView } from '@/lib/api/types';
 import { applyServerErrors } from '@/lib/forms';
-import { NOTIFICATION_CATEGORY_LABELS, NOTIFICATION_CHANNEL_LABELS } from '@/lib/labels';
+import { useI18n } from '@/lib/i18n';
+import { useLabels } from '@/lib/i18n/labels';
 import { qk } from '@/lib/queries';
 import { zodFr } from '@/lib/zod-fr';
 
 /** Formulaire : heures calmes activables + catégorie SECURITY toujours incluse (US-8.5). */
-const formSchema = z
-  .object({
-    preferredChannel: notificationPrefsSchema.shape.preferredChannel,
-    frequency: z.enum(['IMMEDIATE', 'DAILY_DIGEST']),
-    enabledTypes: z.array(z.enum(NOTIFICATION_CATEGORIES)),
-    quietEnabled: z.boolean(),
-    quietStart: z.string(),
-    quietEnd: z.string(),
-  })
-  .superRefine((v, ctx) => {
-    if (v.quietEnabled) {
-      const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
-      if (!hhmm.test(v.quietStart)) {
-        ctx.addIssue({ code: 'custom', path: ['quietStart'], message: 'Heure attendue HH:MM' });
+const buildSchema = (timeFormat: string) =>
+  z
+    .object({
+      preferredChannel: notificationPrefsSchema.shape.preferredChannel,
+      frequency: z.enum(['IMMEDIATE', 'DAILY_DIGEST']),
+      enabledTypes: z.array(z.enum(NOTIFICATION_CATEGORIES)),
+      quietEnabled: z.boolean(),
+      quietStart: z.string(),
+      quietEnd: z.string(),
+    })
+    .superRefine((v, ctx) => {
+      if (v.quietEnabled) {
+        const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
+        if (!hhmm.test(v.quietStart)) {
+          ctx.addIssue({ code: 'custom', path: ['quietStart'], message: timeFormat });
+        }
+        if (!hhmm.test(v.quietEnd)) {
+          ctx.addIssue({ code: 'custom', path: ['quietEnd'], message: timeFormat });
+        }
       }
-      if (!hhmm.test(v.quietEnd)) {
-        ctx.addIssue({ code: 'custom', path: ['quietEnd'], message: 'Heure attendue HH:MM' });
-      }
-    }
-  });
-type FormValues = z.infer<typeof formSchema>;
+    });
+type FormValues = z.infer<ReturnType<typeof buildSchema>>;
 
 function defaults(prefs: MemberView['notificationPrefs']): FormValues {
   const types = new Set<NotificationCategory>(prefs?.enabledTypes ?? [...NOTIFICATION_CATEGORIES]);
@@ -56,6 +58,9 @@ function defaults(prefs: MemberView['notificationPrefs']): FormValues {
 }
 
 export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
+  const { t } = useI18n();
+  const labels = useLabels();
+  const [formSchema] = useState(() => buildSchema(t('profile.timeFormat')));
   const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
   const form = useForm<FormValues>({
@@ -76,7 +81,7 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
     try {
       await api.put('/me/notification-preferences', body);
       await queryClient.invalidateQueries({ queryKey: qk.profile });
-      toast.success('Préférences enregistrées');
+      toast.success(t('profile.prefsSaved'));
     } catch (e) {
       setFormError(applyServerErrors(e, form.setError, ['preferredChannel', 'frequency']));
     }
@@ -88,21 +93,21 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField
           id="preferredChannel"
-          label="Canal préféré"
+          label={t('profile.channel')}
           error={errors.preferredChannel?.message}
         >
           <Select {...form.register('preferredChannel')}>
             {(['IN_APP', 'SMS', 'EMAIL', 'PUSH'] as const).map((c) => (
               <option key={c} value={c}>
-                {NOTIFICATION_CHANNEL_LABELS[c]}
+                {labels.notificationChannel[c]}
               </option>
             ))}
           </Select>
         </FormField>
-        <FormField id="frequency" label="Fréquence" error={errors.frequency?.message}>
+        <FormField id="frequency" label={t('profile.frequency')} error={errors.frequency?.message}>
           <Select {...form.register('frequency')}>
-            <option value="IMMEDIATE">Immédiate</option>
-            <option value="DAILY_DIGEST">Résumé quotidien</option>
+            <option value="IMMEDIATE">{t('profile.immediate')}</option>
+            <option value="DAILY_DIGEST">{t('profile.digest')}</option>
           </Select>
         </FormField>
       </div>
@@ -110,10 +115,7 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
         control={form.control}
         name="enabledTypes"
         render={({ field }) => (
-          <Fieldset
-            legend="Catégories de notifications"
-            description="Les alertes de sécurité sont toujours envoyées."
-          >
+          <Fieldset legend={t('profile.categories')} description={t('profile.securityAlways')}>
             <div className="grid gap-2 sm:grid-cols-2">
               {NOTIFICATION_CATEGORIES.map((c) => {
                 const security = c === 'SECURITY';
@@ -131,10 +133,10 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
                         field.onChange(next);
                       }}
                     />
-                    {NOTIFICATION_CATEGORY_LABELS[c]}
+                    {labels.notificationCategory[c]}
                     {security ? (
                       <span id="security-always" className="text-xs text-muted-foreground">
-                        (obligatoire)
+                        {t('profile.mandatory')}
                       </span>
                     ) : null}
                   </label>
@@ -144,27 +146,28 @@ export function NotificationPrefsForm({ profile }: { profile: MemberView }) {
           </Fieldset>
         )}
       />
-      <Fieldset
-        legend="Heures calmes"
-        description="Aucune notification non urgente pendant cette plage."
-      >
+      <Fieldset legend={t('profile.quietHours')} description={t('profile.quietHelp')}>
         <label className="flex items-center gap-2 text-sm">
           <Checkbox {...form.register('quietEnabled')} />
-          Activer les heures calmes
+          {t('profile.quietEnable')}
         </label>
         {quietEnabled ? (
           <div className="grid max-w-sm grid-cols-2 gap-3">
-            <FormField id="quietStart" label="Début" error={errors.quietStart?.message}>
+            <FormField
+              id="quietStart"
+              label={t('profile.quietStart')}
+              error={errors.quietStart?.message}
+            >
               <Input {...form.register('quietStart')} type="time" />
             </FormField>
-            <FormField id="quietEnd" label="Fin" error={errors.quietEnd?.message}>
+            <FormField id="quietEnd" label={t('profile.quietEnd')} error={errors.quietEnd?.message}>
               <Input {...form.register('quietEnd')} type="time" />
             </FormField>
           </div>
         ) : null}
       </Fieldset>
-      <Button type="submit" loading={form.formState.isSubmitting}>
-        Enregistrer les préférences
+      <Button type="submit" variant="secondary" loading={form.formState.isSubmitting}>
+        {t('profile.savePrefs')}
       </Button>
     </form>
   );

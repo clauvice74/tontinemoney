@@ -79,6 +79,39 @@ describe('US-8.1 / US-8.2 — génération et personnalisation', () => {
   });
 });
 
+describe('A-60 — filtres de la liste des notifications', () => {
+  it('paiement, rappel, système, KYC, wallet, tontines ; combinables avec « non lues »', async () => {
+    const u = await ctx.createUser();
+    const send = (template: Parameters<NotificationService['notify']>[0]['template']) =>
+      notifications.notify({ recipientIds: [u.id], template, vars: {} });
+    await paymentFailed(u);
+    await send('wallet.debit_failed');
+    await send('tontine.contribution_reminder');
+    await send('tontine.started');
+    await send('auth.new_device');
+    await send('kyc.verified');
+    const token = await ctx.token(u);
+    const titles = async (query: string) => {
+      const res = await ctx.http.get(`/api/v1/me/notifications?${query}`).set(bearer(token));
+      expect(res.status).toBe(200);
+      return (res.body.data as Array<{ category: string }>).map((n) => n.category).sort();
+    };
+    expect(await titles('filter=PAYMENT')).toEqual(['PAYMENT']);
+    expect(await titles('filter=WALLET')).toEqual(['WALLET']);
+    expect(await titles('filter=KYC')).toEqual(['KYC']);
+    // Le rappel est une notification « tontine », classée aussi dans les rappels
+    expect(await titles('filter=REMINDER')).toEqual(['TONTINE']);
+    expect(await titles('filter=TONTINE')).toEqual(['TONTINE', 'TONTINE']);
+    expect((await titles('filter=SYSTEM')).every((c) => ['SECURITY', 'ACCOUNT'].includes(c))).toBe(
+      true,
+    );
+    expect(await titles('filter=PAYMENT&unread=true')).toEqual(['PAYMENT']);
+    expect(
+      (await ctx.http.get('/api/v1/me/notifications?filter=NOPE').set(bearer(token))).status,
+    ).toBe(400);
+  });
+});
+
 describe('US-8.3 — envoi avec résilience', () => {
   it('nominal : SMS envoyé, rapport de livraison, événement notification.sent', async () => {
     const u = await ctx.createUser();

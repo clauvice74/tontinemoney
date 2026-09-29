@@ -1,5 +1,5 @@
 import { type NestExpressApplication } from '@nestjs/platform-express';
-import { generateTotp, generateTotpSecret, hashSecret, DataCipher } from '@tontine/auth';
+import { generateTotp, generateTotpSecret, hashSecret, DataCipher, sha256Hex } from '@tontine/auth';
 import { testConfig, type AppConfig } from '@tontine/config';
 import {
   getCountry,
@@ -186,6 +186,41 @@ export class TestContext {
       orderBy: { createdAt: 'desc' },
     });
     return m ? { body: m.body, subject: m.subject, channel: m.channel } : null;
+  }
+
+  /** Code de confirmation d'un retrait (A-59) : demande, puis lecture du SMS simulé. */
+  async withdrawalOtp(
+    user: TestUser,
+    token: string,
+    body: { amount: string; currency: string; phone: string },
+  ): Promise<{ otpChallengeId: string; otp: string }> {
+    const res = await this.http
+      .post('/api/v1/me/wallet/withdrawals/otp')
+      .set(bearer(token))
+      .send({ ...body, method: 'MOBILE_MONEY' });
+    if (res.status !== 200) throw new Error(`otp ${res.status} ${JSON.stringify(res.body)}`);
+    const sms = await this.lastMessage(user.phone);
+    const otp = /\b(\d{6})\b/.exec(sms?.body ?? '')?.[1];
+    if (!otp) throw new Error('code de retrait introuvable dans le SMS simulé');
+    return { otpChallengeId: res.body.challengeId as string, otp };
+  }
+
+  /**
+   * Défi de retrait créé directement (code 123456) : un seul code est actif à la fois par
+   * membre, ce raccourci sert aux tests de concurrence du grand livre.
+   */
+  async withdrawalChallenge(userId: string, binding: string): Promise<string> {
+    const t = await this.prisma.authToken.create({
+      data: {
+        userId,
+        type: 'STEP_UP_OTP',
+        tokenHash: await hashSecret('123456', 4),
+        expiresAt: new Date(this.clock.now().getTime() + 5 * 60_000),
+        metadata: { purpose: 'WITHDRAWAL', bindingHash: sha256Hex(binding) },
+        createdAt: this.clock.now(),
+      },
+    });
+    return t.id;
   }
 
   async createTontine(

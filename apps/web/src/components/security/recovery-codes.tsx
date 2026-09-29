@@ -3,6 +3,7 @@
 import { Alert, Button, Checkbox } from '@tontine/ui';
 import { Copy, Download } from 'lucide-react';
 import { useState } from 'react';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * Affichage UNIQUE des 10 codes de récupération : ils ne sont conservés qu'en mémoire du
@@ -15,6 +16,7 @@ export function RecoveryCodes({
   codes: string[];
   onAcknowledged: () => void;
 }) {
+  const { t } = useI18n();
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const text = codes.join('\n');
@@ -29,7 +31,7 @@ export function RecoveryCodes({
   }
 
   function download() {
-    const blob = new Blob([`Codes de récupération TontineMoney (usage unique)\n\n${text}\n`], {
+    const blob = new Blob([`${t('security.fileHeader')}\n\n${text}\n`], {
       type: 'text/plain;charset=utf-8',
     });
     const url = URL.createObjectURL(blob);
@@ -42,13 +44,12 @@ export function RecoveryCodes({
 
   return (
     <div className="space-y-4">
-      <Alert variant="warning" title="Sauvegardez ces codes maintenant">
-        Ils ne seront plus jamais affichés. Chaque code permet une seule connexion si vous perdez
-        l’accès à votre second facteur.
+      <Alert variant="warning" title={t('security.saveNow')}>
+        {t('security.saveNowBody')}
       </Alert>
       <ol
         className="grid grid-cols-2 gap-2 rounded-lg border bg-muted p-4 font-mono text-sm"
-        aria-label="Codes de récupération"
+        aria-label={t('security.recoveryTitle')}
       >
         {codes.map((c) => (
           <li key={c} className="tracking-wider">
@@ -58,18 +59,18 @@ export function RecoveryCodes({
       </ol>
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
-          <Copy aria-hidden="true" /> {copied ? 'Copiés' : 'Copier'}
+          <Copy aria-hidden="true" /> {copied ? t('security.copied') : t('security.copy')}
         </Button>
         <Button type="button" variant="outline" size="sm" onClick={download}>
-          <Download aria-hidden="true" /> Télécharger
+          <Download aria-hidden="true" /> {t('security.download')}
         </Button>
       </div>
       <label className="flex items-center gap-2 text-sm font-medium">
         <Checkbox checked={saved} onChange={(e) => setSaved(e.target.checked)} />
-        Je les ai sauvegardés en lieu sûr
+        {t('security.savedCheck')}
       </label>
-      <Button type="button" disabled={!saved} onClick={onAcknowledged}>
-        Terminer
+      <Button type="button" variant="secondary" disabled={!saved} onClick={onAcknowledged}>
+        {t('security.finish')}
       </Button>
     </div>
   );
