@@ -1,6 +1,11 @@
 import { Global, Module } from '@nestjs/common';
 import { NotificationsModule, ROLE_DIRECTORY } from '@tontine/notifications';
-import { ACCESS_TOKEN_VERIFIER, ACCOUNT_DIRECTORY, ADMIN_DELEGATION } from '@tontine/platform';
+import {
+  ACCESS_TOKEN_VERIFIER,
+  ACCOUNT_DIRECTORY,
+  ADMIN_DELEGATION,
+  STEP_UP,
+} from '@tontine/platform';
 import { AdminUsersController, JwksController } from './admin.controller';
 import { AuthConsumers } from './auth.consumers';
 import { AuthController } from './auth.controller';
@@ -11,6 +16,7 @@ import { LoginService } from './login.service';
 import { MfaService } from './mfa.service';
 import { RegistrationService } from './registration.service';
 import { UserRoleDirectory } from './role-directory';
+import { StepUpService } from './step-up.service';
 import { TokenService } from './token.service';
 
 /** Domaine Authentification & accès (épique 1). Fournit globalement le vérificateur de jetons. */
@@ -27,6 +33,8 @@ import { TokenService } from './token.service';
     AuthConsumers,
     UserRoleDirectory,
     AdminDelegationService,
+    StepUpService,
+    { provide: STEP_UP, useExisting: StepUpService },
     { provide: ADMIN_DELEGATION, useExisting: AdminDelegationService },
     { provide: CaptchaVerifier, useClass: SimulatedCaptchaVerifier },
     { provide: ACCESS_TOKEN_VERIFIER, useExisting: TokenService },
@@ -38,6 +46,7 @@ import { TokenService } from './token.service';
     ADMIN_DELEGATION,
     ACCOUNT_DIRECTORY,
     ROLE_DIRECTORY,
+    STEP_UP,
     TokenService,
     RegistrationService,
     LoginService,

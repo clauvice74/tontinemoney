@@ -12,6 +12,7 @@ import {
   CardTitle,
   FormField,
   Input,
+  OtpInput,
   toast,
 } from '@tontine/ui';
 import { MonitorSmartphone, ShieldCheck } from 'lucide-react';
@@ -19,7 +20,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { ActionDialog } from '@/components/action-dialog';
 import { QueryState } from '@/components/feedback';
-import { PageHeader } from '@/components/page-header';
 import { RecoveryCodes } from '@/components/security/recovery-codes';
 import { api } from '@/lib/api';
 import type {
@@ -30,8 +30,9 @@ import type {
   SessionView,
 } from '@/lib/api/types';
 import { loadCurrentUser } from '@/lib/auth/session';
-import { formatDateTime, formatRelative } from '@/lib/format';
 import { formatError } from '@/lib/forms';
+import { useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
 import { useCurrentUser } from '@/lib/queries';
 
 type Setup =
@@ -41,6 +42,7 @@ type Setup =
   | { step: 'codes'; codes: string[] };
 
 function MfaCard() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const user = useCurrentUser();
   const status = useQuery({ queryKey: ['mfa'], queryFn: () => api.get<MfaStatus>('/auth/mfa') });
@@ -83,22 +85,22 @@ function MfaCard() {
 
   const sendSms = useMutation({
     mutationFn: () => api.post('/auth/mfa/sms-code'),
-    onSuccess: () => toast.success('Code envoyé par SMS'),
-    onError: (e) => toast.error('Envoi impossible', formatError(e)),
+    onSuccess: () => toast.success(t('security.smsCodeSent')),
+    onError: (e) => toast.error(t('security.sendFailed'), formatError(e)),
   });
 
   if (setup.step === 'codes') {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Codes de récupération</CardTitle>
+          <CardTitle>{t('security.recoveryTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <RecoveryCodes
             codes={setup.codes}
             onAcknowledged={() => {
               setSetup({ step: 'idle' });
-              toast.success('Double authentification active');
+              toast.success(t('security.mfaActive'));
             }}
           />
         </CardContent>
@@ -110,12 +112,9 @@ function MfaCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ShieldCheck className="size-5 text-primary" aria-hidden="true" /> Double authentification
-          (MFA)
+          <ShieldCheck className="size-5 text-info" aria-hidden="true" /> {t('security.mfaTitle')}
         </CardTitle>
-        <CardDescription>
-          Protégez votre compte avec un code à usage unique en plus du mot de passe.
-        </CardDescription>
+        <CardDescription>{t('security.mfaDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? <Alert variant="destructive" title={error} /> : null}
@@ -123,53 +122,51 @@ function MfaCard() {
           {(s) => (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                État :
+                {t('security.state')}
                 {s.enabled ? (
                   <Badge variant="success">
-                    Activée ({s.type === 'SMS' ? 'SMS' : 'application'})
+                    {s.type === 'SMS' ? t('security.enabledSms') : t('security.enabledApp')}
                   </Badge>
                 ) : (
-                  <Badge variant="muted">Désactivée</Badge>
+                  <Badge variant="muted">{t('security.disabled')}</Badge>
                 )}
                 {s.enabled ? (
                   <span className="text-muted-foreground">
-                    · {s.recoveryCodesLeft} code{s.recoveryCodesLeft > 1 ? 's' : ''} de récupération
-                    restant{s.recoveryCodesLeft > 1 ? 's' : ''}
+                    · {t('security.codesLeft', { count: s.recoveryCodesLeft })}
                   </span>
                 ) : null}
               </div>
               {s.required && !s.enabled ? (
-                <Alert variant="warning" title="MFA obligatoire pour votre rôle">
-                  Activez la double authentification puis reconnectez-vous pour accéder à
-                  l’administration de la plateforme.
+                <Alert variant="warning" title={t('security.requiredTitle')}>
+                  {t('security.requiredBody')}
                 </Alert>
               ) : null}
               {s.required && s.enabled && user && !user.mfa.usedThisSession ? (
-                <Alert variant="info" title="Reconnexion nécessaire">
-                  Votre session actuelle a été ouverte sans second facteur. Déconnectez-vous puis
-                  reconnectez-vous pour accéder aux écrans d’administration.
+                <Alert variant="info" title={t('security.reloginTitle')}>
+                  {t('security.reloginBody')}
                 </Alert>
               ) : null}
               {s.mustRegenerate ? (
-                <Alert variant="warning" title="Codes de récupération épuisés">
-                  Générez de nouveaux codes ci-dessous.
+                <Alert variant="warning" title={t('security.exhaustedTitle')}>
+                  {t('security.exhaustedBody')}
                 </Alert>
               ) : null}
 
               {!s.enabled && setup.step === 'idle' ? (
                 <div className="flex flex-wrap gap-2">
                   <Button
+                    variant="secondary"
                     onClick={() => enable.mutate('TOTP')}
                     loading={enable.isPending && enable.variables === 'TOTP'}
                   >
-                    Application d’authentification
+                    {t('security.useApp')}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => enable.mutate('SMS')}
                     loading={enable.isPending && enable.variables === 'SMS'}
                   >
-                    Code par SMS
+                    {t('security.useSms')}
                   </Button>
                 </div>
               ) : null}
@@ -180,7 +177,7 @@ function MfaCard() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!/^\d{6}$/.test(code.trim())) {
-                      setError('Saisissez les 6 chiffres du code');
+                      setError(t('security.codeIncomplete'));
                       return;
                     }
                     verify.mutate();
@@ -190,49 +187,39 @@ function MfaCard() {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                       <Image
                         src={setup.totp.qrCodeUrl}
-                        alt="QR code à scanner avec votre application d’authentification"
+                        alt={t('security.qrAlt')}
                         width={176}
                         height={176}
                         unoptimized
                         className="rounded-lg border bg-white p-2"
                       />
                       <div className="space-y-2 text-sm">
+                        <p>{t('security.scan')}</p>
                         <p>
-                          1. Scannez ce QR code avec votre application (Google Authenticator, Authy,
-                          FreeOTP…).
-                        </p>
-                        <p>
-                          Ou saisissez la clé manuellement :{' '}
+                          {t('security.manualKey')}{' '}
                           <code className="break-all rounded bg-muted px-1 py-0.5 font-mono">
                             {setup.totp.secret}
                           </code>
                         </p>
-                        <p>2. Saisissez le code à 6 chiffres affiché.</p>
+                        <p>{t('security.enterCode')}</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm">Un code à 6 chiffres vous a été envoyé par SMS.</p>
+                    <p className="text-sm">{t('security.smsSent')}</p>
                   )}
-                  <FormField id="mfa-verify-code" label="Code de vérification" required>
-                    <Input
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      className="max-w-40"
-                    />
+                  <FormField id="mfa-verify-code" label={t('security.code')} required>
+                    <OtpInput value={code} onValueChange={setCode} />
                   </FormField>
                   <div className="flex gap-2">
-                    <Button type="submit" loading={verify.isPending}>
-                      Confirmer
+                    <Button type="submit" variant="secondary" loading={verify.isPending}>
+                      {t('security.confirm')}
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       onClick={() => setSetup({ step: 'idle' })}
                     >
-                      Annuler
+                      {t('security.cancel')}
                     </Button>
                   </div>
                 </form>
@@ -247,7 +234,7 @@ function MfaCard() {
                       onClick={() => sendSms.mutate()}
                       loading={sendSms.isPending}
                     >
-                      Recevoir un code SMS
+                      {t('security.sendSms')}
                     </Button>
                   ) : null}
                   <RegenerateDialog
@@ -256,13 +243,13 @@ function MfaCard() {
                     onCodes={(codes) => setSetup({ step: 'codes', codes })}
                   />
                   <ActionDialog
-                    trigger="Désactiver"
+                    trigger={t('security.disable')}
                     triggerVariant="destructive"
-                    title="Désactiver la double authentification"
-                    description="Confirmez avec votre mot de passe et un code valide. Une alerte de sécurité vous sera envoyée."
-                    confirmLabel="Désactiver"
+                    title={t('security.disableTitle')}
+                    description={t('security.disableBody')}
+                    confirmLabel={t('security.disable')}
                     confirmVariant="destructive"
-                    successMessage="Double authentification désactivée"
+                    successMessage={t('security.disabledDone')}
                     onConfirm={async () => {
                       await api.post('/auth/mfa/disable', {
                         password: disablePassword,
@@ -273,7 +260,7 @@ function MfaCard() {
                       await refresh();
                     }}
                   >
-                    <FormField id="mfa-disable-password" label="Mot de passe" required>
+                    <FormField id="mfa-disable-password" label={t('security.password')} required>
                       <Input
                         type="password"
                         autoComplete="current-password"
@@ -281,11 +268,7 @@ function MfaCard() {
                         onChange={(e) => setDisablePassword(e.target.value)}
                       />
                     </FormField>
-                    <FormField
-                      id="mfa-disable-code"
-                      label="Code MFA ou code de récupération"
-                      required
-                    >
+                    <FormField id="mfa-disable-code" label={t('security.mfaOrRecovery')} required>
                       <Input value={disableCode} onChange={(e) => setDisableCode(e.target.value)} />
                     </FormField>
                   </ActionDialog>
@@ -308,12 +291,13 @@ function RegenerateDialog({
   setCode: (c: string) => void;
   onCodes: (codes: string[]) => void;
 }) {
+  const { t } = useI18n();
   return (
     <ActionDialog
-      trigger="Régénérer les codes de récupération"
-      title="Nouveaux codes de récupération"
-      description="Les anciens codes seront invalidés. Saisissez un code MFA valide."
-      confirmLabel="Générer"
+      trigger={t('security.regenerate')}
+      title={t('security.regenerateTitle')}
+      description={t('security.regenerateBody')}
+      confirmLabel={t('security.generate')}
       onConfirm={async () => {
         const res = await api.post<{ recoveryCodes: string[] }>('/auth/mfa/recovery-codes', {
           code: code.trim(),
@@ -322,7 +306,7 @@ function RegenerateDialog({
         onCodes(res.recoveryCodes);
       }}
     >
-      <FormField id="mfa-regen-code" label="Code MFA" required>
+      <FormField id="mfa-regen-code" label={t('security.mfaCode')} required>
         <Input
           inputMode="numeric"
           autoComplete="one-time-code"
@@ -335,6 +319,8 @@ function RegenerateDialog({
 }
 
 function SessionsCard() {
+  const { t } = useI18n();
+  const f = useFormat();
   const queryClient = useQueryClient();
   const sessions = useQuery({
     queryKey: ['sessions'],
@@ -344,15 +330,16 @@ function SessionsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MonitorSmartphone className="size-5 text-primary" aria-hidden="true" /> Sessions actives
+          <MonitorSmartphone className="size-5 text-info" aria-hidden="true" />{' '}
+          {t('security.sessionsTitle')}
         </CardTitle>
-        <CardDescription>5 sessions simultanées au maximum.</CardDescription>
+        <CardDescription>{t('security.sessionsDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <QueryState
           query={sessions}
           isEmpty={(d) => d.data.length === 0}
-          empty={<p className="text-sm text-muted-foreground">Aucune session active.</p>}
+          empty={<p className="text-sm text-muted-foreground">{t('security.sessionsEmpty')}</p>}
         >
           {(d) => (
             <ul className="divide-y">
@@ -360,26 +347,28 @@ function SessionsCard() {
                 <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
-                      {s.userAgent ?? 'Appareil inconnu'}
+                      {s.userAgent ?? t('security.unknownDevice')}
                       {s.current ? (
                         <Badge variant="success" className="ml-2">
-                          Cette session
+                          {t('security.thisSession')}
                         </Badge>
                       ) : null}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Ouverte le {formatDateTime(s.createdAt)} · active{' '}
-                      {formatRelative(s.lastUsedAt)}
+                      {t('security.openedOn', {
+                        date: f.dateTime(s.createdAt),
+                        relative: f.relative(s.lastUsedAt),
+                      })}
                     </p>
                   </div>
                   {!s.current ? (
                     <ActionDialog
-                      trigger="Révoquer"
-                      title="Révoquer cette session ?"
-                      description="L’appareil concerné sera déconnecté."
+                      trigger={t('security.revoke')}
+                      title={t('security.revokeTitle')}
+                      description={t('security.revokeBody')}
                       confirmVariant="destructive"
-                      confirmLabel="Révoquer"
-                      successMessage="Session révoquée"
+                      confirmLabel={t('security.revoke')}
+                      successMessage={t('security.revoked')}
                       onConfirm={async () => {
                         await api.delete(`/auth/sessions/${s.id}`);
                         await queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -397,9 +386,13 @@ function SessionsCard() {
 }
 
 export default function SecurityPage() {
+  const { t } = useI18n();
   return (
     <div className="space-y-6">
-      <PageHeader title="Sécurité" description="Double authentification et appareils connectés." />
+      <div className="space-y-1">
+        <h1 className="text-h1">{t('security.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('security.description')}</p>
+      </div>
       <MfaCard />
       <SessionsCard />
     </div>

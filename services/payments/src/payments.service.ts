@@ -6,6 +6,7 @@ import {
   type DepositInput,
   type PaymentNotification,
   type WithdrawalInput,
+  type WithdrawalRequestInput,
   maskPhone,
   moneyView,
   normalizePhone,
@@ -26,6 +27,8 @@ import {
   DomainError,
   MEMBER_QUERY,
   type MemberQueryPort,
+  STEP_UP,
+  type StepUpPort,
   OutboxService,
   PrismaService,
   ScheduledJob,
@@ -100,6 +103,7 @@ export class PaymentsService {
     private readonly wallets: WalletsService,
     private readonly transactions: TransactionsService,
     @Inject(MEMBER_QUERY) private readonly members: MemberQueryPort,
+    @Inject(STEP_UP) private readonly stepUp: StepUpPort,
     @Inject(APP_CONFIG) config: AppConfig,
   ) {
     this.cipher = new DataCipher(config.DATA_ENCRYPTION_KEY);
@@ -302,10 +306,8 @@ export class PaymentsService {
   }
 
   // ------------------------------------------------------------------ US-7.3 retrait
-  async withdraw(actor: Actor, input: WithdrawalInput, idempotencyKey: string) {
-    const key = `withdrawal:${actor.userId}:${idempotencyKey}`;
-    const existing = await this.prisma.payment.findUnique({ where: { idempotencyKey: key } });
-    if (existing) return paymentView(existing);
+  /** Contrôles communs à la demande de code et au retrait : membre, KYC, portefeuille. */
+  private async withdrawalContext(actor: Actor, input: WithdrawalRequestInput) {
     const member = await this.members.snapshot(actor.userId);
     if (!member || member.status !== 'ACTIVE')
       throw new DomainError('MEMBER_NOT_ELIGIBLE', 'Compte non actif');
@@ -317,6 +319,29 @@ export class PaymentsService {
     const currency = input.currency.toUpperCase();
     const amountMinor = toMinor(input.amount, currency);
     const wallet = await this.memberWallet(actor.userId, currency);
+    const phone = normalizePhone(input.phone);
+    // Le code ne vaut que pour ce montant, cette devise et ce numéro (A-59).
+    const binding = `${amountMinor}:${currency}:${phone}`;
+    return { currency, amountMinor, wallet, phone, binding };
+  }
+
+  /** A-59 — code de confirmation du retrait (SMS, ou e-mail à défaut), valable 5 minutes. */
+  async requestWithdrawalCode(actor: Actor, input: WithdrawalRequestInput) {
+    const { amountMinor, wallet, binding } = await this.withdrawalContext(actor, input);
+    if (wallet.balanceMinor - wallet.blockedMinor < amountMinor)
+      throw new DomainError('INSUFFICIENT_FUNDS', 'Solde disponible insuffisant');
+    return this.stepUp.issue(actor.userId, 'WITHDRAWAL', binding);
+  }
+
+  async withdraw(actor: Actor, input: WithdrawalInput, idempotencyKey: string) {
+    const key = `withdrawal:${actor.userId}:${idempotencyKey}`;
+    const existing = await this.prisma.payment.findUnique({ where: { idempotencyKey: key } });
+    if (existing) return paymentView(existing);
+    const { currency, amountMinor, wallet, phone, binding } = await this.withdrawalContext(
+      actor,
+      input,
+    );
+    await this.stepUp.verify(actor.userId, 'WITHDRAWAL', input.otpChallengeId, input.otp, binding);
     await this.compliance.assertCompliant({
       operationType: 'WITHDRAWAL',
       memberId: actor.userId,
@@ -324,7 +349,6 @@ export class PaymentsService {
       currency,
       context: { method: input.method },
     });
-    const phone = normalizePhone(input.phone);
     const now = this.clock.now();
     const payment = await this.uow.run(
       async (tx) => {

@@ -81,6 +81,36 @@ export interface AdminDelegationPort {
 
 export const ADMIN_DELEGATION = Symbol('ADMIN_DELEGATION');
 
+/** Opérations sensibles confirmées par un code à usage unique (A-59). */
+export type StepUpPurpose = 'WITHDRAWAL';
+
+/** Défi émis : le code part par SMS (ou e-mail à défaut) ; destination masquée. */
+export interface StepUpChallenge {
+  challengeId: string;
+  channel: 'SMS' | 'EMAIL';
+  destination: string;
+  expiresAt: string;
+}
+
+/**
+ * Confirmation d'une opération sensible par code à 6 chiffres (implémentée par le domaine Auth).
+ * Le code est lié à l'opération par une empreinte (`binding`) calculée par l'appelant sur ses
+ * paramètres (ex. montant, devise, destination) : un code ne vaut que pour cette opération.
+ */
+export interface StepUpPort {
+  issue(userId: string, purpose: StepUpPurpose, binding: string): Promise<StepUpChallenge>;
+  /** Vérifie et consomme le code ; lève INVALID_OTP, OTP_EXPIRED ou OTP_LOCKED. */
+  verify(
+    userId: string,
+    purpose: StepUpPurpose,
+    challengeId: string,
+    code: string,
+    binding: string,
+  ): Promise<void>;
+}
+
+export const STEP_UP = Symbol('STEP_UP');
+
 /** Compte plateforme : rôle et statut (implémenté par le domaine Auth). */
 export interface AccountSnapshot {
   id: string;

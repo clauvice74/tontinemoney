@@ -6,3 +6,4 @@ export * from './tontines';
 export * from './wallets';
 export * from './compliance';
 export * from './admin';
+export * from './notifications';

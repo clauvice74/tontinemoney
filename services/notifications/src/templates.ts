@@ -90,6 +90,22 @@ export const TEMPLATES = {
       body: 'Your password has been reset and all sessions were closed. Contact support if this was not you.',
     },
   }),
+  'auth.step_up_withdrawal': T({
+    category: 'SECURITY',
+    priority: 'URGENT',
+    channels: ['SMS', 'EMAIL'],
+    sensitive: ['code'],
+    fr: {
+      title: 'Confirmez votre retrait',
+      body: 'Votre code de confirmation de retrait TontineMoney : {code} (valable 5 minutes). Si vous n’êtes pas à l’origine de cette demande, changez votre mot de passe.',
+      sms: 'TontineMoney : code de retrait {code} (5 min). Ne le communiquez à personne.',
+    },
+    en: {
+      title: 'Confirm your withdrawal',
+      body: 'Your TontineMoney withdrawal confirmation code: {code} (valid 5 minutes). If you did not request it, change your password.',
+      sms: 'TontineMoney: withdrawal code {code} (5 min). Never share it.',
+    },
+  }),
   'auth.mfa_sms_code': T({
     category: 'SECURITY',
     priority: 'URGENT',

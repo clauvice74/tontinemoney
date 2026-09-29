@@ -349,11 +349,13 @@ describe('US-7.3 — retrait Mobile Money', () => {
     const user = await ctx.createUser();
     await ctx.fund(user.id, 50_000n);
     const token = await ctx.token(user);
+    const body = { amount: '20000', currency: 'XAF', phone: '+237677001122' };
+    const otp = await ctx.withdrawalOtp(user, token, body);
     const res = await ctx.http
       .post('/api/v1/me/wallet/withdrawals')
       .set(bearer(token))
       .set('Idempotency-Key', randomUUID())
-      .send({ amount: '20000', currency: 'XAF', method: 'MOBILE_MONEY', phone: '+237677001122' });
+      .send({ ...body, method: 'MOBILE_MONEY', ...otp });
     expect(res.status).toBe(201);
     expect(res.body.status).toBe('PROCESSING');
     expect(await ctx.balance(user.id)).toEqual({ balance: 50_000n, blocked: 20_000n });
@@ -376,11 +378,13 @@ describe('US-7.3 — retrait Mobile Money', () => {
     const user = await ctx.createUser();
     await ctx.fund(user.id, 50_000n);
     const token = await ctx.token(user);
+    const body = { amount: '20000', currency: 'XAF', phone: '+237677000001' };
+    const otp = await ctx.withdrawalOtp(user, token, body);
     const res = await ctx.http
       .post('/api/v1/me/wallet/withdrawals')
       .set(bearer(token))
       .set('Idempotency-Key', randomUUID())
-      .send({ amount: '20000', currency: 'XAF', method: 'MOBILE_MONEY', phone: '+237677000001' });
+      .send({ ...body, method: 'MOBILE_MONEY', ...otp });
     await registry.simulated(res.body.provider).settle(res.body.providerReference, 'SUCCESS');
     await ctx.drain();
     expect(
@@ -389,14 +393,34 @@ describe('US-7.3 — retrait Mobile Money', () => {
     expect(await ctx.balance(user.id)).toEqual({ balance: 50_000n, blocked: 0n });
   });
 
-  it('solde insuffisant : 422 et aucun paiement ni hold', async () => {
+  it('solde insuffisant : 422 dès la demande de code, aucun code envoyé', async () => {
     const user = await ctx.createUser();
     await ctx.fund(user.id, 5_000n);
+    const res = await ctx.http
+      .post('/api/v1/me/wallet/withdrawals/otp')
+      .set(bearer(await ctx.token(user)))
+      .send({ amount: '20000', currency: 'XAF', method: 'MOBILE_MONEY', phone: '+237677001122' });
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('INSUFFICIENT_FUNDS');
+    expect(await ctx.prisma.authToken.count({ where: { type: 'STEP_UP_OTP' } })).toBe(0);
+  });
+
+  it('solde devenu insuffisant après le code : 422 et aucun paiement ni hold', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 5_000n);
+    const challenge = await ctx.withdrawalChallenge(user.id, '20000:XAF:+237677001122');
     const res = await ctx.http
       .post('/api/v1/me/wallet/withdrawals')
       .set(bearer(await ctx.token(user)))
       .set('Idempotency-Key', randomUUID())
-      .send({ amount: '20000', currency: 'XAF', method: 'MOBILE_MONEY', phone: '+237677001122' });
+      .send({
+        amount: '20000',
+        currency: 'XAF',
+        method: 'MOBILE_MONEY',
+        phone: '+237677001122',
+        otpChallengeId: challenge,
+        otp: '123456',
+      });
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('INSUFFICIENT_FUNDS');
     expect(await ctx.prisma.payment.count({ where: { type: 'WITHDRAWAL' } })).toBe(0);
@@ -407,8 +431,11 @@ describe('US-7.3 — retrait Mobile Money', () => {
     const user = await ctx.createUser();
     await ctx.fund(user.id, 50_000n);
     const token = await ctx.token(user);
+    const challenges = await Promise.all(
+      Array.from({ length: 4 }, () => ctx.withdrawalChallenge(user.id, '20000:XAF:+237677001122')),
+    );
     const results = await Promise.all(
-      Array.from({ length: 4 }, () =>
+      challenges.map((otpChallengeId) =>
         ctx.http
           .post('/api/v1/me/wallet/withdrawals')
           .set(bearer(token))
@@ -418,11 +445,126 @@ describe('US-7.3 — retrait Mobile Money', () => {
             currency: 'XAF',
             method: 'MOBILE_MONEY',
             phone: '+237677001122',
+            otpChallengeId,
+            otp: '123456',
           }),
       ),
     );
     expect(results.filter((r) => r.status === 201)).toHaveLength(2);
     expect((await ctx.balance(user.id)).blocked).toBe(40_000n);
+  });
+});
+
+describe('A-59 — code de confirmation du retrait', () => {
+  const body = { amount: '20000', currency: 'XAF', phone: '+237677001122' };
+
+  async function withdraw(token: string, extra: Record<string, string>) {
+    return ctx.http
+      .post('/api/v1/me/wallet/withdrawals')
+      .set(bearer(token))
+      .set('Idempotency-Key', randomUUID())
+      .send({ ...body, method: 'MOBILE_MONEY', ...extra });
+  }
+
+  it('code envoyé par SMS au numéro du compte ; destination masquée, code absent de la réponse', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const res = await ctx.http
+      .post('/api/v1/me/wallet/withdrawals/otp')
+      .set(bearer(await ctx.token(user)))
+      .send({ ...body, method: 'MOBILE_MONEY' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ channel: 'SMS', challengeId: expect.any(String) });
+    expect(res.body.destination).not.toBe(user.phone);
+    expect(JSON.stringify(res.body)).not.toMatch(/\b\d{6}\b/);
+    const sms = await ctx.lastMessage(user.phone);
+    expect(sms?.body).toMatch(/code de retrait \d{6}/);
+    // Historique des notifications : code masqué (jamais stocké en clair)
+    const stored = await ctx.prisma.notification.findFirstOrThrow({
+      where: { recipientId: user.id, templateKey: 'auth.step_up_withdrawal' },
+    });
+    expect(stored.body).not.toMatch(/\d{6}/);
+  });
+
+  it('sans code : 400 ; code d’une autre opération (montant modifié) : refusé', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const token = await ctx.token(user);
+    expect((await withdraw(token, {})).status).toBe(400);
+    const otp = await ctx.withdrawalOtp(user, token, body);
+    const other = await ctx.http
+      .post('/api/v1/me/wallet/withdrawals')
+      .set(bearer(token))
+      .set('Idempotency-Key', randomUUID())
+      .send({ ...body, amount: '30000', method: 'MOBILE_MONEY', ...otp });
+    expect(other.status).toBe(401);
+    expect(other.body.code).toBe('INVALID_OTP');
+    expect(await ctx.balance(user.id)).toEqual({ balance: 50_000n, blocked: 0n });
+  });
+
+  it('usage unique : le même code ne sert pas deux fois', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const token = await ctx.token(user);
+    const otp = await ctx.withdrawalOtp(user, token, body);
+    expect((await withdraw(token, otp)).status).toBe(201);
+    const again = await withdraw(token, otp);
+    expect(again.body.code).toBe('INVALID_OTP');
+    expect((await ctx.balance(user.id)).blocked).toBe(20_000n);
+  });
+
+  it('3 codes erronés : blocage 15 min, nouveau code refusé pendant le blocage', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const token = await ctx.token(user);
+    const { otpChallengeId, otp } = await ctx.withdrawalOtp(user, token, body);
+    const wrong = otp === '000000' ? '111111' : '000000';
+    expect((await withdraw(token, { otpChallengeId, otp: wrong })).body.code).toBe('INVALID_OTP');
+    expect((await withdraw(token, { otpChallengeId, otp: wrong })).body.code).toBe('INVALID_OTP');
+    const third = await withdraw(token, { otpChallengeId, otp: wrong });
+    expect(third.status).toBe(423);
+    expect(third.body.code).toBe('OTP_LOCKED');
+    // Même le bon code ne passe plus
+    expect((await withdraw(token, { otpChallengeId, otp })).body.code).toBe('OTP_LOCKED');
+    const renew = await ctx.http
+      .post('/api/v1/me/wallet/withdrawals/otp')
+      .set(bearer(token))
+      .send({ ...body, method: 'MOBILE_MONEY' });
+    expect(renew.body.code).toBe('OTP_LOCKED');
+    ctx.clock.advance(16 * 60_000);
+    const fresh = await ctx.withdrawalOtp(user, await ctx.token(user), body);
+    expect((await withdraw(await ctx.token(user), fresh)).status).toBe(201);
+  });
+
+  it('code expiré après 5 minutes : 410', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const token = await ctx.token(user);
+    const otp = await ctx.withdrawalOtp(user, token, body);
+    ctx.clock.advance(5 * 60_000 + 1);
+    const res = await withdraw(token, otp);
+    expect(res.status).toBe(410);
+    expect(res.body.code).toBe('OTP_EXPIRED');
+  });
+
+  it('un nouveau code remplace le précédent', async () => {
+    const user = await ctx.createUser();
+    await ctx.fund(user.id, 50_000n);
+    const token = await ctx.token(user);
+    const first = await ctx.withdrawalOtp(user, token, body);
+    await ctx.withdrawalOtp(user, token, body);
+    expect((await withdraw(token, first)).body.code).toBe('INVALID_OTP');
+  });
+
+  it('KYC niveau 1 : pas de code envoyé', async () => {
+    const user = await ctx.createUser({ kycLevel: 'TIER_1' });
+    await ctx.fund(user.id, 50_000n);
+    const res = await ctx.http
+      .post('/api/v1/me/wallet/withdrawals/otp')
+      .set(bearer(await ctx.token(user)))
+      .send({ ...body, method: 'MOBILE_MONEY' });
+    expect(res.body.code).toBe('KYC_LEVEL_INSUFFICIENT');
+    expect(await ctx.prisma.authToken.count({ where: { type: 'STEP_UP_OTP' } })).toBe(0);
   });
 });
 

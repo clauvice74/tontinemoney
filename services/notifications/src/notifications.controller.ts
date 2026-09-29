@@ -1,6 +1,14 @@
 import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { buildPage, decodeCursor, paginationQuerySchema } from '@tontine/contracts';
+import {
+  NOTIFICATION_FILTER_CATEGORIES,
+  type NotificationFilter,
+  REMINDER_TEMPLATES,
+  buildPage,
+  decodeCursor,
+  notificationFilterSchema,
+  paginationQuerySchema,
+} from '@tontine/contracts';
 import {
   type Actor,
   ApiZodQuery,
@@ -11,7 +19,17 @@ import {
 } from '@tontine/platform';
 import { z } from 'zod';
 
-const listSchema = paginationQuerySchema.extend({ unread: z.enum(['true', 'false']).optional() });
+const listSchema = paginationQuerySchema.extend({
+  unread: z.enum(['true', 'false']).optional(),
+  filter: notificationFilterSchema.optional(),
+});
+
+/** Filtre lisible (A-60) → condition Prisma : catégories, ou modèles de rappel. */
+function filterWhere(filter: NotificationFilter | undefined) {
+  if (!filter) return {};
+  if (filter === 'REMINDER') return { templateKey: { in: [...REMINDER_TEMPLATES] } };
+  return { category: { in: NOTIFICATION_FILTER_CATEGORIES[filter] } };
+}
 
 @ApiTags('Notifications')
 @Controller({ version: '1' })
@@ -19,7 +37,10 @@ export class MyNotificationsController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get(['me/notifications', 'notifications'])
-  @ApiOperation({ summary: 'Mes notifications in-app (historique)' })
+  @ApiOperation({
+    summary:
+      'Mes notifications in-app (historique) ; filtres : non lues, PAYMENT, REMINDER, SYSTEM, KYC, WALLET, TONTINE (A-60)',
+  })
   @ApiZodQuery(listSchema)
   async list(@CurrentUser() actor: Actor, @ZodQuery(listSchema) q: z.infer<typeof listSchema>) {
     const cursor = decodeCursor(q.cursor);
@@ -28,6 +49,7 @@ export class MyNotificationsController {
         recipientId: actor.userId,
         channel: 'IN_APP',
         ...(q.unread === 'true' ? { readAt: null } : {}),
+        ...filterWhere(q.filter),
         ...(cursor
           ? {
               OR: [
