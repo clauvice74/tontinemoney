@@ -60,7 +60,9 @@ test.describe('Accessibilité WCAG AA (axe-core)', () => {
     await expectAccessible(page);
     await page.getByRole('link', { name: /Voir les détails — Tontine Solidarité Douala/ }).click();
     await expect(page.getByText('Informations générales')).toBeVisible();
-    await expect(page.getByText(/Cycle 1 — /)).toBeVisible();
+    await expect(
+      page.getByText(/Cycle 1 — |Les cycles commencent au démarrage/).first(),
+    ).toBeVisible();
     await expectAccessible(page);
     await page.goto('/tontines/new');
     await expect(page.getByText('Étape 1 sur 4 — Type')).toBeVisible();

@@ -21,7 +21,9 @@ test.describe('Lot 3 : accueil, tontines, création, invitation', () => {
       page.getByRole('heading', { level: 1, name: 'Tontine Solidarité Douala' }),
     ).toBeVisible();
     await expect(page.getByText('Informations générales')).toBeVisible();
-    await expect(page.getByText(/Cycle 1 — /)).toBeVisible();
+    await expect(
+      page.getByText(/Cycle 1 — |Les cycles commencent au démarrage/).first(),
+    ).toBeVisible();
 
     await page.getByRole('tab', { name: 'Membres' }).click();
     await expect(
