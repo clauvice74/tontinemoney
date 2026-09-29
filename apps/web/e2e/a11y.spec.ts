@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { type Page, expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { login, loginSuperAdmin } from './helpers';
 
 /** WCAG 2.1 AA (charte : contraste AA sur toutes les combinaisons fond / texte). */
 async function expectAccessible(page: Page) {
@@ -87,6 +87,34 @@ test.describe('Accessibilité WCAG AA (axe-core)', () => {
     await expectAccessible(page);
     await page.goto('/wallet?action=withdraw');
     await expect(page.getByRole('dialog').getByText('Disponible après retrait')).toBeVisible();
+    await expectAccessible(page);
+  });
+
+  test('administration de tontine : tableau de bord et membres', async ({ page }) => {
+    await login(page, 'admin.tontine@tontinemoney.local');
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'));
+    await page.goto('/tontines');
+    await page.getByRole('link', { name: /Gérer — Tontine Solidarité Douala/ }).click();
+    await expect(page.getByText('Total collecté')).toBeVisible();
+    await expectAccessible(page);
+    await page
+      .getByRole('navigation', { name: 'Administration de la tontine' })
+      .getByRole('link', { name: 'Membres', exact: true })
+      .click();
+    await expect(page.getByRole('searchbox', { name: 'Recherche' })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expectAccessible(page);
+  });
+
+  test('super-admin : tableau global et tontines', async ({ page, request }) => {
+    await loginSuperAdmin(page, request);
+    await page.goto('/admin');
+    await expect(page.getByText('Comptes actifs')).toBeVisible();
+    await expectAccessible(page);
+    await page.goto('/admin/tontines');
+    await expect(
+      page.getByRole('cell', { name: 'Tontine Solidarité Douala', exact: true }),
+    ).toBeVisible();
     await expectAccessible(page);
   });
 });

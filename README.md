@@ -16,6 +16,8 @@ pnpm db:migrate             # migrations SQL versionnées (packages/database/pri
 pnpm db:roles               # rôles PostgreSQL par service (moindre privilège)
 pnpm db:seed                # comptes et tontine de démonstration
 pnpm dev                    # API :4000, API Gateway :8080, Payment Gateway :8090, web :3000
+# ou, pour une démonstration stable (services compilés, sans rechargement à chaud) :
+pnpm start:demo --build
 ```
 
 | Service                      | URL                                                                           |
@@ -54,6 +56,7 @@ Scénarios du simulateur PSP : numéro finissant par `0003` → prestataire indi
 pnpm dev                  # API (tsc watch + node --watch) et web (next dev)
 pnpm build                # build de tous les packages (turbo)
 pnpm build:demo           # build avec les outils de simulation visibles dans le web (NEXT_PUBLIC_ENABLE_SIMULATORS=true)
+pnpm start:demo [--build] # lance les services compilés + web (next start), sans rechargement à chaud — démonstration stable
 pnpm format | pnpm format:check
 pnpm lint                 # ESLint (TypeScript strict, frontières de packages)
 pnpm typecheck

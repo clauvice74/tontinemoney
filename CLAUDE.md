@@ -23,6 +23,7 @@ pnpm test:int      # intégration API + Postgres (DATABASE_URL_TEST)
 pnpm test:e2e      # Playwright (web + api démarrés)
 pnpm test:e2e:local # démarre api (dist) + web (next start), exécute Playwright
 pnpm build:demo    # build avec outils de simulation visibles (NEXT_PUBLIC_ENABLE_SIMULATORS=true)
+pnpm start:demo [--build] # démo stable : services compilés + next start (journaux .logs/)
 pnpm db:migrate:check # dérive schema.prisma ⇄ migrations
 pnpm secrets:scan  # détection de secrets
 pnpm check         # format:check + lint + typecheck + test

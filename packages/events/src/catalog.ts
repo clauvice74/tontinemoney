@@ -419,6 +419,11 @@ export const EVENT_CATALOG = {
   'tontine.paused': def('tontines', z.object({ tontineId: id, reason: z.string() })),
   'tontine.resumed': def('tontines', z.object({ tontineId: id, reason: z.string() })),
   'tontine.cancelled': def('tontines', z.object({ tontineId: id, reason: z.string() })),
+  /** A-61 — configuration modifiée avant démarrage (brouillon, aucun autre membre engagé). */
+  'tontine.updated': def(
+    'tontines',
+    z.object({ tontineId: id, updatedBy: id, changedFields: z.array(z.string()) }),
+  ),
   'tontine.closed': def(
     'tontines',
     z.object({ tontineId: id, totalCycles: z.number().int(), totalMinor: minor, currency }),

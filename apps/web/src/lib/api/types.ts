@@ -423,7 +423,10 @@ export interface CycleView {
 }
 
 export interface AdminTontineDashboard {
+  status?: string;
   totalCollected: MoneyView;
+  penaltiesDue?: MoneyView;
+  reserveBalance?: MoneyView;
   currentCycle: {
     number: number;
     beneficiary: { memberId?: string; firstName?: string; fullName?: string } | string | null;

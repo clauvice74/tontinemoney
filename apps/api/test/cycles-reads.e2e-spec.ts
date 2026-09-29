@@ -181,3 +181,52 @@ describe('Vue tontine : cycle en cours (A-58)', () => {
     expect(res.body.currentCycle).toBeNull();
   });
 });
+
+describe('A-61 — relance de la clôture (super-admin)', () => {
+  it('en cours : blocages renvoyés, statut inchangé ; réservé au super-admin ; 404 inconnue', async () => {
+    const s = await startTontine(ctx);
+    const admin = await ctx.createUser({ role: 'SUPER_ADMIN' });
+    const token = await ctx.token(admin);
+    const res = await ctx.http
+      .post(`/api/v1/admin/tontines/${s.tontineId}/close`)
+      .set(bearer(token))
+      .send();
+    expect(res.status).toBe(200);
+    expect(res.body.closed).toBe(false);
+    expect(res.body.blockers.length).toBeGreaterThan(0);
+    expect(
+      (await ctx.prisma.tontine.findUniqueOrThrow({ where: { id: s.tontineId } })).status,
+    ).toBe('ACTIVE');
+    expect(
+      (
+        await ctx.http
+          .post(`/api/v1/admin/tontines/${s.tontineId}/close`)
+          .set(bearer(await ctx.token(s.admin)))
+          .send()
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await ctx.http
+          .post(`/api/v1/admin/tontines/${randomUUID()}/close`)
+          .set(bearer(token))
+          .send()
+      ).status,
+    ).toBe(404);
+  });
+
+  it('tous les cycles terminés : tontine COMPLETED', async () => {
+    const s = await startTontine(ctx);
+    await runToCompletion(ctx, s);
+    await settle(ctx);
+    const admin = await ctx.createUser({ role: 'SUPER_ADMIN' });
+    await ctx.http
+      .post(`/api/v1/admin/tontines/${s.tontineId}/close`)
+      .set(bearer(await ctx.token(admin)))
+      .send()
+      .expect(200);
+    expect(
+      (await ctx.prisma.tontine.findUniqueOrThrow({ where: { id: s.tontineId } })).status,
+    ).toBe('COMPLETED');
+  });
+});

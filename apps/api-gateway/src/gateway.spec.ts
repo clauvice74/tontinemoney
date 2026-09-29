@@ -269,6 +269,22 @@ describe('protections', () => {
     expect(open.headers['retry-after']).toBeDefined();
   });
 
+  it('requêtes annulées par le client : jamais comptées comme des pannes du service', async () => {
+    // Navigation rapide dans le navigateur : les requêtes en cours sont annulées. Ce n'est pas une
+    // panne amont ; sinon le disjoncteur s'ouvrirait pour tous les utilisateurs.
+    behaviour = (_req, res, body) => setTimeout(() => echo(_req, res, body), 300);
+    const api = await gateway({ GATEWAY_CIRCUIT_FAILURES: '2' });
+    for (let i = 0; i < 4; i++) {
+      await api
+        .get('/api/v1/x')
+        .timeout(50)
+        .catch(() => undefined);
+    }
+    await new Promise((r) => setTimeout(r, 400));
+    behaviour = null;
+    expect((await api.get('/api/v1/x')).status).toBe(200);
+  });
+
   it('service trop lent → 504', async () => {
     behaviour = () => undefined; // ne répond jamais
     const api = await gateway({ GATEWAY_UPSTREAM_TIMEOUT_MS: '200' });

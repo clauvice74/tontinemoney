@@ -218,7 +218,11 @@ export function createGatewayHandler(deps: GatewayDeps) {
       fail(e.code === 'ECONNREFUSED' ? 'UPSTREAM_UNAVAILABLE' : 'UPSTREAM_ERROR');
     });
     res.on('close', () => {
-      if (!res.writableFinished) upstreamReq.destroy();
+      if (res.writableFinished) return;
+      // Client parti (navigation, onglet fermé) : on abandonne l'appel amont sans le compter
+      // comme une panne du service — sinon le disjoncteur s'ouvrirait pour tout le monde.
+      settled = true;
+      upstreamReq.destroy();
     });
 
     const limit = new BodyLimit(config.GATEWAY_MAX_BODY_BYTES);

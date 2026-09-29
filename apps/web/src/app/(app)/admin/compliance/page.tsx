@@ -20,12 +20,12 @@ import { useState } from 'react';
 import { ActionDialog } from '@/components/action-dialog';
 import { ErrorAlert, QueryState } from '@/components/feedback';
 import { RequireRole } from '@/components/guards';
-import { PageHeader } from '@/components/page-header';
 import { SimpleTable } from '@/components/simple-table';
 import { api } from '@/lib/api';
 import type { ComplianceRuleView } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/format';
-import { OPERATION_TYPE_LABELS, RULE_TYPE_LABELS, label } from '@/lib/labels';
+import { useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
+import { useLabels } from '@/lib/i18n/labels';
 
 const PARAM_HELP: Record<string, string> = {
   DAILY_LIMIT: '{"limitMinor": "1000000"}',
@@ -46,6 +46,8 @@ function parseJson(text: string): Record<string, unknown> | null {
 }
 
 function CreateRule({ onCreated }: { onCreated: () => void }) {
+  const { t } = useI18n();
+  const labels = useLabels();
   const [code, setCode] = useState('');
   const [country, setCountry] = useState('CM');
   const [ruleType, setRuleType] = useState<string>('DAILY_LIMIT');
@@ -68,7 +70,7 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
         params: parsed,
         ...(description ? { description } : {}),
       });
-      toast.success('Règle créée — effet immédiat');
+      toast.success(t('complianceUi.created'));
       setCode('');
       onCreated();
     } catch (e) {
@@ -81,11 +83,11 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nouvelle règle</CardTitle>
+        <CardTitle>{t('complianceUi.newRule')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="r-code">Code (CC-NOM-REGLE)</Label>
+          <Label htmlFor="r-code">{t('complianceUi.codeLabel')}</Label>
           <Input
             id="r-code"
             value={code}
@@ -94,7 +96,7 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="r-country">Pays (ISO 2)</Label>
+          <Label htmlFor="r-country">{t('complianceUi.countryLabel')}</Label>
           <Input
             id="r-country"
             maxLength={2}
@@ -103,7 +105,7 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="r-type">Type</Label>
+          <Label htmlFor="r-type">{t('complianceUi.type')}</Label>
           <Select
             id="r-type"
             value={ruleType}
@@ -112,15 +114,15 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
               setParams(PARAM_HELP[e.target.value] ?? '{}');
             }}
           >
-            {COMPLIANCE_RULE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {label(RULE_TYPE_LABELS, t)}
+            {COMPLIANCE_RULE_TYPES.map((rt) => (
+              <option key={rt} value={rt}>
+                {labels.ruleType[rt] ?? rt}
               </option>
             ))}
           </Select>
         </div>
         <fieldset className="space-y-1">
-          <legend className="text-sm font-medium">Opérations concernées</legend>
+          <legend className="text-sm font-medium">{t('complianceUi.operationsLabel')}</legend>
           <div className="grid grid-cols-2 gap-1">
             {OPERATION_TYPES.map((o) => (
               <label key={o} className="flex items-center gap-2 text-sm">
@@ -130,13 +132,13 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
                     setOps((cur) => (e.target.checked ? [...cur, o] : cur.filter((x) => x !== o)))
                   }
                 />
-                {label(OPERATION_TYPE_LABELS, o)}
+                {labels.operationType[o] ?? o}
               </label>
             ))}
           </div>
         </fieldset>
         <div className="space-y-1.5 md:col-span-2">
-          <Label htmlFor="r-params">Paramètres (JSON, montants en unités mineures)</Label>
+          <Label htmlFor="r-params">{t('complianceUi.paramsLabel')}</Label>
           <Textarea
             id="r-params"
             rows={2}
@@ -145,10 +147,12 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
             onChange={(e) => setParams(e.target.value)}
             aria-invalid={!parsed}
           />
-          {!parsed ? <p className="text-xs text-destructive">JSON invalide</p> : null}
+          {!parsed ? (
+            <p className="text-xs text-destructive">{t('complianceUi.invalidJson')}</p>
+          ) : null}
         </div>
         <div className="space-y-1.5 md:col-span-2">
-          <Label htmlFor="r-desc">Description</Label>
+          <Label htmlFor="r-desc">{t('complianceUi.description_')}</Label>
           <Input id="r-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         {error ? (
@@ -157,8 +161,12 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
           </div>
         ) : null}
         <div>
-          <Button onClick={submit} disabled={busy || !parsed || !code || ops.length === 0}>
-            Créer la règle
+          <Button
+            variant="secondary"
+            onClick={submit}
+            disabled={busy || !parsed || !code || ops.length === 0}
+          >
+            {t('complianceUi.create')}
           </Button>
         </div>
       </CardContent>
@@ -168,6 +176,9 @@ function CreateRule({ onCreated }: { onCreated: () => void }) {
 
 /** US-9.3 — catalogue de règles par pays : modifications sans redéploiement, historique versionné. */
 export default function AdminCompliancePage() {
+  const { t } = useI18n();
+  const f = useFormat();
+  const labels = useLabels();
   const queryClient = useQueryClient();
   const [country, setCountry] = useState('');
   const [history, setHistory] = useState<{
@@ -192,16 +203,16 @@ export default function AdminCompliancePage() {
   return (
     <RequireRole roles={['SUPER_ADMIN']}>
       <div className="space-y-4">
-        <PageHeader
-          title="Règles de conformité"
-          description="Effet immédiat : le cache des règles (5 min) est invalidé à chaque modification."
-        />
+        <div className="space-y-1">
+          <h1 className="text-h1">{t('complianceUi.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('complianceUi.description')}</p>
+        </div>
         <div className="max-w-xs space-y-1.5">
-          <Label htmlFor="c-filter">Filtrer par pays</Label>
+          <Label htmlFor="c-filter">{t('complianceUi.filterCountry')}</Label>
           <Input
             id="c-filter"
             maxLength={2}
-            placeholder="ex. CM"
+            placeholder={t('complianceUi.filterPlaceholder')}
             value={country}
             onChange={(e) => setCountry(e.target.value.toUpperCase())}
           />
@@ -209,7 +220,11 @@ export default function AdminCompliancePage() {
         <QueryState
           query={query}
           isEmpty={(d) => d.data.length === 0}
-          empty={<p className="py-6 text-center text-sm text-muted-foreground">Aucune règle.</p>}
+          empty={
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              {t('complianceUi.empty')}
+            </p>
+          }
         >
           {(d) => (
             <Card>
@@ -218,39 +233,56 @@ export default function AdminCompliancePage() {
                   rows={d.data}
                   rowKey={(r) => r.code}
                   columns={[
-                    { header: 'Code', cell: (r) => <code className="text-xs">{r.code}</code> },
-                    { header: 'Pays', cell: (r) => r.countryCode },
-                    { header: 'Type', cell: (r) => label(RULE_TYPE_LABELS, r.ruleType) },
                     {
-                      header: 'Opérations',
-                      cell: (r) =>
-                        r.operationTypes.map((o) => label(OPERATION_TYPE_LABELS, o)).join(', '),
+                      header: t('complianceUi.code'),
+                      cell: (r) => <code className="text-xs">{r.code}</code>,
+                    },
+                    { header: t('complianceUi.country'), cell: (r) => r.countryCode },
+                    {
+                      header: t('complianceUi.type'),
+                      cell: (r) => labels.ruleType[r.ruleType] ?? r.ruleType,
                     },
                     {
-                      header: 'Paramètres',
+                      header: t('complianceUi.operations'),
+                      cell: (r) =>
+                        r.operationTypes.map((o) => labels.operationType[o] ?? o).join(', '),
+                    },
+                    {
+                      header: t('complianceUi.params'),
                       cell: (r) => <code className="text-xs">{JSON.stringify(r.params)}</code>,
                     },
                     {
-                      header: 'État',
+                      header: t('complianceUi.state'),
                       cell: (r) => (
                         <Badge variant={r.active ? 'success' : 'muted'}>
-                          {r.active ? 'Active' : 'Inactive'}
+                          {r.active ? t('complianceUi.active') : t('complianceUi.inactive')}
                         </Badge>
                       ),
                     },
-                    { header: 'Version', cell: (r) => r.version ?? 1 },
+                    { header: t('complianceUi.version'), cell: (r) => r.version ?? 1 },
                     {
-                      header: 'Actions',
+                      header: t('complianceUi.actions'),
                       srOnlyHeader: true,
                       className: 'text-right space-x-2',
                       cell: (r) => (
                         <>
                           <ActionDialog
-                            trigger={r.active ? 'Désactiver' : 'Activer'}
+                            trigger={
+                              r.active ? t('complianceUi.deactivate') : t('complianceUi.activate')
+                            }
                             triggerVariant="outline"
-                            title={`${r.active ? 'Désactiver' : 'Activer'} ${r.code} ?`}
-                            reason={{ label: 'Motif du changement', required: true, minLength: 3 }}
-                            successMessage="Règle mise à jour"
+                            title={t('complianceUi.toggleTitle', {
+                              action: r.active
+                                ? t('complianceUi.deactivate')
+                                : t('complianceUi.activate'),
+                              code: r.code,
+                            })}
+                            reason={{
+                              label: t('complianceUi.changeReason'),
+                              required: true,
+                              minLength: 3,
+                            }}
+                            successMessage={t('complianceUi.updated')}
                             onConfirm={async (reason) => {
                               await api.patch(
                                 `/admin/compliance/rules/${encodeURIComponent(r.code)}`,
@@ -275,7 +307,7 @@ export default function AdminCompliancePage() {
                               setHistory({ code: r.code, rows: h.data });
                             }}
                           >
-                            Historique
+                            {t('complianceUi.history')}
                           </Button>
                         </>
                       ),
@@ -289,19 +321,19 @@ export default function AdminCompliancePage() {
         {history ? (
           <Card>
             <CardHeader>
-              <CardTitle>Historique de {history.code}</CardTitle>
+              <CardTitle>{t('complianceUi.historyOf', { code: history.code })}</CardTitle>
             </CardHeader>
             <CardContent>
               <SimpleTable
                 rows={history.rows}
                 rowKey={(h) => String(h.version)}
                 columns={[
-                  { header: 'Version', cell: (h) => h.version },
-                  { header: 'Date', cell: (h) => formatDateTime(h.createdAt) },
-                  { header: 'Changement', cell: (h) => h.change },
-                  { header: 'Motif', cell: (h) => h.reason ?? '—' },
+                  { header: t('complianceUi.version'), cell: (h) => h.version },
+                  { header: t('complianceUi.date'), cell: (h) => f.dateTime(h.createdAt) },
+                  { header: t('complianceUi.change'), cell: (h) => h.change },
+                  { header: t('complianceUi.reason'), cell: (h) => h.reason ?? '—' },
                   {
-                    header: 'Instantané',
+                    header: t('complianceUi.snapshot'),
                     cell: (h) => <code className="text-xs">{JSON.stringify(h.snapshot)}</code>,
                   },
                 ]}

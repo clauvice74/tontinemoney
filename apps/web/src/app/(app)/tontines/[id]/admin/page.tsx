@@ -2,11 +2,15 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  Alert,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  KpiCard,
+  ProgressBar,
   Table,
   TableBody,
   TableCell,
@@ -14,29 +18,39 @@ import {
   TableHeader,
   TableRow,
 } from '@tontine/ui';
-import { AlertCircle, CircleDollarSign, HandCoins, RefreshCw } from 'lucide-react';
+import {
+  AlertCircle,
+  CalendarClock,
+  CircleDollarSign,
+  HandCoins,
+  Pencil,
+  RefreshCw,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ActionDialog } from '@/components/action-dialog';
+import { Amount } from '@/components/amount';
 import { QueryState } from '@/components/feedback';
-import { Money } from '@/components/money';
-import { StatCard } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
-import { TontineSummary } from '@/components/tontines/tontine-summary';
 import { api } from '@/lib/api';
 import type { AdminTontineDashboard } from '@/lib/api/types';
-import { formatDate, formatDateTime } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
+import { useLabels } from '@/lib/i18n/labels';
 import { formatMoneyView } from '@/lib/money';
 import { qk, useTontine } from '@/lib/queries';
+import { isEditable } from '@/lib/tontines';
 
 /** Rafraîchissement automatique du tableau de bord (US-4.10). */
 const REFRESH_MS = 30_000;
 
 type Beneficiary = NonNullable<AdminTontineDashboard['currentCycle']>['beneficiary'];
 
-function beneficiaryName(b: Beneficiary): string {
-  if (!b) return 'À déterminer';
+function beneficiaryName(b: Beneficiary | undefined, fallback: string): string {
+  if (!b) return fallback;
   if (typeof b === 'string') return b;
-  return b.fullName ?? b.firstName ?? 'Membre';
+  return b.fullName ?? b.firstName ?? fallback;
 }
 
 interface DrawProof {
@@ -50,6 +64,7 @@ interface DrawProof {
 
 /** US-4.3 — conditions de démarrage et démarrage manuel (dès la date de début atteinte). */
 function StartPanel({ id, onStarted }: { id: string; onStarted: () => Promise<unknown> }) {
+  const { t } = useI18n();
   const check = useQuery({
     queryKey: ['tontines', id, 'start-check'],
     queryFn: () => api.get<{ blockers: string[] }>(`/tontines/${id}/start-check`),
@@ -58,28 +73,31 @@ function StartPanel({ id, onStarted }: { id: string; onStarted: () => Promise<un
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Démarrage</CardTitle>
-        <CardDescription>
-          La tontine démarre automatiquement à la date prévue si toutes les conditions sont réunies.
-        </CardDescription>
+        <CardTitle>{t('adminT.start.title')}</CardTitle>
+        <CardDescription>{t('adminT.start.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         {blockers.length ? (
-          <ul className="list-disc space-y-1 pl-5 text-destructive">
-            {blockers.map((b) => (
-              <li key={b}>{b}</li>
-            ))}
-          </ul>
+          <Alert variant="warning" title={t('adminT.start.title')}>
+            <ul className="list-disc space-y-1 pl-5">
+              {blockers.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          </Alert>
         ) : (
-          <p className="text-success">Toutes les conditions sont réunies.</p>
+          <p className="text-success">{t('adminT.start.ready')}</p>
         )}
         <ActionDialog
-          trigger="Démarrer maintenant"
+          trigger={t('adminT.start.now')}
+          triggerVariant="primary"
+          triggerSize="md"
           disabled={blockers.length > 0}
-          title="Démarrer la tontine ?"
-          description="Le tirage (mode aléatoire) est effectué et le premier cycle est ouvert. Irréversible."
-          confirmLabel="Démarrer"
-          successMessage="Demande de démarrage traitée"
+          title={t('adminT.start.confirmTitle')}
+          description={t('adminT.start.confirmBody')}
+          confirmLabel={t('adminT.start.confirm')}
+          confirmVariant="primary"
+          successMessage={t('adminT.start.done')}
           onConfirm={async () => {
             const r = await api.post<{ started: boolean; blockers: string[] }>(
               `/tontines/${id}/start`,
@@ -93,7 +111,11 @@ function StartPanel({ id, onStarted }: { id: string; onStarted: () => Promise<un
   );
 }
 
+/** Tableau de bord de l'administrateur (US-4.10) : indicateurs, cycle en cours, retards, cycles. */
 export default function TontineAdminDashboardPage() {
+  const { t } = useI18n();
+  const f = useFormat();
+  const labels = useLabels();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const tontine = useTontine(id);
@@ -107,28 +129,29 @@ export default function TontineAdminDashboardPage() {
     queryFn: () => api.get<DrawProof>(`/tontines/${id}/draw-proof`),
     enabled: tontine.data?.drawMode === 'RANDOM' && !!tontine.data?.startedAt,
   });
-  const t = tontine.data;
+  const x = tontine.data;
+  const beforeStart = !!x && (x.status === 'DRAFT' || x.status === 'READY');
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-1 text-xs text-muted-foreground" aria-live="polite">
           <RefreshCw className="size-3" aria-hidden="true" />
-          Actualisation automatique toutes les 30 s
+          {t('adminT.autoRefresh')}
           {dashboard.dataUpdatedAt
-            ? ` · mis à jour à ${new Date(dashboard.dataUpdatedAt).toLocaleTimeString('fr-FR')}`
+            ? ` · ${t('adminT.updatedAt', { time: f.dateTime(new Date(dashboard.dataUpdatedAt)) })}`
             : ''}
         </p>
-        {t && (t.status === 'DRAFT' || t.status === 'READY') ? (
+        {beforeStart ? (
           <ActionDialog
-            trigger="Annuler la tontine"
+            trigger={t('adminT.cancel.cta')}
             triggerVariant="destructive"
-            title="Annuler la tontine"
-            description="Possible uniquement avant le démarrage. Les membres seront notifiés."
-            reason={{ label: 'Motif', required: true }}
+            title={t('adminT.cancel.cta')}
+            description={t('adminT.cancel.body')}
+            reason={{ label: t('adminT.cancel.reason'), required: true }}
             confirmVariant="destructive"
-            confirmLabel="Annuler la tontine"
-            successMessage="Tontine annulée"
+            confirmLabel={t('adminT.cancel.cta')}
+            successMessage={t('adminT.cancel.done')}
             onConfirm={async (reason) => {
               await api.post(`/tontines/${id}/cancel`, { reason });
               await queryClient.invalidateQueries({ queryKey: qk.tontine(id) });
@@ -137,99 +160,124 @@ export default function TontineAdminDashboardPage() {
         ) : null}
       </div>
 
-      {t && (t.status === 'DRAFT' || t.status === 'READY') ? (
+      {beforeStart ? (
         <StartPanel
           id={id}
           onStarted={() => queryClient.invalidateQueries({ queryKey: ['tontines', id] })}
         />
       ) : null}
 
-      <QueryState query={dashboard} comingSoonTitle="Tableau de bord bientôt disponible">
+      <QueryState query={dashboard}>
         {(d) => {
           const c = d.currentCycle;
-          const progress =
-            c && c.memberCount > 0 ? Math.round((c.paidCount / c.memberCount) * 100) : 0;
           return (
             <>
               <section
-                aria-label="Indicateurs"
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                aria-label={t('adminT.tabs.dashboard')}
+                className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5"
               >
-                <StatCard
-                  label="Total collecté"
-                  value={formatMoneyView(d.totalCollected)}
+                <KpiCard
+                  label={t('adminT.kpi.members')}
+                  icon={<Users />}
+                  value={x ? x.memberCount : '—'}
+                  unit={x ? `/ ${x.maxMembers}` : undefined}
+                  hint={x ? t('adminT.kpi.membersHint', { max: x.maxMembers }) : undefined}
+                />
+                <KpiCard
+                  label={t('adminT.kpi.pot')}
                   icon={<CircleDollarSign />}
+                  value={<Amount value={d.totalCollected} size="h2" />}
+                  hint={
+                    d.reserveBalance
+                      ? t('adminT.kpi.potHint', { amount: formatMoneyView(d.reserveBalance) })
+                      : undefined
+                  }
                 />
-                <StatCard
-                  label="Pénalités perçues"
-                  value={formatMoneyView(d.penaltiesCollected)}
+                <KpiCard
+                  label={t('adminT.kpi.contributions')}
                   icon={<HandCoins />}
+                  value={c ? c.paidCount : '—'}
+                  unit={c ? `/ ${c.memberCount}` : undefined}
+                  tone={c && c.paidCount === c.memberCount ? 'success' : 'default'}
+                  hint={
+                    c
+                      ? t('adminT.kpi.contributionsHint', { amount: formatMoneyView(c.remaining) })
+                      : t('adminT.kpi.notStarted')
+                  }
                 />
-                <StatCard
-                  label="Cycle en cours"
-                  value={c ? `${c.number}${t?.totalCycles ? ` / ${t.totalCycles}` : ''}` : '—'}
-                  hint={c ? `Échéance ${formatDate(c.dueDate)}` : 'Tontine non démarrée'}
-                />
-                <StatCard
-                  label="Membres en retard"
-                  value={String(d.lateMembers.length)}
+                <KpiCard
+                  label={t('adminT.kpi.late')}
                   icon={<AlertCircle />}
+                  value={d.lateMembers.length}
+                  tone={d.lateMembers.length > 0 ? 'destructive' : 'success'}
+                  hint={
+                    d.penaltiesDue
+                      ? t('adminT.kpi.lateHint', { amount: formatMoneyView(d.penaltiesDue) })
+                      : undefined
+                  }
+                />
+                <KpiCard
+                  label={t('adminT.kpi.cycles')}
+                  icon={<CalendarClock />}
+                  value={c ? c.number : '—'}
+                  unit={c && x?.totalCycles ? `/ ${x.totalCycles}` : undefined}
+                  hint={
+                    c
+                      ? t('adminT.kpi.cyclesHint', { date: f.date(c.dueDate) })
+                      : t('adminT.kpi.notStarted')
+                  }
                 />
               </section>
+
               {c ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Cycle {c.number}</CardTitle>
+                    <CardTitle>{t('adminT.currentCycle', { number: c.number })}</CardTitle>
                     <CardDescription>
-                      Bénéficiaire : {beneficiaryName(c.beneficiary)}
+                      {t('adminT.beneficiary', {
+                        name: beneficiaryName(c.beneficiary, t('adminT.toBeDesignated')),
+                      })}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div>
-                      <div className="mb-1 flex justify-between text-sm">
-                        <span>
-                          {c.paidCount} cotisation{c.paidCount > 1 ? 's' : ''} sur {c.memberCount}
-                        </span>
-                        <span className="font-medium">{progress} %</span>
-                      </div>
-                      <div
-                        className="h-2.5 rounded-full bg-muted"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={progress}
-                        aria-label="Cotisations reçues"
-                      >
-                        <div
-                          className="h-2.5 rounded-full bg-primary"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-sm">
-                      Collecté : <Money value={c.collected} className="font-medium" /> · Reste :{' '}
-                      <Money value={c.remaining} className="font-medium" />
+                    <ProgressBar
+                      value={c.paidCount}
+                      max={Math.max(c.memberCount, 1)}
+                      label={t('adminT.kpi.contributions')}
+                      valueText={`${c.paidCount} / ${c.memberCount}`}
+                      showLabel
+                    />
+                    <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                      <span>
+                        {t('adminT.colCollected')} : <Amount value={c.collected} />
+                      </span>
+                      <span className="text-muted-foreground">
+                        {t('adminT.kpi.contributionsHint', {
+                          amount: formatMoneyView(c.remaining),
+                        })}
+                      </span>
                     </p>
                   </CardContent>
                 </Card>
               ) : null}
+
               <div className="grid gap-6 lg:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Membres en retard</CardTitle>
+                    <CardTitle>{t('adminT.lateTitle')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {d.lateMembers.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Aucun retard.</p>
+                      <p className="text-sm text-muted-foreground">{t('adminT.noLate')}</p>
                     ) : (
-                      <ul className="divide-y text-sm">
+                      <ul className="divide-y rounded-md border text-sm">
                         {d.lateMembers.map((m) => (
-                          <li key={m.memberId} className="flex justify-between py-2">
-                            <span className="font-medium">
-                              {m.fullName ?? m.firstName ?? 'Membre'}
-                            </span>
+                          <li key={m.memberId} className="flex justify-between gap-2 p-3">
+                            <span className="font-medium">{m.fullName ?? m.firstName ?? '—'}</span>
                             {m.daysLate !== undefined ? (
-                              <span className="text-destructive">{m.daysLate} j de retard</span>
+                              <span className="text-destructive">
+                                {t('adminT.daysLate', { days: m.daysLate })}
+                              </span>
                             ) : null}
                           </li>
                         ))}
@@ -239,40 +287,35 @@ export default function TontineAdminDashboardPage() {
                 </Card>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Historique des cycles</CardTitle>
+                    <CardTitle>{t('adminT.cyclesTitle')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {d.cycles.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Aucun cycle.</p>
+                      <p className="text-sm text-muted-foreground">{t('adminT.cyclesEmpty')}</p>
                     ) : (
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Cycle</TableHead>
-                            <TableHead>Échéance</TableHead>
-                            <TableHead>Collecté</TableHead>
-                            <TableHead>Statut</TableHead>
+                            <TableHead>{t('adminT.colCycle')}</TableHead>
+                            <TableHead>{t('adminT.colBeneficiary')}</TableHead>
+                            <TableHead>{t('adminT.colDue')}</TableHead>
+                            <TableHead className="text-right">{t('adminT.colCollected')}</TableHead>
+                            <TableHead>{t('adminT.colStatus')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {d.cycles.map((cy) => (
                             <TableRow key={cy.id}>
                               <TableCell>{cy.number}</TableCell>
-                              <TableCell>{formatDate(cy.dueDate)}</TableCell>
-                              <TableCell>
-                                <Money value={cy.collected} />
+                              <TableCell>{beneficiaryName(cy.beneficiary, '—')}</TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {f.date(cy.dueDate)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Amount value={cy.collected} />
                               </TableCell>
                               <TableCell>
-                                <StatusBadge
-                                  status={cy.status}
-                                  labels={{
-                                    PENDING: 'À venir',
-                                    IN_PROGRESS: 'En cours',
-                                    PAYOUT_PENDING: 'Versement en attente',
-                                    PAYOUT_PROCESSING: 'Versement en cours',
-                                    COMPLETED: 'Terminé',
-                                  }}
-                                />
+                                <StatusBadge status={cy.status} labels={labels.cycleStatus} />
                               </TableCell>
                             </TableRow>
                           ))}
@@ -287,33 +330,60 @@ export default function TontineAdminDashboardPage() {
         }}
       </QueryState>
 
-      {t ? (
+      {x ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Configuration</CardTitle>
+          <CardHeader className="flex-row flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle>{t('adminT.config.title')}</CardTitle>
+              <CardDescription>{t('adminT.config.locked')}</CardDescription>
+            </div>
+            {isEditable(x) ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/tontines/${id}/admin/settings`}>
+                  <Pencil aria-hidden="true" /> {t('adminT.config.edit')}
+                </Link>
+              </Button>
+            ) : null}
           </CardHeader>
           <CardContent>
-            <TontineSummary tontine={t} />
+            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {(
+                [
+                  [t('tontine.contribution'), <Amount key="c" value={x.contribution} />],
+                  [t('tontine.frequency'), labels.frequency[x.frequency] ?? x.frequency],
+                  [t('tontine.startDate'), f.date(x.startDate)],
+                  [t('tontine.members'), `${x.memberCount} / ${x.maxMembers}`],
+                  [t('tontine.drawMode'), labels.drawMode[x.drawMode] ?? x.drawMode],
+                  [
+                    t('tontine.incompletePolicy'),
+                    labels.incompletePolicy[x.incompletePolicy] ?? x.incompletePolicy,
+                  ],
+                ] as Array<[string, React.ReactNode]>
+              ).map(([k, v]) => (
+                <div key={k}>
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd className="font-medium">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </CardContent>
         </Card>
       ) : null}
 
-      {t?.drawMode === 'RANDOM' && proof.data ? (
+      {x?.drawMode === 'RANDOM' && proof.data ? (
         <Card>
           <CardHeader>
-            <CardTitle>Preuve du tirage</CardTitle>
-            <CardDescription>
-              Empreinte permettant à chacun de vérifier l’ordre tiré au sort.
-            </CardDescription>
+            <CardTitle>{t('adminT.proof.title')}</CardTitle>
+            <CardDescription>{t('adminT.proof.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
-            <p className="break-all font-mono">{proof.data.proof ?? '—'}</p>
+            <p className="break-all font-mono text-mono">{proof.data.proof ?? '—'}</p>
             <p className="text-muted-foreground">
-              {proof.data.algorithm ?? 'SHA-256'} · {formatDateTime(proof.data.drawnAt)} ·{' '}
-              {proof.data.verified ? 'vérifiée ✔' : 'non vérifiable'}
+              {proof.data.algorithm ?? 'SHA-256'} · {f.dateTime(proof.data.drawnAt)} ·{' '}
+              {proof.data.verified ? t('adminT.proof.verified') : t('adminT.proof.unverifiable')}
             </p>
             <p className="break-all text-xs text-muted-foreground">
-              Graine : {proof.data.seed ?? '—'}
+              {t('adminT.proof.seed', { seed: proof.data.seed ?? '—' })}
             </p>
             <ol className="list-decimal pl-5">
               {proof.data.order.map((o) => (

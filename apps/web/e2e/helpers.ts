@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 export const DEMO_PASSWORD = 'Demo#Tontine2026';
 
@@ -30,4 +30,19 @@ export async function login(page: Page, email: string, password = DEMO_PASSWORD)
 
 export async function expectLoggedIn(page: Page, path: RegExp): Promise<void> {
   await expect(page).toHaveURL(path);
+}
+
+/** Super-admin : connexion puis second facteur SMS lu dans le simulateur de messages. */
+export async function loginSuperAdmin(page: Page, request: APIRequestContext): Promise<void> {
+  await login(page, 'superadmin@tontinemoney.local');
+  const codeInput = page.getByLabel('Code de vérification');
+  await expect(codeInput).toBeVisible();
+  const res = await request.get('/api/v1/dev/messages', {
+    params: { to: '+237600000001', limit: '1' },
+  });
+  const body = (await res.json()) as { data: Array<{ body: string }> };
+  const code = /\b(\d{6})\b/.exec(body.data[0]?.body ?? '')?.[1] ?? '';
+  await codeInput.fill(code);
+  await page.getByRole('button', { name: 'Vérifier' }).click();
+  await expect(page).toHaveURL(/\/admin/);
 }

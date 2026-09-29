@@ -9,6 +9,15 @@ test.describe('Pages publiques', () => {
     await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible();
   });
 
+  test('build de démonstration : console des messages simulés accessible depuis l’en-tête', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Messages simulés' }).first().click();
+    await expect(page).toHaveURL(/\/dev\/messages/);
+    await expect(page.getByRole('heading', { name: 'Messages simulés' })).toBeVisible();
+  });
+
   test('identifiants invalides : message générique, pas de connexion', async ({ page }) => {
     await login(page, 'awa@tontinemoney.local', 'mauvais-mot-de-passe');
     await expect(page.getByRole('alert').first()).toBeVisible();

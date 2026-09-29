@@ -42,45 +42,63 @@ export const penaltyRulesSchema = z
   .strict();
 export type PenaltyRules = z.infer<typeof penaltyRulesSchema>;
 
+/** Paramètres d'une tontine (création US-4.1, modification avant démarrage A-61). */
+const tontineParamsShape = {
+  name: z.string().trim().min(3).max(200),
+  type: z.literal('SIMPLE_ROTATIVE').default('SIMPLE_ROTATIVE'),
+  contributionAmount: amountStringSchema,
+  currency: currencySchema.optional(),
+  frequency: z.enum(TONTINE_FREQUENCIES),
+  frequencyDetail: frequencyDetailSchema.default({}),
+  maxMembers: z.number().int().min(3).max(50),
+  startDate: isoDateSchema,
+  drawMode: z.enum(DRAW_MODES),
+  penaltyRules: penaltyRulesSchema,
+  entryFee: amountStringSchema.optional(),
+  collation: amountStringSchema.optional(),
+  incompletePolicy: z.enum(INCOMPLETE_POLICIES).default('POSTPONE'),
+};
+
+function refineTontineParams(
+  v: { frequency: string; frequencyDetail: FrequencyDetail },
+  ctx: z.RefinementCtx,
+) {
+  if ((v.frequency === 'WEEKLY' || v.frequency === 'BIWEEKLY') && !v.frequencyDetail.day) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['frequencyDetail', 'day'],
+      message: 'Jour de la semaine requis',
+    });
+  }
+  if (
+    v.frequency === 'MONTHLY' &&
+    !v.frequencyDetail.lastDayOfMonth &&
+    (!v.frequencyDetail.day || v.frequencyDetail.weekOfMonth === undefined)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['frequencyDetail'],
+      message: 'Préciser le jour et la semaine du mois, ou le dernier jour du mois',
+    });
+  }
+}
+
 /** US-4.1 — création d'une tontine. */
 export const createTontineSchema = z
-  .object({
-    name: z.string().trim().min(3).max(200),
-    type: z.literal('SIMPLE_ROTATIVE').default('SIMPLE_ROTATIVE'),
-    contributionAmount: amountStringSchema,
-    currency: currencySchema.optional(),
-    frequency: z.enum(TONTINE_FREQUENCIES),
-    frequencyDetail: frequencyDetailSchema.default({}),
-    maxMembers: z.number().int().min(3).max(50),
-    startDate: isoDateSchema,
-    drawMode: z.enum(DRAW_MODES),
-    penaltyRules: penaltyRulesSchema,
-    entryFee: amountStringSchema.optional(),
-    collation: amountStringSchema.optional(),
-    incompletePolicy: z.enum(INCOMPLETE_POLICIES).default('POSTPONE'),
-  })
+  .object(tontineParamsShape)
   .strict()
-  .superRefine((v, ctx) => {
-    if ((v.frequency === 'WEEKLY' || v.frequency === 'BIWEEKLY') && !v.frequencyDetail.day) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['frequencyDetail', 'day'],
-        message: 'Jour de la semaine requis',
-      });
-    }
-    if (
-      v.frequency === 'MONTHLY' &&
-      !v.frequencyDetail.lastDayOfMonth &&
-      (!v.frequencyDetail.day || v.frequencyDetail.weekOfMonth === undefined)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['frequencyDetail'],
-        message: 'Préciser le jour et la semaine du mois, ou le dernier jour du mois',
-      });
-    }
-  });
+  .superRefine(refineTontineParams);
 export type CreateTontineInput = z.infer<typeof createTontineSchema>;
+
+/**
+ * A-61 — modification de la configuration avant démarrage : mêmes paramètres que la création
+ * (remplacement complet) et `version` lue (verrou optimiste, VERSION_CONFLICT sinon).
+ */
+export const updateTontineSchema = z
+  .object({ ...tontineParamsShape, version: z.number().int().nonnegative() })
+  .strict()
+  .superRefine(refineTontineParams);
+export type UpdateTontineInput = z.infer<typeof updateTontineSchema>;
 
 /** US-4.2 — invitations. */
 export const createInvitationSchema = z.discriminatedUnion('channel', [
