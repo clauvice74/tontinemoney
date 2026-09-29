@@ -12,6 +12,7 @@ storage/
 test-results/
 playwright-report/
 *.log
+.logs/
 .DS_Store
 next-env.d.ts
 src/generated/

@@ -30,6 +30,7 @@
     "db:migrate:check": "pnpm --filter @tontine/database db:migrate:check",
     "test:e2e:local": "bash infrastructure/scripts/e2e-local.sh",
     "build:demo": "NEXT_PUBLIC_ENABLE_SIMULATORS=true turbo run build",
+    "start:demo": "bash infrastructure/scripts/start-demo.sh",
     "db:roles": "pnpm --filter @tontine/database db:roles",
     "arch:check": "node infrastructure/scripts/check-data-ownership.mjs",
     "kafka:topics": "pnpm --filter @tontine/platform kafka:topics",
