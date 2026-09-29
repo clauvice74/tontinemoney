@@ -19,24 +19,20 @@ import { Search } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { api } from '@/lib/api';
 import type { ListResponse, MemberRow, MembersMeta } from '@/lib/api/types';
-import { formatDate, formatRelative } from '@/lib/format';
 import { useCursorPagination } from '@/lib/hooks/use-cursor-pagination';
-import {
-  KYC_LEVEL_LABELS,
-  MEMBERSHIP_STATUS_LABELS,
-  MEMBER_STATUS_LABELS,
-  label,
-} from '@/lib/labels';
+import { type MessageKey, useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
+import { useLabels } from '@/lib/i18n/labels';
 import { QueryState } from '../feedback';
 import { StatusBadge } from '../status-badge';
 
-export const MEMBER_SORTS = {
-  name_asc: 'Nom (A → Z)',
-  name_desc: 'Nom (Z → A)',
-  registered_desc: 'Inscription (récentes)',
-  registered_asc: 'Inscription (anciennes)',
-  status: 'Statut',
-} as const;
+export const MEMBER_SORTS = [
+  'name_asc',
+  'name_desc',
+  'registered_desc',
+  'registered_asc',
+  'status',
+] as const;
 
 export interface MemberFilters {
   status: string;
@@ -44,7 +40,7 @@ export interface MemberFilters {
   registeredFrom: string;
   registeredTo: string;
   search: string;
-  sort: keyof typeof MEMBER_SORTS;
+  sort: (typeof MEMBER_SORTS)[number];
   membership: 'ALL' | 'ACTIVE' | 'PENDING_APPROVAL';
 }
 
@@ -69,6 +65,9 @@ export function MembersTable({
   tontineId: string;
   rowActions?: (member: MemberRow) => ReactNode;
 }) {
+  const { t } = useI18n();
+  const f = useFormat();
+  const labels = useLabels();
   const [draft, setDraft] = useState<MemberFilters>(DEFAULT_FILTERS);
   const [filters, setFilters] = useState<MemberFilters>(DEFAULT_FILTERS);
   const pagination = useCursorPagination();
@@ -101,7 +100,7 @@ export function MembersTable({
     <div className="space-y-4">
       <form
         role="search"
-        aria-label="Filtrer les membres"
+        aria-label={t('adminT.members.filtersLabel')}
         onSubmit={(e) => {
           e.preventDefault();
           apply(draft);
@@ -109,52 +108,52 @@ export function MembersTable({
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="members-search">Recherche</Label>
+          <Label htmlFor="members-search">{t('adminT.members.search')}</Label>
           <div className="flex gap-2">
             <Input
               id="members-search"
               type="search"
-              placeholder="Nom, prénom, email ou téléphone"
+              placeholder={t('adminT.members.searchPlaceholder')}
               value={draft.search}
               onChange={(e) => setDraft({ ...draft, search: e.target.value })}
             />
-            <Button type="submit" aria-label="Rechercher">
+            <Button type="submit" variant="secondary" aria-label={t('adminT.members.searchButton')}>
               <Search aria-hidden="true" />
             </Button>
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-status">Statut</Label>
+          <Label htmlFor="members-status">{t('adminT.members.status')}</Label>
           <Select
             id="members-status"
             value={draft.status}
             onChange={(e) => apply({ ...draft, status: e.target.value })}
           >
-            <option value="">Tous</option>
+            <option value="">{t('adminT.members.all')}</option>
             {MEMBER_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {MEMBER_STATUS_LABELS[s]}
+                {labels.memberStatus[s] ?? s}
               </option>
             ))}
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-kyc">Niveau KYC</Label>
+          <Label htmlFor="members-kyc">{t('adminT.members.kyc')}</Label>
           <Select
             id="members-kyc"
             value={draft.kycLevel}
             onChange={(e) => apply({ ...draft, kycLevel: e.target.value })}
           >
-            <option value="">Tous</option>
+            <option value="">{t('adminT.members.all')}</option>
             {KYC_LEVELS.map((k) => (
               <option key={k} value={k}>
-                {KYC_LEVEL_LABELS[k]}
+                {labels.kycLevel[k] ?? k}
               </option>
             ))}
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-from">Inscrits du</Label>
+          <Label htmlFor="members-from">{t('adminT.members.from')}</Label>
           <Input
             id="members-from"
             type="date"
@@ -163,7 +162,7 @@ export function MembersTable({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-to">au</Label>
+          <Label htmlFor="members-to">{t('adminT.members.to')}</Label>
           <Input
             id="members-to"
             type="date"
@@ -172,21 +171,21 @@ export function MembersTable({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-sort">Tri</Label>
+          <Label htmlFor="members-sort">{t('adminT.members.sort')}</Label>
           <Select
             id="members-sort"
             value={draft.sort}
             onChange={(e) => apply({ ...draft, sort: e.target.value as MemberFilters['sort'] })}
           >
-            {Object.entries(MEMBER_SORTS).map(([k, v]) => (
+            {MEMBER_SORTS.map((k) => (
               <option key={k} value={k}>
-                {v}
+                {t(`adminT.members.sorts.${k}` as MessageKey)}
               </option>
             ))}
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="members-membership">Adhésion</Label>
+          <Label htmlFor="members-membership">{t('adminT.members.membership')}</Label>
           <Select
             id="members-membership"
             value={draft.membership}
@@ -194,9 +193,9 @@ export function MembersTable({
               apply({ ...draft, membership: e.target.value as MemberFilters['membership'] })
             }
           >
-            <option value="ALL">Toutes</option>
-            <option value="ACTIVE">Actives</option>
-            <option value="PENDING_APPROVAL">En attente de validation</option>
+            <option value="ALL">{t('adminT.members.membershipAll')}</option>
+            <option value="ACTIVE">{t('adminT.members.membershipActive')}</option>
+            <option value="PENDING_APPROVAL">{t('adminT.members.membershipPending')}</option>
           </Select>
         </div>
       </form>
@@ -206,7 +205,7 @@ export function MembersTable({
         isEmpty={(d) => d.data.length === 0}
         empty={
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun membre ne correspond à ces critères.
+            {t('adminT.members.empty')}
           </p>
         }
       >
@@ -217,19 +216,47 @@ export function MembersTable({
                 {d.meta.summary}
               </p>
             ) : null}
-            <Table>
+            {/* Mobile : cartes */}
+            <ul className="divide-y rounded-md border md:hidden">
+              {d.data.map((m) => (
+                <li key={m.id} className="space-y-2 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium">
+                      {m.fullName}
+                      {m.membershipRole === 'ADMIN' ? (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          ({t('adminT.members.admin')})
+                        </span>
+                      ) : null}
+                    </p>
+                    <StatusBadge status={m.status} labels={labels.memberStatus} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {[m.email, m.phone].filter(Boolean).join(' · ') || '—'}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span>{labels.kycLevel[m.kycLevel] ?? m.kycLevel}</span>
+                    <StatusBadge status={m.membershipStatus} labels={labels.membershipStatus} />
+                    <span className="text-muted-foreground">{f.date(m.registeredAt)}</span>
+                  </div>
+                  {rowActions ? <div>{rowActions(m)}</div> : null}
+                </li>
+              ))}
+            </ul>
+            {/* Ordinateur : tableau */}
+            <Table className="hidden md:table">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>KYC</TableHead>
-                  <TableHead>Adhésion</TableHead>
-                  <TableHead>Inscription</TableHead>
-                  <TableHead>Dernière activité</TableHead>
+                  <TableHead>{t('adminT.members.colName')}</TableHead>
+                  <TableHead>{t('adminT.members.colContact')}</TableHead>
+                  <TableHead>{t('adminT.members.colStatus')}</TableHead>
+                  <TableHead>{t('adminT.members.colKyc')}</TableHead>
+                  <TableHead>{t('adminT.members.colMembership')}</TableHead>
+                  <TableHead>{t('adminT.members.colRegistered')}</TableHead>
+                  <TableHead>{t('adminT.members.colActivity')}</TableHead>
                   {rowActions ? (
                     <TableHead>
-                      <span className="sr-only">Actions</span>
+                      <span className="sr-only">{t('adminT.members.actions')}</span>
                     </TableHead>
                   ) : null}
                 </TableRow>
@@ -240,7 +267,9 @@ export function MembersTable({
                     <TableCell className="font-medium">
                       {m.fullName}
                       {m.membershipRole === 'ADMIN' ? (
-                        <span className="ml-1 text-xs text-muted-foreground">(admin)</span>
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          ({t('adminT.members.admin')})
+                        </span>
                       ) : null}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -248,17 +277,15 @@ export function MembersTable({
                       <span className="block">{m.phone ?? ''}</span>
                     </TableCell>
                     <TableCell>
-                      <StatusBadge status={m.status} labels={MEMBER_STATUS_LABELS} />
+                      <StatusBadge status={m.status} labels={labels.memberStatus} />
                     </TableCell>
-                    <TableCell>{label(KYC_LEVEL_LABELS, m.kycLevel)}</TableCell>
+                    <TableCell>{labels.kycLevel[m.kycLevel] ?? m.kycLevel}</TableCell>
                     <TableCell>
-                      <StatusBadge status={m.membershipStatus} labels={MEMBERSHIP_STATUS_LABELS} />
+                      <StatusBadge status={m.membershipStatus} labels={labels.membershipStatus} />
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDate(m.registeredAt)}
-                    </TableCell>
+                    <TableCell className="whitespace-nowrap">{f.date(m.registeredAt)}</TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {m.lastActivityAt ? formatRelative(m.lastActivityAt) : '—'}
+                      {m.lastActivityAt ? f.relative(m.lastActivityAt) : '—'}
                     </TableCell>
                     {rowActions ? (
                       <TableCell className="text-right">{rowActions(m)}</TableCell>
@@ -274,7 +301,7 @@ export function MembersTable({
               onPrevious={pagination.previous}
               onNext={() => pagination.next(d.page?.nextCursor)}
               loading={query.isFetching}
-              info="20 par page"
+              info={t('adminT.members.perPage')}
             />
           </>
         )}

@@ -19,9 +19,9 @@ flowchart TD
   APP --> M5["/notifications ✅ L4"]
   APP --> M6["/profile, /security ✅ L4"]
   APP --> M7["/reporting 🆕 L1"]
-  APP --> A1["/tontines/:id/admin/* 🔄 L5"]
-  APP --> A2["/admin/* 🔄 L5"]
-  APP --> A3["/kyc-review/* 🔄 L5"]
+  APP --> A1["/tontines/:id/admin (tableau de bord, membres, paramètres) ✅ L5"]
+  APP --> A2["/admin (tableau global, tontines, utilisateurs, membres, conformité, incidents, audit) ✅ L5"]
+  APP --> A3["/kyc-review/* — thème L1, textes FR"]
   ROOT --> DEV["/dev/ui-kit 🆕 L1 · /dev/messages"]
 ```
 
@@ -44,6 +44,6 @@ flowchart TD
 | `/notifications`                             | Liste chronologique, filtres                                                        | 4 ✅ |
 | `/profile`, `/security`                      | Profil, préférences, sessions, MFA                                                  | 4 ✅ |
 | `/reporting`                                 | Rapports des tontines administrées / de la plateforme                               | 1 ✅ |
-| `/tontines/:id/admin/*`                      | Administration de tontine                                                           | 5    |
-| `/admin/*`                                   | Plateforme (KPIs, utilisateurs, tontines, conformité, incidents, audit)             | 5    |
+| `/tontines/:id/admin/*`                      | Administration de tontine (tableau de bord, membres, paramètres refondus)           | 5 ✅ |
+| `/admin/*`                                   | Plateforme (KPIs, utilisateurs, tontines, conformité, incidents, audit)             | 5 ✅ |
 | `/kyc-review/*`                              | Revue KYC et AML                                                                    | 5    |

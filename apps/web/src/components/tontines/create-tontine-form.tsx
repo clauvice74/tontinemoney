@@ -120,10 +120,17 @@ export function CreateTontineForm({
   defaultCurrency = 'XAF',
   onSubmit,
   today,
+  mode = 'create',
+  initialValues,
+  submitLabel,
 }: {
   defaultCurrency?: string;
   onSubmit: (values: CreateTontineInput, invitees: InviteTarget[]) => Promise<void>;
   today?: Date;
+  /** `edit` (A-61) : 3 étapes, sans invitations ; devise non modifiable. */
+  mode?: 'create' | 'edit';
+  initialValues?: Partial<FormInput>;
+  submitLabel?: string;
 }) {
   const { t } = useI18n();
   const f = useFormat();
@@ -150,6 +157,7 @@ export function CreateTontineForm({
       drawMode: 'RANDOM',
       penaltyRules: { graceDays: 3, lateFeePercent: 5, suspendAfter: 3, defaultAfterDays: 7 },
       incompletePolicy: 'POSTPONE',
+      ...initialValues,
     },
   });
   const errors = form.formState.errors;
@@ -161,7 +169,7 @@ export function CreateTontineForm({
     t('wizard.steps.type'),
     t('wizard.steps.amount'),
     t('wizard.steps.rules'),
-    t('wizard.steps.invitations'),
+    ...(mode === 'create' ? [t('wizard.steps.invitations')] : []),
   ];
 
   function goTo(next: number) {
@@ -239,7 +247,7 @@ export function CreateTontineForm({
       }}
       className="space-y-6"
       noValidate
-      aria-label={t('wizard.title')}
+      aria-label={mode === 'edit' ? t('adminT.settings.title') : t('wizard.title')}
     >
       <Stepper steps={steps} current={step} label={t('wizard.stepsLabel')} />
 
@@ -317,7 +325,10 @@ export function CreateTontineForm({
               description={t('wizard.currencyHint')}
               error={errors.currency?.message}
             >
-              <Select {...form.register('currency', { setValueAs: emptyToUndefined })}>
+              <Select
+                {...form.register('currency', { setValueAs: emptyToUndefined })}
+                disabled={mode === 'edit'}
+              >
                 {CURRENCY_CODES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -605,7 +616,7 @@ export function CreateTontineForm({
         ) : (
           <Button type="submit" variant="primary" size="lg" loading={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? null : <Check aria-hidden="true" />}
-            {t('wizard.submit')}
+            {submitLabel ?? t('wizard.submit')}
           </Button>
         )}
       </div>

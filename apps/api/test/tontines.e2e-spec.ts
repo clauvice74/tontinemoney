@@ -179,6 +179,89 @@ describe('US-4.1 — création d’une tontine', () => {
   });
 });
 
+describe('A-61 — modification de la configuration avant démarrage', () => {
+  let creator: TestUser;
+  let token: string;
+
+  beforeEach(async () => {
+    creator = await ctx.createUser({ kycLevel: 'TIER_3' });
+    token = await ctx.token(creator);
+  });
+
+  async function patch(id: string, body: Record<string, unknown>, as = token) {
+    return ctx.http.patch(`/api/v1/tontines/${id}`).set(bearer(as)).send(body);
+  }
+
+  it('brouillon : remplacement complet, version incrémentée, événement et audit', async () => {
+    const created = (await createVia(token)).body;
+    const res = await patch(created.id, {
+      ...validBody({ name: 'Tontine renommée', contributionAmount: '60000', maxMembers: 8 }),
+      version: created.version,
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      name: 'Tontine renommée',
+      maxMembers: 8,
+      contribution: { amountMinor: '60000', currency: 'XAF' },
+      version: created.version + 1,
+    });
+    const evt = await ctx.prisma.outboxEvent.findFirstOrThrow({
+      where: { eventType: 'tontine.updated', aggregateId: created.id },
+    });
+    expect((evt.payload as { changedFields: string[] }).changedFields).toEqual(
+      expect.arrayContaining(['name', 'contributionMinor', 'maxMembers']),
+    );
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: { action: 'tontine.updated', resourceId: created.id },
+      }),
+    ).toBe(1);
+  });
+
+  it('version obsolète : 409 ; mêmes validations que la création', async () => {
+    const created = (await createVia(token)).body;
+    const stale = await patch(created.id, { ...validBody(), version: created.version + 5 });
+    expect(stale.status).toBe(409);
+    expect(stale.body.code).toBe('VERSION_CONFLICT');
+    const early = await patch(created.id, {
+      ...validBody({ startDate: '2026-09-28' }),
+      version: created.version,
+    });
+    expect(early.status).toBe(400);
+    expect(early.body.code).toBe('VALIDATION_FAILED');
+    const currency = await patch(created.id, {
+      ...validBody({ currency: 'XOF' }),
+      version: created.version,
+    });
+    expect(currency.body.code).toBe('CURRENCY_MISMATCH');
+    expect((await patch(created.id, { name: 'x', version: created.version })).status).toBe(400);
+  });
+
+  it('refusée dès qu’un autre membre a rejoint, et pour un non-administrateur', async () => {
+    const created = (await createVia(token)).body;
+    const other = await ctx.createUser();
+    const denied = await patch(
+      created.id,
+      { ...validBody(), version: created.version },
+      await ctx.token(other),
+    );
+    // Tontine administrée par un autre : existence non révélée
+    expect(denied.status).toBe(404);
+    const link = await ctx.http
+      .post(`/api/v1/tontines/${created.id}/invitations`)
+      .set(bearer(token))
+      .send({ channel: 'LINK' });
+    await ctx.http
+      .post(`/api/v1/invitations/code/${link.body.code}/accept`)
+      .set(bearer(await ctx.token(other)))
+      .send()
+      .expect(200);
+    const res = await patch(created.id, { ...validBody(), version: created.version });
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('BUSINESS_RULE_VIOLATION');
+  });
+});
+
 describe('US-4.2 — invitations', () => {
   let admin: TestUser;
   let adminToken: string;

@@ -10,6 +10,7 @@ import {
   type Actor,
   ApiZodBody,
   CurrentUser,
+  DomainError,
   PrismaService,
   Roles,
   ZodBody,
@@ -106,6 +107,19 @@ export class TontineOpsController {
     @ZodBody(pauseTontineSchema) body: { reason: string },
   ) {
     return this.payouts.setPaused(actor, id, true, body.reason);
+  }
+
+  @Post('admin/tontines/:id/close')
+  @Roles('SUPER_ADMIN')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Relancer la clôture (US-4.9, A-61) : clôture si tous les cycles sont terminés et rien n’est impayé, sinon renvoie les blocages',
+  })
+  async close(@Param('id', ParseUUIDPipe) id: string) {
+    const exists = await this.prisma.tontine.findUnique({ where: { id }, select: { id: true } });
+    if (!exists) throw new DomainError('NOT_FOUND', 'Tontine introuvable');
+    return this.payouts.tryClose(id);
   }
 
   @Post('admin/tontines/:id/resume')

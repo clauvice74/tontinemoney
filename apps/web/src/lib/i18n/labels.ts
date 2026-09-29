@@ -13,6 +13,10 @@ import {
   KYC_STATUS_LABELS,
   MEMBERSHIP_STATUS_LABELS,
   MEMBER_STATUS_LABELS,
+  OPERATION_TYPE_LABELS,
+  ROLE_LABELS,
+  RULE_TYPE_LABELS,
+  USER_STATUS_LABELS,
   MOVEMENT_CONTEXT_LABELS,
   MOVEMENT_TYPE_LABELS,
   NOTIFICATION_CATEGORY_LABELS,
@@ -47,6 +51,10 @@ const FR = {
   notificationCategory: NOTIFICATION_CATEGORY_LABELS,
   notificationChannel: NOTIFICATION_CHANNEL_LABELS,
   memberStatus: MEMBER_STATUS_LABELS,
+  userStatus: USER_STATUS_LABELS,
+  role: ROLE_LABELS,
+  operationType: OPERATION_TYPE_LABELS,
+  ruleType: RULE_TYPE_LABELS,
 };
 
 type LabelSets = { [K in keyof typeof FR]: Record<string, string> };
@@ -194,6 +202,41 @@ const EN: LabelSets = {
     ACTIVE: 'Active',
     SUSPENDED: 'Suspended',
     PENDING_REVIEW: 'In review',
+  },
+  userStatus: {
+    PENDING_APPROVAL: 'Awaiting approval',
+    PENDING_ACTIVATION: 'Awaiting activation',
+    ACTIVE: 'Active',
+    ACTIVE_PENDING_KYC: 'Active — KYC to complete',
+    SUSPENDED: 'Suspended',
+    REJECTED: 'Rejected',
+    EXPIRED: 'Expired',
+    INACTIVE: 'Inactive',
+  },
+  role: {
+    SUPER_ADMIN: 'Super administrator',
+    TONTINE_ADMIN: 'Tontine administrator',
+    MEMBER: 'Member',
+    KYC_AGENT: 'KYC agent',
+    COMPLIANCE_AGENT: 'Compliance agent',
+    ADMIN: 'Administrator',
+  },
+  operationType: {
+    DEPOSIT: 'Deposit',
+    WITHDRAWAL: 'Withdrawal',
+    TRANSFER: 'Transfer',
+    TONTINE_CONTRIBUTION: 'Contribution',
+    TONTINE_PAYOUT: 'Payout',
+    TONTINE_CREATION: 'Tontine creation',
+    TONTINE_JOIN: 'Joining a tontine',
+  },
+  ruleType: {
+    DAILY_LIMIT: 'Daily limit',
+    MONTHLY_LIMIT: 'Monthly limit',
+    WALLET_LIMIT: 'Wallet limit',
+    KYC_MIN_LEVEL: 'Minimum KYC level',
+    TONTINE_ALLOWED: 'Tontines allowed',
+    OPERATION_FORBIDDEN: 'Forbidden operation',
   },
 };
 

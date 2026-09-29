@@ -1,12 +1,23 @@
-import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   type CreateInvitationInput,
   type CreateTontineInput,
+  type UpdateTontineInput,
   createInvitationSchema,
   createTontineSchema,
   reasonSchema,
   respondInvitationSchema,
+  updateTontineSchema,
 } from '@tontine/contracts';
 import { type Actor, ApiZodBody, CurrentUser, Public, Roles, ZodBody } from '@tontine/platform';
 import { z } from 'zod';
@@ -57,6 +68,20 @@ export class TontinesController {
   @ApiOperation({ summary: 'Participants (prénom, rôle, position — sans montants individuels)' })
   async participants(@CurrentUser() actor: Actor, @Param('id', ParseUUIDPipe) id: string) {
     return { data: await this.tontines.participants(actor, id) };
+  }
+
+  @Patch('tontines/:id')
+  @ApiOperation({
+    summary:
+      'Modifier la configuration avant démarrage (admin, A-61) : brouillon, aucun autre membre engagé',
+  })
+  @ApiZodBody(updateTontineSchema)
+  async update(
+    @CurrentUser() actor: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZodBody(updateTontineSchema) body: UpdateTontineInput,
+  ) {
+    return this.tontines.update(actor, id, body);
   }
 
   @Post('tontines/:id/cancel')

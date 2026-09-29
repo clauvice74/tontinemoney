@@ -17,6 +17,7 @@ import {
 } from '@tontine/ui';
 import { type ReactNode, useId, useState } from 'react';
 import { formatError } from '@/lib/forms';
+import { useI18n } from '@/lib/i18n';
 
 interface ActionDialogProps {
   /** Libellé du bouton déclencheur. */
@@ -46,7 +47,7 @@ export function ActionDialog({
   triggerSize = 'sm',
   title,
   description,
-  confirmLabel = 'Confirmer',
+  confirmLabel,
   confirmVariant = 'default',
   reason,
   successMessage,
@@ -54,6 +55,7 @@ export function ActionDialog({
   disabled,
   children,
 }: ActionDialogProps) {
+  const { t } = useI18n();
   const id = useId();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
@@ -67,7 +69,11 @@ export function ActionDialog({
     e.preventDefault();
     setError(null);
     if (reason && value.trim().length < minLength) {
-      setFieldError(minLength > 1 ? `${minLength} caractères minimum` : 'Le motif est obligatoire');
+      setFieldError(
+        minLength > 1
+          ? t('actionDialog.minLength', { count: minLength })
+          : t('actionDialog.reasonRequired'),
+      );
       return;
     }
     setFieldError(undefined);
@@ -125,10 +131,10 @@ export function ActionDialog({
           {error ? <Alert variant="destructive" title={error} /> : null}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Annuler
+              {t('actionDialog.cancel')}
             </Button>
             <Button type="submit" variant={confirmVariant} loading={pending}>
-              {confirmLabel}
+              {confirmLabel ?? t('actionDialog.confirm')}
             </Button>
           </DialogFooter>
         </form>

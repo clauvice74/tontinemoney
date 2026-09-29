@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge, Card, CardContent } from '@tontine/ui';
 import { QueryState } from '@/components/feedback';
 import { RequireRole } from '@/components/guards';
-import { PageHeader } from '@/components/page-header';
 import { SimpleTable } from '@/components/simple-table';
 import { api } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
-import { OPERATION_TYPE_LABELS, label } from '@/lib/labels';
+import { useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
+import { useLabels } from '@/lib/i18n/labels';
 
 interface Violation {
   id: string;
@@ -22,6 +22,9 @@ interface Violation {
 
 /** US-9.4 — violations détectées : blocage, suspension, alerte (changement de pays suspect). */
 export default function AdminViolationsPage() {
+  const { t } = useI18n();
+  const f = useFormat();
+  const labels = useLabels();
   const query = useQuery({
     queryKey: ['admin', 'violations'],
     queryFn: () => api.get<{ data: Violation[] }>('/admin/compliance/violations'),
@@ -29,15 +32,17 @@ export default function AdminViolationsPage() {
   return (
     <RequireRole roles={['SUPER_ADMIN']}>
       <div className="space-y-4">
-        <PageHeader
-          title="Violations de conformité"
-          description="5 violations en 24 h entraînent la suspension automatique du membre."
-        />
+        <div className="space-y-1">
+          <h1 className="text-h1">{t('complianceUi.violationsTitle')}</h1>
+          <p className="text-sm text-muted-foreground">{t('complianceUi.violationsDescription')}</p>
+        </div>
         <QueryState
           query={query}
           isEmpty={(d) => d.data.length === 0}
           empty={
-            <p className="py-6 text-center text-sm text-muted-foreground">Aucune violation.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              {t('complianceUi.violationsEmpty')}
+            </p>
           }
         >
           {(d) => (
@@ -47,19 +52,22 @@ export default function AdminViolationsPage() {
                   rows={d.data}
                   rowKey={(v) => v.id}
                   columns={[
-                    { header: 'Date', cell: (v) => formatDateTime(v.createdAt) },
+                    { header: t('complianceUi.date'), cell: (v) => f.dateTime(v.createdAt) },
                     {
-                      header: 'Membre',
+                      header: t('complianceUi.member'),
                       cell: (v) => <code className="text-xs">{v.memberId.slice(0, 8)}</code>,
                     },
                     {
-                      header: 'Opération',
-                      cell: (v) => label(OPERATION_TYPE_LABELS, v.operationType),
+                      header: t('complianceUi.operation'),
+                      cell: (v) => labels.operationType[v.operationType] ?? v.operationType,
                     },
-                    { header: 'Règle', cell: (v) => <code className="text-xs">{v.ruleCode}</code> },
-                    { header: 'Détail', cell: (v) => v.details?.message ?? '—' },
                     {
-                      header: 'Action',
+                      header: t('complianceUi.rule'),
+                      cell: (v) => <code className="text-xs">{v.ruleCode}</code>,
+                    },
+                    { header: t('complianceUi.detail'), cell: (v) => v.details?.message ?? '—' },
+                    {
+                      header: t('complianceUi.action'),
                       cell: (v) => (
                         <Badge
                           variant={
@@ -71,10 +79,10 @@ export default function AdminViolationsPage() {
                           }
                         >
                           {v.action === 'SUSPENDED'
-                            ? 'Suspension'
+                            ? t('complianceUi.suspension')
                             : v.action === 'BLOCKED'
-                              ? 'Blocage'
-                              : 'Alerte'}
+                              ? t('complianceUi.block')
+                              : t('complianceUi.alert')}
                         </Badge>
                       ),
                     },

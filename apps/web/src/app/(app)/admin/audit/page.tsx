@@ -5,14 +5,16 @@ import { Badge, Card, CardContent, Input, Label, Select } from '@tontine/ui';
 import { useState } from 'react';
 import { QueryState } from '@/components/feedback';
 import { RequireRole } from '@/components/guards';
-import { PageHeader } from '@/components/page-header';
 import { SimpleTable } from '@/components/simple-table';
 import { api } from '@/lib/api';
 import type { AuditLogView } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/format';
+import { type MessageKey, useI18n } from '@/lib/i18n';
+import { useFormat } from '@/lib/i18n/format';
 
 /** Journal d'audit (lecture seule) : actions sensibles, refus d'accès, décisions. */
 export default function AdminAuditPage() {
+  const { t } = useI18n();
+  const f = useFormat();
   const [resourceType, setResourceType] = useState('');
   const [result, setResult] = useState('');
   const query = useQuery({
@@ -25,34 +27,36 @@ export default function AdminAuditPage() {
   return (
     <RequireRole roles={['SUPER_ADMIN']}>
       <div className="space-y-4">
-        <PageHeader
-          title="Journal d’audit"
-          description="Immuable. Les secrets, jetons et documents n’y figurent jamais."
-        />
+        <div className="space-y-1">
+          <h1 className="text-h1">{t('ops.auditTitle')}</h1>
+          <p className="text-sm text-muted-foreground">{t('ops.auditDescription')}</p>
+        </div>
         <div className="grid max-w-lg grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="audit-resource">Ressource</Label>
+            <Label htmlFor="audit-resource">{t('ops.resource')}</Label>
             <Input
               id="audit-resource"
-              placeholder="ex. tontine, user, payment"
+              placeholder={t('ops.resourcePlaceholder')}
               value={resourceType}
               onChange={(e) => setResourceType(e.target.value.trim())}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="audit-result">Résultat</Label>
+            <Label htmlFor="audit-result">{t('ops.result')}</Label>
             <Select id="audit-result" value={result} onChange={(e) => setResult(e.target.value)}>
-              <option value="">Tous</option>
-              <option value="SUCCESS">Succès</option>
-              <option value="DENIED">Refusé</option>
-              <option value="FAILURE">Échec</option>
+              <option value="">{t('ops.all')}</option>
+              <option value="SUCCESS">{t('ops.results.SUCCESS')}</option>
+              <option value="DENIED">{t('ops.results.DENIED')}</option>
+              <option value="FAILURE">{t('ops.results.FAILURE')}</option>
             </Select>
           </div>
         </div>
         <QueryState
           query={query}
           isEmpty={(d) => d.data.length === 0}
-          empty={<p className="py-6 text-center text-sm text-muted-foreground">Aucune entrée.</p>}
+          empty={
+            <p className="py-6 text-center text-sm text-muted-foreground">{t('ops.auditEmpty')}</p>
+          }
         >
           {(d) => (
             <Card>
@@ -61,20 +65,23 @@ export default function AdminAuditPage() {
                   rows={d.data}
                   rowKey={(a) => a.id}
                   columns={[
-                    { header: 'Date', cell: (a) => formatDateTime(a.createdAt) },
-                    { header: 'Action', cell: (a) => <code className="text-xs">{a.action}</code> },
+                    { header: t('ops.date'), cell: (a) => f.dateTime(a.createdAt) },
                     {
-                      header: 'Ressource',
+                      header: t('ops.action'),
+                      cell: (a) => <code className="text-xs">{a.action}</code>,
+                    },
+                    {
+                      header: t('ops.resource'),
                       cell: (a) =>
                         `${a.resourceType}${a.resourceId ? ` · ${a.resourceId.slice(0, 8)}` : ''}`,
                     },
                     {
-                      header: 'Acteur',
+                      header: t('ops.actor'),
                       cell: (a) =>
                         `${a.actorRole ?? '—'}${a.actorId ? ` · ${a.actorId.slice(0, 8)}` : ''}`,
                     },
                     {
-                      header: 'Résultat',
+                      header: t('ops.result'),
                       cell: (a) => (
                         <Badge
                           variant={
@@ -85,11 +92,11 @@ export default function AdminAuditPage() {
                                 : 'destructive'
                           }
                         >
-                          {a.result}
+                          {t(`ops.results.${a.result}` as MessageKey)}
                         </Badge>
                       ),
                     },
-                    { header: 'IP', cell: (a) => a.ip ?? '—' },
+                    { header: t('ops.ip'), cell: (a) => a.ip ?? '—' },
                   ]}
                 />
               </CardContent>

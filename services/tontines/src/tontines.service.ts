@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ComplianceService } from '@tontine/compliance';
 import {
   type CreateTontineInput,
+  type UpdateTontineInput,
   fromMinor,
   getCountry,
   moneyView,
@@ -30,6 +31,9 @@ import {
 } from '@tontine/platform';
 import { WalletsService } from '@tontine/wallets';
 import { addDays, localDate } from './domain/calendar';
+
+/** Comparaison JSON de valeurs Prisma (bigint compris). */
+const jsonBigint = (_k: string, v: unknown) => (typeof v === 'bigint' ? v.toString() : v);
 
 /** US-4.1 §2 : date de début ≥ aujourd'hui + 7 jours. */
 export const MIN_START_DELAY_DAYS = 7;
@@ -260,30 +264,13 @@ export class TontinesService {
         `La tontine doit être en ${wallet?.currency ?? country.currency}, la devise de votre portefeuille`,
       );
     }
-    const contributionMinor = toMinor(input.contributionAmount, currency);
-    const entryFeeMinor = input.entryFee ? toMinor(input.entryFee, currency) : 0n;
-    const collationMinor = input.collation ? toMinor(input.collation, currency) : 0n;
-    if (contributionMinor <= 0n)
-      throw new DomainError(
-        'VALIDATION_FAILED',
-        'Le montant de contribution doit être supérieur à 0',
-      );
-    if (collationMinor >= contributionMinor * BigInt(MIN_MEMBERS)) {
-      throw new DomainError(
-        'VALIDATION_FAILED',
-        'La collation doit être inférieure au pot minimal (3 contributions)',
-      );
-    }
     // A-27 : dates civiles dans le fuseau du créateur
     const timezone = country.timezone;
-    const earliest = addDays(localDate(timezone, this.clock.now()), MIN_START_DELAY_DAYS);
-    if (input.startDate < earliest) {
-      throw new DomainError(
-        'VALIDATION_FAILED',
-        `La date de début doit être au plus tôt le ${earliest}`,
-        { field: 'startDate', min: earliest },
-      );
-    }
+    const { contributionMinor, entryFeeMinor, collationMinor } = this.checkParams(
+      input,
+      currency,
+      timezone,
+    );
     await this.compliance.assertCompliant({
       operationType: 'TONTINE_CREATION',
       memberId: actor.userId,
@@ -432,6 +419,130 @@ export class TontinesService {
   }
 
   // ------------------------------------------------------------------ annulation avant démarrage
+  /** Règles communes à la création et à la modification : montants, collation, date J+7. */
+  private checkParams(
+    input: Pick<CreateTontineInput, 'contributionAmount' | 'entryFee' | 'collation' | 'startDate'>,
+    currency: string,
+    timezone: string,
+  ) {
+    const contributionMinor = toMinor(input.contributionAmount, currency);
+    const entryFeeMinor = input.entryFee ? toMinor(input.entryFee, currency) : 0n;
+    const collationMinor = input.collation ? toMinor(input.collation, currency) : 0n;
+    if (contributionMinor <= 0n)
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        'Le montant de contribution doit être supérieur à 0',
+      );
+    if (collationMinor >= contributionMinor * BigInt(MIN_MEMBERS)) {
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        'La collation doit être inférieure au pot minimal (3 contributions)',
+      );
+    }
+    const earliest = addDays(localDate(timezone, this.clock.now()), MIN_START_DELAY_DAYS);
+    if (input.startDate < earliest) {
+      throw new DomainError(
+        'VALIDATION_FAILED',
+        `La date de début doit être au plus tôt le ${earliest}`,
+        { field: 'startDate', min: earliest },
+      );
+    }
+    return { contributionMinor, entryFeeMinor, collationMinor };
+  }
+
+  /**
+   * A-61 — modification de la configuration par l'administrateur, uniquement avant démarrage
+   * (DRAFT ou READY) et tant qu'aucun autre membre n'a rejoint : les conditions acceptées par
+   * des participants ne changent jamais. Devise inchangée (portefeuilles de la tontine créés).
+   */
+  async update(actor: Actor, tontineId: string, input: UpdateTontineInput) {
+    const t = await this.getAdministered(actor, tontineId);
+    if (t.status !== 'DRAFT' && t.status !== 'READY') {
+      throw new DomainError(
+        'INVALID_STATE_TRANSITION',
+        `Tontine ${t.status} : configuration modifiable uniquement avant le démarrage`,
+      );
+    }
+    if ((await this.seatedCount(t.id)) > 1) {
+      throw new DomainError(
+        'BUSINESS_RULE_VIOLATION',
+        'Des membres ont déjà rejoint la tontine : sa configuration ne peut plus changer',
+      );
+    }
+    if (input.currency && input.currency.toUpperCase() !== t.currency) {
+      throw new DomainError('CURRENCY_MISMATCH', `La devise de la tontine est ${t.currency}`);
+    }
+    const { contributionMinor, entryFeeMinor, collationMinor } = this.checkParams(
+      input,
+      t.currency,
+      t.timezone,
+    );
+    await this.compliance.assertCompliant({
+      operationType: 'TONTINE_CREATION',
+      memberId: actor.userId,
+      amountMinor: contributionMinor,
+      currency: t.currency,
+      context: { name: input.name },
+    });
+    const data = {
+      name: input.name,
+      contributionMinor,
+      frequency: input.frequency,
+      frequencyDetail: input.frequencyDetail as object,
+      maxMembers: input.maxMembers,
+      startDate: new Date(`${input.startDate}T00:00:00Z`),
+      drawMode: input.drawMode,
+      graceDays: input.penaltyRules.graceDays,
+      lateFeeBps: percentToBps(input.penaltyRules.lateFeePercent),
+      suspendAfter: input.penaltyRules.suspendAfter,
+      defaultAfterDays: input.penaltyRules.defaultAfterDays,
+      entryFeeMinor,
+      collationMinor,
+      incompletePolicy: input.incompletePolicy,
+    };
+    const changedFields = (Object.keys(data) as Array<keyof typeof data>).filter(
+      (k) => JSON.stringify(data[k], jsonBigint) !== JSON.stringify(t[k], jsonBigint),
+    );
+    try {
+      const updated = await this.uow.run(async (tx) => {
+        const res = await tx.tontine.updateMany({
+          where: { id: t.id, version: input.version, status: { in: ['DRAFT', 'READY'] } },
+          data: { ...data, version: { increment: 1 } },
+        });
+        if (res.count !== 1)
+          throw new DomainError('VERSION_CONFLICT', 'La tontine a été modifiée entre-temps');
+        if (entryFeeMinor === 0n) {
+          await tx.tontineMember.updateMany({
+            where: { tontineId: t.id, memberId: actor.userId },
+            data: { entryFeePaid: true },
+          });
+        }
+        await this.outbox.add(tx, {
+          type: 'tontine.updated',
+          aggregateType: 'tontine',
+          aggregateId: t.id,
+          payload: { tontineId: t.id, updatedBy: actor.userId, changedFields },
+        });
+        await this.audit.record(
+          {
+            action: 'tontine.updated',
+            resourceType: 'tontine',
+            resourceId: t.id,
+            result: 'SUCCESS',
+            metadata: { changedFields },
+          },
+          tx,
+        );
+        return tx.tontine.findUniqueOrThrow({ where: { id: t.id } });
+      });
+      return tontineView(updated, { memberCount: 1, myRole: 'ADMIN', myStatus: 'ACTIVE' });
+    } catch (e) {
+      if (isUniqueViolation(e))
+        throw new DomainError('DUPLICATE_NAME', 'Vous avez déjà une tontine portant ce nom');
+      throw e;
+    }
+  }
+
   async cancel(actor: Actor, tontineId: string, reason: string) {
     const t = await this.getAdministered(actor, tontineId);
     if (t.status !== 'DRAFT' && t.status !== 'READY') {
